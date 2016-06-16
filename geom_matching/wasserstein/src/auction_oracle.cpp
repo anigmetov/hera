@@ -46,8 +46,11 @@ AuctionOracleAbstract::AuctionOracleAbstract(const std::vector<DiagramPoint>& _b
 
 double AuctionOracleAbstract::getValueForBidder(size_t bidderIdx, size_t itemIdx)
 {
-    //return pow(distLp(bidders[bidderIdx], items[itemIdx], internal_p), wassersteinPower) + prices[itemIdx];
-    return pow(distLp(bidders.at(bidderIdx), items.at(itemIdx), internal_p), wassersteinPower) + prices.at(itemIdx);
+    assert(distLp(bidders.at(bidderIdx), items.at(itemIdx), internal_p) + prices.at(itemIdx) >= 0.0);
+    if (wassersteinPower == 1.0) 
+        return distLp(bidders[bidderIdx], items[itemIdx], internal_p) + prices[itemIdx];
+    else
+        return pow(distLp(bidders[bidderIdx], items[itemIdx], internal_p), wassersteinPower) + prices[itemIdx];
 }
 
 // *****************************
@@ -1182,7 +1185,11 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
     //assert(projItem.projId == bidder.id);
     //assert(projItem.id == bidder.projId);
     // todo: store precomputed distance?
-    double projItemValue = pow(distLp(bidder, projItem, internal_p), wassersteinPower) + prices[projItemIdx];
+    double projItemValue;
+    if (wassersteinPower == 1.0)  
+        projItemValue = distLp(bidder, projItem, internal_p) + prices[projItemIdx];
+    else
+        projItemValue = pow(distLp(bidder, projItem, internal_p), wassersteinPower) + prices[projItemIdx];
    
     if (bidder.isDiagonal()) {
         // for diagonal bidder the only normal point has already been added
