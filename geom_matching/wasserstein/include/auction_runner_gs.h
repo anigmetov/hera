@@ -42,7 +42,8 @@ derivative works thereof, in binary and source code form.
 namespace geom_ws {
 
 //using AuctionOracle = AuctionOracleLazyHeapRestricted;
-using AuctionOracle = AuctionOracleKDTreeRestricted;
+//using AuctionOracle = AuctionOracleKDTreeRestricted;
+using AuctionOracle = AuctionOracleKDTreeBestKHeur;
 
 #ifdef KEEP_UNASSIGNED_ORDERED
 using IdxPointPair = std::pair<size_t, DiagramPoint>;

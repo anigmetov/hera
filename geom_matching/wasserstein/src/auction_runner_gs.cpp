@@ -36,7 +36,7 @@ derivative works thereof, in binary and source code form.
 #include "auction_runner_gs.h"
 #include "wasserstein.h"
 
-//#define PRINT_DETAILED_TIMING
+#define PRINT_DETAILED_TIMING
 
 namespace geom_ws {
 
@@ -138,6 +138,9 @@ void AuctionRunnerGS::runAuction(void)
         flushAssignment();
         runAuctionPhase();
         iterNum++;
+        if (iterNum == 4) { 
+            oracle->startCaching();
+        }
         //std::cout << "Iteration " << iterNum << " completed. " << std::endl; 
         // result is d^q
         currentResult = getDistanceToQthPowerInternal();
@@ -149,6 +152,11 @@ void AuctionRunnerGS::runAuction(void)
         std::cout << "Iteration " << iterNum << " finished. ";
         std::cout << "Current result is " << currentResult  << ", epsilon = " << oracle->getEpsilon() << std::endl;
         std::cout << "Number of rounds (cumulative): " << numRounds << std::endl;
+#ifdef GATHER_BEST_K_STAT
+        std::cout << "oracle, cacheHits = " << oracle->cacheHits << ", cache misses: " << oracle->cacheMisses << std::endl;
+        oracle->cacheHits = 0;
+        oracle->cacheMisses = 0;
+#endif
 #endif
         if ( denominator <= 0 ) {
             //std::cout << "Epsilon is too big." << std::endl;

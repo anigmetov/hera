@@ -32,6 +32,8 @@ derivative works thereof, in binary and source code form.
 
 #define USE_BOOST_HEAP
 
+#define GATHER_BEST_K_STAT
+
 #include <map>
 #include <memory>
 #include <set>
@@ -285,6 +287,60 @@ struct AuctionOracleKDTreeRestricted final : AuctionOracleAbstract {
     size_t secondBestDiagonalItemIdx;
     double secondBestDiagonalItemValue;
 };
+
+
+struct AuctionOracleKDTreeBestKHeur  final : AuctionOracleAbstract {
+
+
+    typedef dnn::Point<2, double> DnnPoint;
+    typedef dnn::PointTraits<DnnPoint> DnnTraits;
+
+    AuctionOracleKDTreeBestKHeur(const std::vector<DiagramPoint>& bidders, const std::vector<DiagramPoint>& items, const double wassersteinPower, const double _internal_p = std::numeric_limits<double>::infinity());
+    ~AuctionOracleKDTreeBestKHeur();
+    // data members
+    // temporarily make everything public
+    double maxVal;
+    double weightAdjConst;
+    dnn::KDTree<DnnTraits>* kdtree;
+    std::vector<DnnPoint> dnnPoints;
+    std::vector<DnnPoint*> dnnPointHandles;
+    std::vector<DnnPoint> dnnPointsAll;
+    std::vector<DnnPoint*> dnnPointHandlesAll;
+    LossesHeap diagItemsHeap;
+    std::vector<LossesHeap::handle_type> diagHeapHandles;
+    std::vector<size_t> heapHandlesIndices;
+    std::vector<size_t> kdtreeItems;
+    // vector of heaps to find the best items
+    void setPrice(const IdxType itemsIdx, const double newPrice) override final;
+    IdxValPair getOptimalBid(const IdxType bidderIdx) override final;
+    void adjustPrices(void) override final;
+    // debug routines
+    DebugOptimalBid getOptimalBidDebug(IdxType bidderIdx);
+    void setEpsilon(double newVal) override final;
+
+
+    bool bestDiagonalItemsComputed;
+    size_t bestDiagonalItemIdx;
+    double bestDiagonalItemValue;
+    size_t secondBestDiagonalItemIdx;
+    double secondBestDiagonalItemValue;
+
+    bool useCaching { false };
+    const int K;  // the number of best candidates for memoization
+    // best candidates for bidder i are stored in i, i+1, ..., i + (k-1)
+    std::vector<IdxType> cachedCandidates; 
+    std::vector<double> cachedBenefits; 
+    std::vector<double> rescanThresholds; 
+    void refreshBestK(const IdxType bidderIdx);
+    void startCaching();
+#ifdef GATHER_BEST_K_STAT
+    int cacheHits { 0 };
+    int cacheMisses { 0 };
+#endif
+};
+
+
+
 
 struct AuctionOracleRestricted final : AuctionOracleAbstract {
     AuctionOracleRestricted(const std::vector<DiagramPoint>& bidders, const std::vector<DiagramPoint>& items, const double wassersteinPower, const double _internal_p = std::numeric_limits<double>::infinity());

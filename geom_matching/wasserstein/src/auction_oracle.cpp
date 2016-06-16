@@ -46,7 +46,8 @@ AuctionOracleAbstract::AuctionOracleAbstract(const std::vector<DiagramPoint>& _b
 
 double AuctionOracleAbstract::getValueForBidder(size_t bidderIdx, size_t itemIdx)
 {
-    return pow(distLp(bidders[bidderIdx], items[itemIdx], internal_p), wassersteinPower) + prices[itemIdx];
+    //return pow(distLp(bidders[bidderIdx], items[itemIdx], internal_p), wassersteinPower) + prices[itemIdx];
+    return pow(distLp(bidders.at(bidderIdx), items.at(itemIdx), internal_p), wassersteinPower) + prices.at(itemIdx);
 }
 
 // *****************************
@@ -352,12 +353,12 @@ DebugOptimalBid AuctionOracleLazyHeapRestricted::getOptimalBidDebug(IdxType bidd
 
     size_t projItemIdx = bidderIdx;
     assert( 0 <= projItemIdx and projItemIdx < items.size() );
-    DiagramPoint projItem = items[projItemIdx];
+    //DiagramPoint projItem = items[projItemIdx];
     assert(projItem.type != bidder.type);
     //assert(projItem.projId == bidder.id);
     //assert(projItem.id == bidder.projId);
     // todo: store precomputed distance?
-    double projItemValue = pow(distLp(bidder, projItem, internal_p), wassersteinPower) + prices[projItemIdx];
+    double projItemValue = getValueForBidder(bidderIdx, projItemIdx);
     candItems.push_back( std::make_pair(projItemIdx, projItemValue) );
  
     if (bidder.isNormal()) {
@@ -1297,6 +1298,343 @@ void AuctionOracleKDTreeRestricted::setEpsilon(double newVal)
     assert(newVal >= 0.0);
     epsilon = newVal;
 }
+
+
+
+// *****************************
+// AuctionOracleKDTreeBestKHeur
+// *****************************
+
+AuctionOracleKDTreeBestKHeur::AuctionOracleKDTreeBestKHeur(const std::vector<DiagramPoint>& _bidders, 
+        const std::vector<DiagramPoint>& _items, 
+        const double _wassersteinPower,
+        const double internal_p) :
+    AuctionOracleAbstract(_bidders, _items, _wassersteinPower, internal_p),
+    heapHandlesIndices(items.size(), std::numeric_limits<size_t>::max()),
+    kdtreeItems(items.size(), std::numeric_limits<size_t>::max()),
+    bestDiagonalItemsComputed(false),
+    K( std::min( static_cast<decltype(K)>(_items.size()), static_cast<decltype(K)>(4))),
+    cachedCandidates( K * _bidders.size(), std::numeric_limits<IdxType>::lowest()),
+    cachedBenefits( K * _bidders.size(), std::numeric_limits<double>::lowest()),
+    rescanThresholds( _bidders.size(), std::numeric_limits<double>::lowest())
+{
+    size_t dnnItemIdx { 0 };
+    size_t trueIdx { 0 };
+    dnnPoints.clear();
+    // store normal items in kd-tree
+    for(const auto& g : items) {
+        if (g.isNormal() ) {
+            kdtreeItems[trueIdx] = dnnItemIdx;
+            // index of items is id of dnn-point
+            DnnPoint p(trueIdx);
+            p[0] = g.getRealX();
+            p[1] = g.getRealY();
+            dnnPoints.push_back(p);
+            assert(dnnItemIdx == dnnPoints.size() - 1);
+            dnnItemIdx++;
+        }
+        trueIdx++;
+    }
+
+    assert(dnnPoints.size() < items.size() );
+    for(size_t i = 0; i < dnnPoints.size(); ++i) {
+        dnnPointHandles.push_back(&dnnPoints[i]);
+    }
+    DnnTraits traits;
+    //std::cout << "kdtree: " << dnnPointHandles.size() << " points" << std::endl;
+    kdtree = new dnn::KDTree<DnnTraits>(traits, dnnPointHandles, wassersteinPower);
+    
+    size_t handleIdx {0};
+    for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
+        if (items[itemIdx].isDiagonal()) {
+            heapHandlesIndices[itemIdx] = handleIdx++;
+            diagHeapHandles.push_back(diagItemsHeap.push(std::make_pair(itemIdx, 0)));
+        }
+    }
+    //to-do: remove maxVal from 
+    //std::cout << "3getFurthestDistance3Approx = " << getFurthestDistance3Approx(_bidders, _items) << std::endl;
+    maxVal = 3*getFurthestDistance3Approx(_bidders, _items);
+    maxVal = pow(maxVal, wassersteinPower);
+    weightAdjConst = maxVal;
+
+    //std::cout << "AuctionOracleKDTreeBestKHeur: weightAdjConst = " << weightAdjConst << std::endl;
+    //std::cout << "AuctionOracleKDTreeBestKHeur constructor done" << std::endl;
+}
+
+DebugOptimalBid AuctionOracleKDTreeBestKHeur::getOptimalBidDebug(IdxType bidderIdx)
+{
+    assert(false);
+}
+
+IdxValPair AuctionOracleKDTreeBestKHeur::getOptimalBid(IdxType bidderIdx)
+{
+
+    
+    DiagramPoint bidder = bidders[bidderIdx];
+
+    //std::cout << "bidder.x = " << bidderDnn[0] << std::endl;
+    //std::cout << "bidder.y = " << bidderDnn[1] << std::endl;
+
+    // corresponding point is always considered as a candidate
+    // if bidder is a diagonal point, projItem is a normal point, 
+    // and vice versa.
+    
+    size_t bestItemIdx;
+    double bestItemValue;
+    double secondBestItemValue;
+
+
+    size_t projItemIdx = bidderIdx;
+    assert( 0 <= projItemIdx and projItemIdx < items.size() );
+    //DiagramPoint projItem = items[projItemIdx];
+    assert(projItem.type != bidder.type);
+    //assert(projItem.projId == bidder.id);
+    //assert(projItem.id == bidder.projId);
+    // todo: store precomputed distance?
+    double projItemValue = getValueForBidder(bidderIdx, projItemIdx);
+   
+    if (bidder.isDiagonal()) {
+        // for diagonal bidder the only normal point has already been added
+        // the other 2 candidates are diagonal items only, get from the heap
+        // with prices
+
+        if (not bestDiagonalItemsComputed) {
+            auto topDiagIter = diagItemsHeap.ordered_begin();
+            bestDiagonalItemIdx = topDiagIter->first;
+            bestDiagonalItemValue = topDiagIter->second;
+            if (diagItemsHeap.size() > 1) {
+                topDiagIter++;
+                secondBestDiagonalItemIdx = topDiagIter->first;
+                secondBestDiagonalItemValue = topDiagIter->second;
+            } else {
+                // there is only one diagonal point at all,
+                // ensure that second best diagonal value
+                // will lose to projection item
+                secondBestDiagonalItemValue = std::numeric_limits<double>::max();
+                secondBestDiagonalItemIdx = -1;
+            }
+            bestDiagonalItemsComputed = true;
+        }
+
+        if ( projItemValue < bestDiagonalItemValue) {
+            bestItemIdx = projItemIdx;
+            bestItemValue = projItemValue;
+            secondBestItemValue = bestDiagonalItemValue;
+        } else if (projItemValue < secondBestDiagonalItemValue) {
+            bestItemIdx = bestDiagonalItemIdx;
+            bestItemValue = bestDiagonalItemValue;
+            secondBestItemValue = projItemValue;
+        } else {
+            bestItemIdx = bestDiagonalItemIdx;
+            bestItemValue = bestDiagonalItemValue;
+            secondBestItemValue = secondBestDiagonalItemValue;
+        }
+    } else {
+
+        // for normal bidder
+        size_t bestNormalItemIdx { std::numeric_limits<decltype(bestNormalItemIdx)>::max() };
+        double bestNormalItemValue { std::numeric_limits<decltype(bestNormalItemValue)>::max() };
+        double secondBestNormalItemValue { std::numeric_limits<decltype(secondBestNormalItemValue)>::max() };
+
+        if (useCaching) {
+            double refreshThreshold = rescanThresholds[bidderIdx];
+            int cachedCandidatesCounter { 0 };
+            // loop over cached normal candidates
+            for(IdxType idx = 0; idx < K; ++idx) {
+                IdxType cachIdx = K * bidderIdx + idx;
+                assert( prices.at(cachedCandidates.at(cachIdx)) >= 0.0 );
+                double currVal = cachedBenefits[cachIdx] + prices[ cachedCandidates[cachIdx] ];
+                if (currVal <= refreshThreshold) {
+                    cachedCandidatesCounter++;
+                    if (currVal < bestNormalItemValue) {
+                        // current candidate is better;
+                        // the previous value is demoted to 2nd rank
+                        secondBestNormalItemValue = bestNormalItemValue;
+                        // current value is the best we've seen so far
+                        bestNormalItemValue = currVal;
+                        bestNormalItemIdx = cachedCandidates[cachIdx];
+                    } else if (currVal < secondBestNormalItemValue) {
+                        secondBestNormalItemValue = currVal;
+                    }
+                } 
+            }
+            if (cachedCandidatesCounter <= 1) {
+                // we cannot guarantee that the cached candidates are still
+                // the best, refresh cache
+                refreshBestK(bidderIdx);
+#ifdef GATHER_BEST_K_STAT
+                cacheMisses++;
+#endif
+                // immediately after refresh the candidates are ordered
+                // by value, so best and second-best indices are here:
+                bestNormalItemIdx = cachedCandidates[K*bidderIdx];
+                bestNormalItemValue = cachedBenefits[K*bidderIdx] + prices[cachedCandidates[K*bidderIdx]];
+                //auto secondBestNormalItemIdx = cachedCandidates[K*bidderIdx + 1];
+                secondBestNormalItemValue = cachedBenefits[K*bidderIdx +1] + prices[cachedCandidates[K*bidderIdx + 1]];
+            } else {
+#ifdef GATHER_BEST_K_STAT
+                cacheHits++;
+#endif
+            }
+        } else {
+            // if no caching is used, we query k-d tree every time
+            // for normal bidder get 2 best items among non-diagonal points from
+            // kdtree
+            DnnPoint bidderDnn;
+            bidderDnn[0] = bidder.getRealX();
+            bidderDnn[1] = bidder.getRealY();
+            auto twoBestItems = kdtree->findK(bidderDnn, 2);
+            //std::cout << "twoBestItems for all: " << twoBestItems[0].d << " " << twoBestItems[1].d << std::endl;
+            bestNormalItemIdx = twoBestItems[0].p->id();
+            bestNormalItemValue = twoBestItems[0].d;
+            secondBestNormalItemValue = twoBestItems[1].d;
+        }
+
+        if ( projItemValue < bestNormalItemValue) {
+            bestItemIdx = projItemIdx;
+            bestItemValue = projItemValue;
+            secondBestItemValue = bestNormalItemValue;
+        } else if (projItemValue < secondBestNormalItemValue) {
+            bestItemIdx = bestNormalItemIdx;
+            bestItemValue = bestNormalItemValue;
+            secondBestItemValue = projItemValue;
+        } else {
+            bestItemIdx = bestNormalItemIdx;
+            bestItemValue = bestNormalItemValue;
+            secondBestItemValue = secondBestNormalItemValue;
+        }
+    }
+
+    IdxValPair result;
+
+    assert( secondBestItemValue >= bestItemValue );
+
+    result.first = bestItemIdx;
+    result.second = ( secondBestItemValue - bestItemValue ) + prices[bestItemIdx] + epsilon;
+
+    //DebugOptimalBid debugNaiveResult;
+    //debugNaiveResult.bestItemValue = 1e20;
+    //debugNaiveResult.secondBestItemValue = 1e20;
+    //double currItemValue;
+    //for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
+        //if (bidders[bidderIdx].type != items[itemIdx].type and itemIdx != bidderIdx)
+            //continue;
+
+        //currItemValue = getValueForBidder(bidderIdx, itemIdx);
+        //if (currItemValue < debugNaiveResult.bestItemValue) {
+            //debugNaiveResult.bestItemValue = currItemValue;
+            //debugNaiveResult.bestItemIdx  = itemIdx;
+        //}
+    //}
+
+    ////std::cout << "got naive result" << std::endl;
+
+    //if ( fabs( debugNaiveResult.bestItemValue - bestItemValue ) > 1e-6) {
+        ////kdtreeAll->printWeights();
+        //std::cerr << "bidderIdx = " << bidderIdx << "; ";
+        //std::cerr << bidders[bidderIdx] << std::endl;
+        ////for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
+            ////std::cout << itemIdx << ": " << items[itemIdx] << "; price = " << prices[itemIdx] << std::endl;
+        ////}
+        //std::cerr << "debugNaiveResult: " << debugNaiveResult << std::endl;
+        //std::cerr << "bestItemIdx = " << bestItemIdx << ", value = " << bestItemValue << std::endl;
+        //for(int qq = 0; qq < K; ++qq) {
+            //std::cerr << "best-" << qq + 1 << " " << cachedCandidates[K * bidderIdx + qq] << std::endl;
+        //}
+        ////std::cerr << "twoBestItems: " << twoBestItems[0].d << " " << twoBestItems[1].d << std::endl;
+        //throw 1;
+        //assert(false);
+    //}
+ 
+
+
+    return result;
+}
+
+
+void AuctionOracleKDTreeBestKHeur::refreshBestK(const IdxType bidderIdx)
+{
+    auto bidder = bidders[bidderIdx];
+    if (bidder.isDiagonal()) {
+        ;
+    } else {
+        DnnPoint bidderDnn;
+        bidderDnn[0] = bidder.getRealX();
+        bidderDnn[1] = bidder.getRealY();
+        auto bestItems = kdtree->findK(bidderDnn, K);
+        for(IdxType idx = 0; idx < K; ++idx) {
+            auto candIdx = bestItems[idx].p->id();
+            cachedCandidates[K * bidderIdx + idx] = candIdx;
+            cachedBenefits[K * bidderIdx + idx] = bestItems[idx].d - prices[candIdx];
+        }
+        assert(bestItems.size() >= K);
+        //rescanThresholds[bidderIdx] = std::max(bestItems[K-1].d, getValueForBidder(bidderIdx, bidderIdx));
+        rescanThresholds[bidderIdx] = bestItems[K-1].d;
+    }
+    //for(size_t i = 0; i < bidders.size(); ++i) {
+        //for(size_t j = 0; j < K; ++j) {
+            //std::cout << "bidder " << i << " best-" << j+1 << " " << cachedCandidates[K * i + j] << std::endl;
+        //}
+    //}
+    //std::cout << "-----------------------------------------------------" << std::endl;
+}
+
+
+/*
+a_{ij} = d_{ij} 
+value_{ij} = a_{ij} + price_j
+*/
+void AuctionOracleKDTreeBestKHeur::setPrice(IdxType itemIdx, double newPrice)
+{
+    assert(prices.size() == items.size());
+    assert( 0 < diagHeapHandles.size() and diagHeapHandles.size() <= items.size());
+    assert(newPrice > prices.at(itemIdx));
+    prices[itemIdx] = newPrice;
+    if ( items[itemIdx].isNormal() ) {
+        //std::cout << "before increasing weight in kdtree " << std::endl;
+        //std::cout << kdtreeItems.at(itemIdx) << std::endl;
+        assert(0 <= itemIdx and itemIdx < kdtreeItems.size());
+        assert(0 <= kdtreeItems[itemIdx] and kdtreeItems[itemIdx] < dnnPointHandles.size());
+        kdtree->increase_weight( dnnPointHandles[kdtreeItems[itemIdx]], newPrice);
+        //std::cout << "after increasing weight in kdtree" << std::endl;
+    } else {
+        //std::cout << "before decreasing weight in heap" << std::endl;
+        //std::cout << "diagHeapHandles.size = " << diagHeapHandles.size() << std::endl;
+        assert(diagHeapHandles.size() > heapHandlesIndices.at(itemIdx));
+        diagItemsHeap.decrease(diagHeapHandles[heapHandlesIndices[itemIdx]], std::make_pair(itemIdx, newPrice));
+        bestDiagonalItemsComputed = false;
+    }
+}
+
+void AuctionOracleKDTreeBestKHeur::adjustPrices(void)
+{
+}
+
+AuctionOracleKDTreeBestKHeur::~AuctionOracleKDTreeBestKHeur()
+{
+    delete kdtree;
+}
+
+void AuctionOracleKDTreeBestKHeur::setEpsilon(double newVal) 
+{
+    assert(newVal >= 0.0);
+    epsilon = newVal;
+}
+
+
+void AuctionOracleKDTreeBestKHeur::startCaching()
+{
+    useCaching = true;
+    for(size_t bidderIdx = 0; bidderIdx < bidders.size(); ++bidderIdx) {
+        refreshBestK(bidderIdx);
+    }
+#ifdef GATHER_BEST_K_STAT
+    cacheHits = 0;
+    cacheMisses = 0;
+#endif
+}
+
+
 
 std::ostream& operator<< (std::ostream& output, const DebugOptimalBid& db)
 {
