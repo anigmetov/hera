@@ -21,7 +21,6 @@ wasserstein/build/
 *.*~*
 *.swp
 *.nfs*
-*.txt
 *.pdf
 *.o
 *.d
