@@ -35,7 +35,7 @@
 #include <string>
 #include <assert.h>
 
-#include "def_debug.h"
+#include "def_debug_bt.h"
 
 
 namespace geom_bt {
