@@ -30,7 +30,7 @@ derivative works thereof, in binary and source code form.
 #include <functional>
 #include <iterator>
 
-#include "def_debug.h"
+#include "def_debug_ws.h"
 #include "auction_oracle.h"
 
 namespace geom_ws {

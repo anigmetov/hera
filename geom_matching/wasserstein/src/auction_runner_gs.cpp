@@ -32,7 +32,7 @@ derivative works thereof, in binary and source code form.
 #include <iterator>
 #include <chrono>
 
-#include "def_debug.h"
+#include "def_debug_ws.h"
 #include "auction_runner_gs.h"
 #include "wasserstein.h"
 

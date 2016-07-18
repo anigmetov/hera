@@ -42,7 +42,7 @@ derivative works thereof, in binary and source code form.
 #endif
 
 
-#include "def_debug.h"
+#include "def_debug_ws.h"
 
 #define MIN_VALID_ID 10
 
