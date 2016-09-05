@@ -37,10 +37,10 @@ derivative works thereof, in binary and source code form.
 namespace geom_ws {
 
 // *****************************
-// AuctionRunnerJak 
+// AuctionRunnerJac 
 // *****************************
 
-AuctionRunnerJak::AuctionRunnerJak(const std::vector<DiagramPoint>& A, const std::vector<DiagramPoint>& B, const double q, const double _delta, const double _internal_p) :
+AuctionRunnerJac::AuctionRunnerJac(const std::vector<DiagramPoint>& A, const std::vector<DiagramPoint>& B, const double q, const double _delta, const double _internal_p) :
     bidders(A),
     items(B),
     numBidders(A.size()),
@@ -57,7 +57,7 @@ AuctionRunnerJak::AuctionRunnerJak(const std::vector<DiagramPoint>& A, const std
     oracle = std::unique_ptr<AuctionOracle>(new AuctionOracle(bidders, items, wassersteinPower, internal_p));
 }
 
-void AuctionRunnerJak::assignGoodToBidder(IdxType itemIdx, IdxType bidderIdx)
+void AuctionRunnerJac::assignGoodToBidder(IdxType itemIdx, IdxType bidderIdx)
 {
     //sanityCheck();
     IdxType myOldItem = biddersToItems[bidderIdx];
@@ -79,7 +79,9 @@ void AuctionRunnerJak::assignGoodToBidder(IdxType itemIdx, IdxType bidderIdx)
         // RE: this cannot be necessary. I submitted the best bid, hence I was
         // an unassigned bidder.
         if (myOldItem != -1) {
+#ifndef FOR_R_TDA
             std::cout << "This is not happening" << std::endl;
+#endif
             assert(false);
             itemsToBidders[myOldItem] = -1;
         }
@@ -88,7 +90,9 @@ void AuctionRunnerJak::assignGoodToBidder(IdxType itemIdx, IdxType bidderIdx)
         biddersToItems[currItemOwner] = myOldItem;
         // add the old owner of bids to the list of 
         if ( -1 != myOldItem ) {
+#ifndef FOR_R_TDA
             std::cout << "This is not happening" << std::endl;
+#endif
             assert(false);
             // if I had something, update itemsToBidders, too
             // RE: nonsense: if I had something, I am not unassigned and did not
@@ -103,18 +107,17 @@ void AuctionRunnerJak::assignGoodToBidder(IdxType itemIdx, IdxType bidderIdx)
 }
 
 
-void AuctionRunnerJak::assignToBestBidder(IdxType itemIdx)
+void AuctionRunnerJac::assignToBestBidder(IdxType itemIdx)
 {
     assert( itemIdx >= 0 and itemIdx < static_cast<IdxType>(numItems) );
     assert( bidTable[itemIdx].first != -1);
     IdxValPair bestBid { bidTable[itemIdx] };
     assignGoodToBidder(itemIdx, bestBid.first);
-    //std::cout << "About to call setPrice" << std::endl;
     oracle->setPrice(itemIdx,  bestBid.second);
     //dynamic_cast<AuctionOracleKDTree*>(oracle)->setNai
 }
 
-void AuctionRunnerJak::clearBidTable(void)
+void AuctionRunnerJac::clearBidTable(void)
 {
     for(auto& itemWithBidIdx : itemsWithBids) {
         itemReceivedBidVec[itemWithBidIdx] = 0;
@@ -124,7 +127,7 @@ void AuctionRunnerJak::clearBidTable(void)
     itemsWithBids.clear();
 }
 
-void AuctionRunnerJak::submitBid(IdxType bidderIdx, const IdxValPair& itemsBidValuePair)
+void AuctionRunnerJac::submitBid(IdxType bidderIdx, const IdxValPair& itemsBidValuePair)
 {
     IdxType itemIdx = itemsBidValuePair.first;
     double bidValue = itemsBidValuePair.second;
@@ -139,9 +142,10 @@ void AuctionRunnerJak::submitBid(IdxType bidderIdx, const IdxValPair& itemsBidVa
     }
 }
 
-void AuctionRunnerJak::printDebug(void)
+void AuctionRunnerJac::printDebug(void)
 {
 #ifdef DEBUG_AUCTION
+#ifndef FOR_R_TDA
     sanityCheck();
     std::cout << "**********************" << std::endl;
     std::cout << "Current assignment:" << std::endl;
@@ -168,9 +172,10 @@ void AuctionRunnerJak::printDebug(void)
     //}
     std::cout << "**********************" << std::endl;
 #endif
+#endif
 }
 
-void AuctionRunnerJak::flushAssignment(void)
+void AuctionRunnerJac::flushAssignment(void)
 {
     for(auto& b2g : biddersToItems) {
         b2g = -1;
@@ -181,7 +186,7 @@ void AuctionRunnerJak::flushAssignment(void)
     //oracle->adjustPrices();
 }
 
-void AuctionRunnerJak::runAuction(void)
+void AuctionRunnerJac::runAuction(void)
 {
     // relative error 
     // choose some initial epsilon
@@ -213,15 +218,19 @@ void AuctionRunnerJak::runAuction(void)
         // decrease epsilon for the next iteration
         oracle->setEpsilon( oracle->getEpsilon() / epsilonCommonRatio );
         if (iterNum > maxIterNum) {
+#ifndef FOR_R_TDA
             std::cerr << "Maximum iteration number exceeded, exiting. Current result is:"; 
             std::cerr << wassersteinDistance << std::endl;
             std::exit(1);
+#else
+            throw std::runtime_error("Max. iter. exceeded");
+#endif
         }
     } while ( notDone );
     //printMatching();
 }
 
-void AuctionRunnerJak::runAuctionPhase(void)
+void AuctionRunnerJac::runAuctionPhase(void)
 {
     //std::cout << "Entered runAuctionPhase" << std::endl;
     //int numUnassignedBidders { 0 };
@@ -266,7 +275,7 @@ void AuctionRunnerJak::runAuctionPhase(void)
 }
  
 // assertion: the matching must be perfect
-double AuctionRunnerJak::getDistanceToQthPowerInternal(void)
+double AuctionRunnerJac::getDistanceToQthPowerInternal(void)
 {
     sanityCheck();
     double result = 0.0;
@@ -276,19 +285,29 @@ double AuctionRunnerJak::getDistanceToQthPowerInternal(void)
         auto pB = items[biddersToItems[bIdx]];
         result += pow(distLp(pA, pB, internal_p), wassersteinPower);
     }
+    wassersteinCost = result;
     wassersteinDistance = pow(result, 1.0 / wassersteinPower);
     return result;
 }
 
-double AuctionRunnerJak::getWassersteinDistance(void)
+double AuctionRunnerJac::getWassersteinDistance(void)
 {
     runAuction();
     return wassersteinDistance;
 }
 
-void AuctionRunnerJak::sanityCheck(void)
+double AuctionRunnerJac::getWassersteinCost(void)
+{
+    runAuction();
+    return wassersteinCost;
+}
+
+
+
+void AuctionRunnerJac::sanityCheck(void)
 {
 #ifdef DEBUG_AUCTION
+#ifndef FOR_R_TDA
     if (biddersToItems.size() != numBidders) {
         std::cerr << "Wrong size of biddersToItems, must be " << numBidders << ", is " << biddersToItems.size() << std::endl;
         throw "Wrong size of biddersToItems";
@@ -344,11 +363,13 @@ void AuctionRunnerJak::sanityCheck(void)
         }
     }
 #endif
+#endif
 }
 
-void AuctionRunnerJak::printMatching(void)
+void AuctionRunnerJac::printMatching(void)
 {
 //#ifdef DEBUG_AUCTION
+#ifndef FOR_R_TDA
     sanityCheck();
     for(size_t bIdx = 0; bIdx < biddersToItems.size(); ++bIdx) {
         if (biddersToItems[bIdx] >= 0) {
@@ -359,6 +380,7 @@ void AuctionRunnerJak::printMatching(void)
             assert(false);
         }
     }
+#endif
 //#endif
 }
 

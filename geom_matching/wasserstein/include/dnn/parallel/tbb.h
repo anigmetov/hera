@@ -1,7 +1,7 @@
 #ifndef PARALLEL_H
 #define PARALLEL_H
 
-#include <iostream>
+//#include <iostream>
 #include <vector>
 
 #include <boost/range.hpp>

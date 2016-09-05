@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cfloat>
+#include "def_debug_bt.h"
 #include "basic_defs_bt.h"
 
 namespace geom_bt {
@@ -36,6 +37,7 @@ bool Point::operator!=(const Point& other) const
     return !(*this == other);
 }
 
+#ifndef FOR_R_TDA
 std::ostream& operator<<(std::ostream& output, const Point p)
 {
     output << "(" << p.x << ", " << p.y << ")";
@@ -51,6 +53,7 @@ std::ostream& operator<<(std::ostream& output, const PointSet& ps)
     output << "\b\b }";
     return output;
 }
+#endif
 
 double sqrDist(const Point& a, const Point& b)
 {
@@ -90,6 +93,7 @@ bool DiagramPoint::operator!=(const DiagramPoint& other) const
     return !(*this == other);
 }
 
+#ifndef FOR_R_TDA
 std::ostream& operator<<(std::ostream& output, const DiagramPoint p)
 {
     if ( p.type == DiagramPoint::DIAG ) {
@@ -109,6 +113,7 @@ std::ostream& operator<<(std::ostream& output, const DiagramPointSet& ps)
     output << "\b\b }";
     return output;
 }
+#endif
 
 DiagramPoint::DiagramPoint(double xx, double yy, Type ttype, IdType uid) : 
     x(xx),
@@ -116,14 +121,8 @@ DiagramPoint::DiagramPoint(double xx, double yy, Type ttype, IdType uid) :
     type(ttype),
     id(uid)
 {
-    //if ( xx < 0 )
-        //throw "Negative x coordinate";
-    //if ( yy < 0)
-        //throw "Negative y coordinate";
-    //if ( yy < xx )
-        //throw "Point is below the diagonal";
     if ( yy == xx and ttype != DiagramPoint::DIAG)
-        throw "Point on the main diagonal must have DIAG type";
+        throw std::runtime_error("Point on the main diagonal must have DIAG type");
 
 }
 

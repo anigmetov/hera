@@ -30,9 +30,11 @@
 #include <ciso646>                      // make VS more conformal
 #endif
 
+#include <stdexcept>
 #include <cstdlib>						// C standard lib defs
 #include <ANN/ANNx.h>					// all ANN includes
 #include <ANN/ANNperf.h>				// ANN performance 
+#include "def_debug_bt.h"
 
 
 
@@ -80,10 +82,12 @@ void annPrintPt(						// print a point
 	int					dim,			// the dimension
 	std::ostream		&out)			// output stream
 {
+#ifndef FOR_R_TDA
 	for (int j = 0; j < dim; j++) {
 		out << pt[j];
 		if (j < dim-1) out << " ";
 	}
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -197,11 +201,16 @@ bool ANNorthRect::intersects(const int dim, const ANNorthRect& r) const
 void annError(const char* msg, ANNerr level)
 {
 	if (level == ANNabort) {
+#ifndef FOR_R_TDA
 		cerr << "ANN: ERROR------->" << msg << "<-------------ERROR\n";
-		exit(1);
+#endif
+        throw std::runtime_error(std::string("ANN: Error: ") + std::string(msg));
+		//exit(1);
 	}
 	else {
+#ifndef FOR_R_TDA
 		cerr << "ANN: WARNING----->" << msg << "<-------------WARNING\n";
+#endif
 	}
 }
 

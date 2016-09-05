@@ -31,6 +31,7 @@
 #include "kd_split.h"					// kd-tree splitting rules
 
 #include <ANN/ANNperf.h>				// performance evaluation
+#include "def_debug_bt.h"
 
 namespace geom_bt {
 //----------------------------------------------------------------------
@@ -43,6 +44,7 @@ void ANNbd_shrink::print(				// print shrinking node
 		int level,						// depth of node in tree
 		ostream &out)					// output stream
 {
+#ifndef FOR_R_TDA
 	child[ANN_OUT]->print(level+1, out);		// print out-child
 
 	out << "    ";
@@ -61,6 +63,7 @@ void ANNbd_shrink::print(				// print shrinking node
 	out << "\n";
 
 	child[ANN_IN]->print(level+1, out);			// print in-child
+#endif
 }
 
 //----------------------------------------------------------------------

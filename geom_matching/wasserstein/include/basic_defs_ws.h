@@ -33,7 +33,6 @@ derivative works thereof, in binary and source code form.
 #include <cstddef>
 #include <unordered_map>
 #include <unordered_set>
-#include <iostream>
 #include <string>
 #include <assert.h>
 
@@ -58,7 +57,9 @@ struct Point {
     bool operator!=(const Point& other) const;
     Point(double ax, double ay) : x(ax), y(ay) {}
     Point() : x(0.0), y(0.0) {}
+#ifndef FOR_R_TDA
     friend std::ostream& operator<<(std::ostream& output, const Point p);
+#endif
 };
 
 struct DiagramPoint 
@@ -76,7 +77,9 @@ struct DiagramPoint
     bool isNormal(void) const { return type == NORMAL; }
     double getRealX() const; // return the x-coord
     double getRealY() const; // return the y-coord
+#ifndef FOR_R_TDA
     friend std::ostream& operator<<(std::ostream& output, const DiagramPoint p);
+#endif
 
     struct LexicographicCmp
     {

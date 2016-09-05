@@ -184,7 +184,9 @@ void NeighbOracleAnn::deletePoint(const DiagramPoint& p)
     diagonalPoints.erase(p, false);
     kdTree->delete_point(pointIdx);
 #ifdef DEBUG_NEIGHBOUR_ORACLE
+#ifndef FOR_R_TDA
     kdTree->Print(ANNtrue, std::cout);
+#endif
 #endif
 }
 

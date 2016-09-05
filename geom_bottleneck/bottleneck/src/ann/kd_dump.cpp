@@ -33,6 +33,7 @@
 
 #include "kd_tree.h"					// kd-tree declarations
 #include "bd_tree.h"					// bd-tree declarations
+#include "def_debug_bt.h"
 
 using namespace std;					// make std:: available
 
@@ -101,6 +102,7 @@ namespace geom_bt {
 	//						... (repeated n_bnds times)
 	//----------------------------------------------------------------------
 
+#ifndef FOR_R_TDA
 	void ANNkd_tree::Dump(					// dump entire tree
 		ANNbool with_pts,				// print points as well?
 		ostream &out)					// output stream
@@ -132,20 +134,24 @@ namespace geom_bt {
 		}
 		out.precision(0);					// restore default precision
 	}
+#endif
 
 	void ANNkd_split::dump(					// dump a splitting node
 		ostream &out)					// output stream
 	{
+#ifndef FOR_R_TDA
 		out << "split " << cut_dim << " " << cut_val << " ";
 		out << cd_bnds[ANN_LO] << " " << cd_bnds[ANN_HI] << "\n";
 
 		child[ANN_LO]->dump(out);			// print low child
 		child[ANN_HI]->dump(out);			// print high child
+#endif
 	}
 
 	void ANNkd_leaf::dump(					// dump a leaf node
 		ostream &out)					// output stream
 	{
+#ifndef FOR_R_TDA
 		if (this == KD_TRIVIAL) {			// canonical trivial leaf node
 			out << "leaf 0\n";				// leaf no points
 		}
@@ -156,17 +162,20 @@ namespace geom_bt {
 			}
 			out << "\n";
 		}
+#endif
 	}
 
 	void ANNbd_shrink::dump(				// dump a shrinking node
 		ostream &out)					// output stream
 	{
+#ifndef FOR_R_TDA
 		out << "shrink " << n_bnds << "\n";
 		for (int j = 0; j < n_bnds; j++) {
 			out << bnds[j].cd << " " << bnds[j].cv << " " << bnds[j].sd << "\n";
 		}
 		child[ANN_IN]->dump(out);			// print in-child
 		child[ANN_OUT]->dump(out);			// print out-child
+#endif
 	}
 
 	//----------------------------------------------------------------------
@@ -441,7 +450,9 @@ namespace geom_bt {
 		}
 		else {
 			annError("Illegal node type in dump file", ANNabort);
+#ifndef FOR_R_TDA
 			exit(0);								// to keep the compiler happy
+#endif
 		}
 	}
 }

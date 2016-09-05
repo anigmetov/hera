@@ -29,6 +29,7 @@
 
 #include <ANN/ANNx.h>					// all ANN includes
 #include "kd_tree.h"					// kd-tree includes
+#include "def_debug_bt.h"
 
 namespace geom_bt {
 //----------------------------------------------------------------------
@@ -91,7 +92,9 @@ public:
 				ANNkdStats &st,					// statistics
 				ANNorthRect &bnd_box);			// bounding box
 	virtual void print(int level, ostream &out);// print node
+#ifndef FOR_R_TDA
 	virtual void dump(ostream &out);			// dump node
+#endif
 
 	virtual void ann_search(ANNdist);			// standard search
 	virtual void ann_pri_search(ANNdist);		// priority search

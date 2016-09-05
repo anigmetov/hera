@@ -30,6 +30,10 @@ derivative works thereof, in binary and source code form.
 #include <set>
 #include "basic_defs_ws.h"
 
+#ifndef FOR_R_TDA
+#include <iostream>
+#endif
+
 namespace geom_ws {
 // Point
 
@@ -43,11 +47,14 @@ bool Point::operator!=(const Point& other) const
     return !(*this == other);
 }
 
+
+#ifndef FOR_R_TDA
 std::ostream& operator<<(std::ostream& output, const Point p)
 {
     output << "(" << p.x << ", " << p.y << ")";
     return output;
 }
+#endif
 
 double sqrDist(const Point& a, const Point& b)
 {
@@ -97,6 +104,7 @@ double distLp(const DiagramPoint& a, const DiagramPoint& b, const double p)
 }
 
 
+#ifndef FOR_R_TDA
 std::ostream& operator<<(std::ostream& output, const DiagramPoint p)
 {
     if ( p.type == DiagramPoint::DIAG ) {
@@ -106,7 +114,7 @@ std::ostream& operator<<(std::ostream& output, const DiagramPoint p)
     }
     return output;
 }
-
+#endif
 
 DiagramPoint::DiagramPoint(double xx, double yy, Type ttype) : 
     x(xx),

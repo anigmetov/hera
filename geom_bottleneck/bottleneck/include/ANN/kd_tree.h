@@ -31,6 +31,7 @@
 
 #include <utility>                      // for std::pair
 #include <ANN/ANNx.h>					// all ANN includes
+#include "def_debug_bt.h"
 
 using namespace std;					// make std:: available
 
@@ -73,7 +74,9 @@ public:
 				ANNorthRect &bnd_box) = 0;		// bounding box
 												// print node
 	virtual void print(int level, ostream &out) = 0;
+#ifndef FOR_R_TDA
 	virtual void dump(ostream &out) = 0;		// dump node
+#endif
 
 	friend class ANNkd_tree;					// allow kd-tree to access us
 
@@ -139,7 +142,9 @@ public:
 				ANNkdStats &st,					// statistics
 				ANNorthRect &bnd_box);			// bounding box
 	virtual void print(int level, ostream &out);// print node
+#ifndef FOR_R_TDA
 	virtual void dump(ostream &out);			// dump node
+#endif
 
 	virtual void ann_search(ANNdist);			// standard search
 	virtual void ann_pri_search(ANNdist);		// priority search
@@ -217,7 +222,9 @@ public:
 				ANNkdStats &st,					// statistics
 				ANNorthRect &bnd_box);			// bounding box
 	virtual void print(int level, ostream &out);// print node
+#ifndef FOR_R_TDA
 	virtual void dump(ostream &out);			// dump node
+#endif
 
 	virtual void ann_search(ANNdist);			// standard search
 	virtual void ann_pri_search(ANNdist);		// priority search

@@ -18,9 +18,12 @@ along with GeomBottleneck.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include <iostream>
 #include <assert.h>
+#include "def_debug_bt.h"
 #include "bound_match.h"
+#ifndef FOR_R_TDA
+#include <iostream>
+#endif
 
 namespace geom_bt {
 /*static void printDebug(//bool isDebug, std::string s)*/
@@ -82,6 +85,7 @@ namespace geom_bt {
 //#endif
 /*}*/
 
+#ifndef FOR_R_TDA
 std::ostream& operator<<(std::ostream& output, const Matching& m)
 {
     output << "Matching: " << m.AToB.size() << " pairs (";
@@ -94,6 +98,7 @@ std::ostream& operator<<(std::ostream& output, const Matching& m)
     }
     return output;
 }
+#endif
 
 void Matching::sanityCheck() const
 {
@@ -103,8 +108,11 @@ void Matching::sanityCheck() const
         auto bToAPair = BToA.find(aToBPair.second);
         assert(bToAPair != BToA.end());
         if (aToBPair.first != bToAPair->second) {
+#ifndef FOR_R_TDA
             std::cerr << "failed assertion, in aToB " << aToBPair.first;
             std::cerr << ", in bToA " << bToAPair->second << std::endl;
+#endif
+            assert(false);
         }
         assert( aToBPair.first == bToAPair->second);
     }
@@ -151,7 +159,9 @@ void Matching::checkAugPath(const Path& augPath) const
     for(size_t idx = 0; idx < augPath.size(); ++idx) {
         bool mustBeExposed  { idx == 0 or idx == augPath.size() - 1 };
         if (isExposed(augPath[idx]) != mustBeExposed) {
+#ifndef FOR_R_TDA
             std::cerr << "mustBeExposed = " << mustBeExposed << ", idx = " << idx << ", point " << augPath[idx] << std::endl;
+#endif
         }
         assert( isExposed(augPath[idx]) == mustBeExposed );
         DiagramPoint matchedVertex {0.0, 0.0, DiagramPoint::DIAG, 1};
@@ -275,10 +285,12 @@ bool BoundMatchOracle::buildAugmentingPath(const DiagramPoint startVertex, Path&
                  // layer
                 DiagramPoint nextVertexA {0.0, 0.0, DiagramPoint::DIAG, 1};
                 if (!M.getMatchedVertex(nextVertexB, nextVertexA)) {
+#ifndef FOR_R_TDA
                     std::cerr << "Vertices in even layers must be matched! Unmatched: ";
                     std::cerr << nextVertexB << std::endl;
                     std::cerr << evenLayerIdx << "; " << layerGraph.size() << std::endl;
-                    throw "Unmatched vertex in even layer";
+#endif
+                    throw std::runtime_error("Unmatched vertex in even layer");
                 } else {
                     assert( ! (nextVertexA.getRealX() == 0 and nextVertexA.getRealY() == 0) );
                     result.push_back(nextVertexA);
@@ -383,8 +395,10 @@ bool BoundMatchOracle::buildMatchingForThreshold(const double r)
             } 
             if (augmentingPaths.empty()) {
                 //printDebug(isDebug,"augmenting paths must exist, but were not found!", M);
+#ifndef FOR_R_TDA
                 std::cerr << "augmenting paths must exist, but were not found!" << std::endl;
-                throw "bad epsilon?";
+#endif
+                throw std::runtime_error("bad epsilon?");
             }
             // swap all augmenting paths with matching to increase it
             //printDebug(isDebug,"before increase with augmenting paths:", M);
@@ -403,6 +417,7 @@ bool BoundMatchOracle::buildMatchingForThreshold(const double r)
 void BoundMatchOracle::printLayerGraph(void)
 {
 #ifdef DEBUG_BOUND_MATCH
+#ifndef FOR_R_TDA
     for(auto& layer : layerGraph) {
         std::cout << "{ ";
         for(auto& p : layer) {
@@ -410,6 +425,7 @@ void BoundMatchOracle::printLayerGraph(void)
         }
         std::cout << "\b\b }" << std::endl;
     }
+#endif
 #endif
 }
 

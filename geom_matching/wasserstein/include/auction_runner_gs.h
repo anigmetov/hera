@@ -76,8 +76,9 @@ public:
                     const double _initialEpsilon,
                     const double _epsFactor);
     void setEpsilon(double newVal) { assert(epsilon > 0.0); epsilon = newVal; };
-    double getEpsilon(void) const { return epsilon; }
-    double getWassersteinDistance(void);
+    double getEpsilon() const { return epsilon; }
+    double getWassersteinDistance();
+    double getWassersteinCost();
     static constexpr int maxIterNum { 25 }; // maximal number of iterations of epsilon-scaling
 private:
     // private data
@@ -94,6 +95,7 @@ private:
     double epsilonCommonRatio; // next epsilon = current epsilon / epsilonCommonRatio
     double weightAdjConst;
     double wassersteinDistance;
+    double wassersteinCost;
     // to get the 2 best items
     std::unique_ptr<AuctionOracle> oracle;
 #ifdef KEEP_UNASSIGNED_ORDERED

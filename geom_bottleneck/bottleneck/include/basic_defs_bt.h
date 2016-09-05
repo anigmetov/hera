@@ -27,15 +27,19 @@
 #endif
 
 #include <vector>
+#include <stdexcept>
 #include <math.h>
 #include <cstddef>
 #include <unordered_map>
 #include <unordered_set>
-#include <iostream>
 #include <string>
 #include <assert.h>
 
 #include "def_debug_bt.h"
+
+#ifndef FOR_R_TDA
+#include <iostream>
+#endif
 
 
 namespace geom_bt {
@@ -50,7 +54,9 @@ struct Point {
     bool operator!=(const Point& other) const;
     Point(CoordinateType ax, CoordinateType ay) : x(ax), y(ay) {}
     Point() : x(0.0), y(0.0) {}
+#ifndef FOR_R_TDA
     friend std::ostream& operator<<(std::ostream& output, const Point p);
+#endif
 };
 
 struct DiagramPoint 
@@ -90,7 +96,9 @@ public:
             //return 0.5 * ( x + y);
     }
 
+#ifndef FOR_R_TDA
     friend std::ostream& operator<<(std::ostream& output, const DiagramPoint p);
+#endif
 };
 
 struct PointHash {
@@ -130,7 +138,9 @@ public:
     std::unordered_set<DiagramPoint, DiagramPointHash>::iterator end() { return points.end(); }
     std::unordered_set<DiagramPoint, DiagramPointHash>::const_iterator cbegin() const { return points.cbegin(); }
     std::unordered_set<DiagramPoint, DiagramPointHash>::const_iterator cend() const { return points.cend(); }
+#ifndef FOR_R_TDA
     friend std::ostream& operator<<(std::ostream& output, const DiagramPointSet& ps);
+#endif
     friend void addProjections(DiagramPointSet& A, DiagramPointSet& B);
     template<class PairIterator> DiagramPointSet(PairIterator first, PairIterator last);
     template<class PairIterator> void fillIn(PairIterator first, PairIterator last);

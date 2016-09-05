@@ -151,7 +151,7 @@ double bottleneckDistExact(DiagramPointSet& A, DiagramPointSet& B)
     const double approxDist = 0.5 * ( interval.first + interval.second);
     const double minDist = interval.first;
     const double maxDist = interval.second;
-    //std::cerr << std::setprecision(15) <<  "minDist = " << minDist << ", maxDist = " << maxDist << std::endl;
+    //std::cout << std::setprecision(15) <<  "minDist = " << minDist << ", maxDist = " << maxDist << std::endl;
     if ( delta == 0 ) {
         return interval.first;
     }
@@ -163,17 +163,17 @@ double bottleneckDistExact(DiagramPointSet& A, DiagramPointSet& B)
         pointsA.push_back(ptA);
     }
 
-    //std::vector<double> killDist;
-    //for(auto ptA : A) {
-        //for(auto ptB : B) {
-            //if ( distLInf(ptA, ptB) > minDist and distLInf(ptA, ptB) < maxDist) {
-                //killDist.push_back(distLInf(ptA, ptB));
-                //std::cout << ptA << ", " << ptB << std::endl;
+    //std::vector<double> killdist;
+    //for(auto pta : a) {
+        //for(auto ptb : b) {
+            //if ( distlinf(pta, ptb) > mindist and distlinf(pta, ptb) < maxdist) {
+                //killdist.push_back(distlinf(pta, ptb));
+                //std::cout << pta << ", " << ptb << std::endl;
             //}
         //}
     //}
-    //std::sort(killDist.begin(), killDist.end());
-    //for(auto d : killDist) {
+    //std::sort(killdist.begin(), killdist.end());
+    //for(auto d : killdist) {
         //std::cout << d << std::endl;
     //}
     //std::cout << "*************" << std::endl;
@@ -257,7 +257,7 @@ double bottleneckDistExact(DiagramPointSet& A, DiagramPointSet& B)
         
         std::sort(yCentersVec.begin(), yCentersVec.end(), compLambda);
 
-        //  std::cout << "Sorted vector of y-centers:" << std::endl;
+        // std::cout << "Sorted vector of y-centers:" << std::endl;
         //for(auto coordPtPair : yCentersVec) {
             //std::cout << coordPtPair.first << ", id = " << coordPtPair.second.id << std::endl;
         //}
@@ -271,13 +271,6 @@ double bottleneckDistExact(DiagramPointSet& A, DiagramPointSet& B)
                                             std::make_pair(ptB.getRealY() - delta, ptB),
                                             compLambda);
 
-            //if (ptB.id == 316) {
-                //std::cout << itStart - yCentersVec.begin() <<  " "  << distLInf(itStart->second, ptB) << std::endl;
-                //std::cout << "maxDist = " << maxDist << std::endl;
-                //std::cout << "minDist = " << minDist << std::endl;
-                //double pwDistDebug = distLInf(itStart->second, ptB);
-                //std::cout << ( pwDistDebug >= minDist and pwDistDebug <= maxDist) << std::endl;
-            //}
 
             for(auto iterA = itStart; iterA < yCentersVec.end(); ++iterA) {
                 if ( ptB.getRealY() < iterA->first - delta) {
@@ -286,19 +279,16 @@ double bottleneckDistExact(DiagramPointSet& A, DiagramPointSet& B)
                 double pwDist = distLInf(iterA->second, ptB);
                 //std::cout << 1000*minDist << " <= " << 1000*pwDist << " <= " << 1000*maxDist << std::endl;
                 if (pwDist >= minDist and pwDist <= maxDist) {
-                    //if (ptB.id == 316) {
-                        //std::cout << "adding " << pwDist << std::endl;
-                    //}
                     pairwiseDist.push_back(pwDist);
                 }
             }
         }
     }
 
-    //std::cerr << "pairwiseDist.size = " << pairwiseDist.size() << " out of " << A.size() * A.size() << std::endl;
+    //std::cout << "pairwiseDist.size = " << pairwiseDist.size() << " out of " << A.size() * A.size() << std::endl;
     std::sort(pairwiseDist.begin(), pairwiseDist.end());
     //for(auto ddd : pairwiseDist) {
-        //std::cerr << std::setprecision(15) << ddd << std::endl;
+        //std::cout << std::setprecision(15) << ddd << std::endl;
     //}
 
     return bottleneckDistExactFromSortedPwDist(A, B, pairwiseDist);
@@ -516,7 +506,9 @@ bool readDiagramPointSet(const char* fname, std::vector<std::pair<double, double
     result.clear();
     std::ifstream f(fname);
     if (!f.good()) {
+#ifndef FOR_R_TDA
         std::cerr << "Cannot open file " << fname << std::endl;
+#endif
         return false;
     }
     std::string line;
@@ -541,7 +533,9 @@ bool readDiagramPointSet(const char* fname, std::vector<std::pair<double, double
         double x, y;
         std::istringstream iss(line);
         if (not(iss >> x >> y)) {
+#ifndef FOR_R_TDA
             std::cerr << "Error in file " << fname << ", line number " << lineNumber << ": cannot parse \"" << line << "\"" << std::endl;
+#endif
             return false;
         }
         result.push_back(std::make_pair(x,y));

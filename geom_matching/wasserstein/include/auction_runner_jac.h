@@ -45,12 +45,13 @@ using AuctionOracle = AuctionOracleKDTreeRestricted;
 // 1. epsilonCommonRatio
 // 2. maxIterNum
 
-class AuctionRunnerJak {
+class AuctionRunnerJac {
 public:
-    AuctionRunnerJak(const std::vector<DiagramPoint>& A, const std::vector<DiagramPoint>& B, const double q,  const double _delta, const double _internal_p);
+    AuctionRunnerJac(const std::vector<DiagramPoint>& A, const std::vector<DiagramPoint>& B, const double q,  const double _delta, const double _internal_p);
     void setEpsilon(double newVal) { assert(epsilon > 0.0); epsilon = newVal; };
-    double getEpsilon(void) const { return epsilon; }
-    double getWassersteinDistance(void);
+    double getEpsilon() const { return epsilon; }
+    double getWassersteinDistance();
+    double getWassersteinCost();
     static constexpr double epsilonCommonRatio { 5 }; // next epsilon = current epsilon / epsilonCommonRatio
     static constexpr int maxIterNum { 25 }; // maximal number of iterations of epsilon-scaling
 private:
@@ -66,6 +67,7 @@ private:
     double internal_p;
     double weightAdjConst;
     double wassersteinDistance;
+    double wassersteinCost;
     std::vector<IdxValPair> bidTable;
     // to get the 2 best items
     std::unique_ptr<AuctionOracle> oracle;
@@ -76,18 +78,18 @@ private:
     // private methods
     void assignGoodToBidder(const IdxType bidderIdx, const IdxType itemsIdx);
     void assignToBestBidder(const IdxType itemsIdx);
-    void clearBidTable(void);
-    void runAuction(void);
-    void runAuctionPhase(void);
+    void clearBidTable();
+    void runAuction();
+    void runAuctionPhase();
     void submitBid(IdxType bidderIdx, const IdxValPair& itemsBidValuePair);
-    void flushAssignment(void);
+    void flushAssignment();
 
     // for debug only
-    void sanityCheck(void);
-    void printDebug(void);
-    int countUnhappy(void);
-    void printMatching(void);
-    double getDistanceToQthPowerInternal(void);
+    void sanityCheck();
+    void printDebug();
+    int countUnhappy();
+    void printMatching();
+    double getDistanceToQthPowerInternal();
 };
 
 

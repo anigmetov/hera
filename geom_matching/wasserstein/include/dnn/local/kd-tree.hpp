@@ -6,6 +6,7 @@
 #include <stack>
 
 #include "../parallel/tbb.h"
+#include "def_debug_ws.h"
 
 template<class T>
 dnn::KDTree<T>::
@@ -127,12 +128,7 @@ search(PointHandle q, ResultsFunctor& rf) const
     // TODO: use tbb::scalable_allocator for the queue
     std::queue<KDTreeNode>  nodes;
 
-
-
     nodes.push(KDTreeNode(tree_.begin(), tree_.end(), 0));
-
-
-    //std::cout << "started kdtree::search" << std::endl;
 
     while (!nodes.empty())
     {
@@ -163,7 +159,6 @@ search(PointHandle q, ResultsFunctor& rf) const
             nodes.push(KDTreeNode(b,   m, i));
         }
     }
-    //std::cout << "exited kdtree::search" << std::endl;
 }
 
 template<class T>
@@ -290,6 +285,7 @@ void
 dnn::KDTree<T>::
 printWeights(void)
 {
+#ifndef FOR_R_TDA
     std::cout << "weights_:" << std::endl;
     for(const auto ph : indices_) {
         std::cout << "idx = " << ph.second << ": (" << (ph.first)->at(0) << ", " << (ph.first)->at(1) << ") weight = " << weights_[ph.second] << std::endl;
@@ -298,6 +294,7 @@ printWeights(void)
     for(size_t idx = 0; idx < subtree_weights_.size(); ++idx) {
         std::cout << idx << " : " << subtree_weights_[idx] << std::endl;
     }
+#endif
 }
 
 

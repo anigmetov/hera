@@ -25,12 +25,16 @@ derivative works thereof, in binary and source code form.
 
  */
 
-#ifndef DEF_DEBUG_H
-#define DEF_DEBUG_H
+#ifndef DEF_DEBUG_WS_H
+#define DEF_DEBUG_WS_H
 
 //#define DEBUG_BOUND_MATCH
 //#define DEBUG_NEIGHBOUR_ORACLE
 //#define DEBUG_MATCHING
 //#define DEBUG_AUCTION
+// This symbol should be defined only in the version
+// for R package TDA, to comply with some CRAN rules
+// like no usage of cout, cerr, cin, exit, etc.
+//#define FOR_R_TDA
 
 #endif

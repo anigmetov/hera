@@ -38,6 +38,7 @@
 #include "kd_split.h"					// kd-tree splitting rules
 #include "kd_util.h"					// kd-tree utilities
 #include <ANN/ANNperf.h>				// performance evaluation
+#include "def_debug_bt.h"
 
 namespace geom_bt {
 //----------------------------------------------------------------------
@@ -75,6 +76,7 @@ void ANNkd_split::print(				// print splitting node
 		int level,						// depth of node in tree
 		ostream &out)					// output stream
 {
+#ifndef FOR_R_TDA
 	child[ANN_HI]->print(level+1, out);	// print high child
 	out << "    ";
 	for (int i = 0; i < level; i++)		// print indentation
@@ -85,13 +87,14 @@ void ANNkd_split::print(				// print splitting node
 	out << " np=" << actual_num_points;
 	out << "\n";
 	child[ANN_LO]->print(level+1, out);	// print low child
+#endif
 }
 
 void ANNkd_leaf::print(					// print leaf node
 		int level,						// depth of node in tree
 		ostream &out)					// output stream
 {
-
+#ifndef FOR_R_TDA
 	out << "    ";
 	for (int i = 0; i < level; i++)		// print indentation
 		out << "..";
@@ -107,8 +110,10 @@ void ANNkd_leaf::print(					// print leaf node
 		}
 		out << ">\n";
 	}
+#endif
 }
 
+#ifndef FOR_R_TDA
 void ANNkd_tree::Print(					// print entire tree
 		ANNbool with_pts,				// print points as well?
 		ostream &out)					// output stream
@@ -128,6 +133,7 @@ void ANNkd_tree::Print(					// print entire tree
 		root->print(0, out);			// invoke printing at root
 	}
 }
+#endif
 
 //----------------------------------------------------------------------
 //	kd_tree statistics (for performance evaluation)

@@ -96,7 +96,6 @@
 
 #include <cstdlib>			// standard lib includes
 #include <cmath>			// math includes
-#include <iostream>			// I/O streams
 #include <cstring>			// C-style strings
 #include <vector>			 
 #include <assert.h>			 
@@ -129,6 +128,12 @@
 #define ANNversionCmt	""
 #define ANNcopyright	"David M. Mount and Sunil Arya"
 #define ANNlatestRev	"Jan 27, 2010"
+
+#include "def_debug_bt.h"
+
+#ifndef FOR_R_TDA
+#include <iostream>			// I/O streams
+#endif
 
 namespace geom_bt {
 //----------------------------------------------------------------------
@@ -798,8 +803,10 @@ public:
 		int				bs = 1,			// bucket size
 		ANNsplitRule	split = ANN_KD_SUGGEST);	// splitting method
 
+#ifndef FOR_R_TDA
 	ANNkd_tree(							// build from dump file
 		std::istream&	in);			// input stream for dump file
+#endif
 
 	~ANNkd_tree();						// tree destructor
 
@@ -834,6 +841,7 @@ public:
 	ANNpointArray thePoints()			// return pointer to points
 		{  return pts;  }
 
+#ifndef FOR_R_TDA
 	virtual void Print(					// print the tree (for debugging)
 		ANNbool			with_pts,		// print points as well?
 		std::ostream&	out);			// output stream
@@ -841,6 +849,7 @@ public:
 	virtual void Dump(					// dump entire tree
 		ANNbool			with_pts,		// print points as well?
 		std::ostream&	out);			// output stream
+#endif
 								
 	virtual void getStats(				// compute tree statistics
 		ANNkdStats&		st);			// the statistics (modified)
@@ -885,8 +894,10 @@ public:
 		ANNsplitRule	split  = ANN_KD_SUGGEST,	// splitting rule
 		ANNshrinkRule	shrink = ANN_BD_SUGGEST);	// shrinking rule
 
+#ifndef FOR_R_TDA
 	ANNbd_tree(							// build from dump file
 		std::istream&	in);			// input stream for dump file
+#endif
 };
 
 //----------------------------------------------------------------------
