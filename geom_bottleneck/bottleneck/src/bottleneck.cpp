@@ -538,7 +538,13 @@ bool readDiagramPointSet(const char* fname, std::vector<std::pair<double, double
 #endif
             return false;
         }
-        result.push_back(std::make_pair(x,y));
+        if ( x != y ) {
+            result.push_back(std::make_pair(x,y));
+        } else {
+#ifndef FOR_R_TDA
+            std::cerr << "Warning: in file " << fname << ", line number " << lineNumber << ", zero persistence point: \"" << line << "\"" << std::endl;
+#endif
+        }
     }
     f.close();
     return true;
