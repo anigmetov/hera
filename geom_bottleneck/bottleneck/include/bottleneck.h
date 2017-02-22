@@ -51,7 +51,11 @@ std::pair<double, double> bottleneckDistApproxInterval(DiagramPointSet& A, Diagr
 double bottleneckDistApprox(DiagramPointSet& A, DiagramPointSet& B, const double epsilon);
 
 // get exact bottleneck distance,
+double bottleneckDistExact(DiagramPointSet& A, DiagramPointSet& B, const int decPrecision);
+
+// get exact bottleneck distance,
 double bottleneckDistExact(DiagramPointSet& A, DiagramPointSet& B);
+
 
 // functions taking containers as input
 // template parameter PairContainer must be a container of pairs of real
@@ -86,12 +90,31 @@ double bottleneckDistExact(PairContainer& A, PairContainer& B)
 {
     DiagramPointSet a(A.begin(), A.end());
     DiagramPointSet b(B.begin(), B.end());
-    return bottleneckDistExact(a, b);
+    return bottleneckDistExact(a, b, 14);
+}
+
+
+// get exact bottleneck distance,
+template<class PairContainer>
+double bottleneckDistExact(PairContainer& A, PairContainer& B, const int decPrecision)
+{
+    DiagramPointSet a(A.begin(), A.end());
+    DiagramPointSet b(B.begin(), B.end());
+    return bottleneckDistExact(a, b, decPrecision);
 }
 
 // fill in result with points from file fname
 // return false if file can't be opened
 // or error occurred while reading
+// decPrecision is the maximal decimal precision in the input,
+// it is zero if all coordinates in the input are integers
+bool readDiagramPointSet(const char* fname, std::vector<std::pair<double, double>>& result, int& decPrecision);
+// wrapper for standard string
+bool readDiagramPointSet(const std::string& fname, std::vector<std::pair<double, double>>& result, int& decPrecision);
+
+
+// these two functions are now just wrappers for the previous ones,
+// in case someone needs them; decPrecision is ignored
 bool readDiagramPointSet(const char* fname, std::vector<std::pair<double, double>>& result);
 // wrapper for standard string
 bool readDiagramPointSet(const std::string& fname, std::vector<std::pair<double, double>>& result);

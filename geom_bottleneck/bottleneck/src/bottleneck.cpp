@@ -100,7 +100,7 @@ double bottleneckDistApprox(DiagramPointSet& A, DiagramPointSet& B, const double
 }
 
 
-double bottleneckDistExactFromSortedPwDist(DiagramPointSet&A, DiagramPointSet& B, std::vector<double>& pairwiseDist)
+double bottleneckDistExactFromSortedPwDist(DiagramPointSet&A, DiagramPointSet& B, std::vector<double>& pairwiseDist, const int decPrecision)
 {
     //for(size_t k = 0; k < pairwiseDist.size(); ++k) {
         //std::cout << "pairwiseDist[" << k << "] = " << std::setprecision(15) << pairwiseDist[k] << std::endl;
@@ -111,13 +111,19 @@ double bottleneckDistExactFromSortedPwDist(DiagramPointSet&A, DiagramPointSet& B
 
     bool useRangeSearch = true;
     double distEpsilon = std::numeric_limits<double>::max();
+    double diffThreshold = 0.1;
+    for(int k = 0; k < decPrecision; ++k) {
+        diffThreshold /= 10.0;
+    }
     for(size_t k = 0; k < pairwiseDist.size() - 2; ++k) {
         auto diff = pairwiseDist[k+1]- pairwiseDist[k];
-        if ( diff > 1.0e-14 and diff < distEpsilon ) {
+        //std::cout << "diff = " << diff << ", pairwiseDist[k] = " << pairwiseDist[k] << std::endl;
+        if ( diff > diffThreshold and diff < distEpsilon ) {
             distEpsilon = diff;
         }
     }
     distEpsilon /= 3.0;
+    //std::cout << "decPrecision = " << decPrecision << ", distEpsilon = " << distEpsilon << std::endl;
 
     BoundMatchOracle oracle(A, B, distEpsilon, useRangeSearch);
     // binary search
@@ -144,6 +150,11 @@ double bottleneckDistExactFromSortedPwDist(DiagramPointSet&A, DiagramPointSet& B
 
 
 double bottleneckDistExact(DiagramPointSet& A, DiagramPointSet& B)
+{
+    return bottleneckDistExact(A, B, 14);
+}
+
+double bottleneckDistExact(DiagramPointSet& A, DiagramPointSet& B, const int decPrecision)
 {
     constexpr double epsilon = 0.001;
     auto interval = bottleneckDistApproxInterval(A, B, epsilon);
@@ -291,7 +302,7 @@ double bottleneckDistExact(DiagramPointSet& A, DiagramPointSet& B)
         //std::cout << std::setprecision(15) << ddd << std::endl;
     //}
 
-    return bottleneckDistExactFromSortedPwDist(A, B, pairwiseDist);
+    return bottleneckDistExactFromSortedPwDist(A, B, pairwiseDist, decPrecision);
 }
 
 double bottleneckDistSlow(DiagramPointSet& A, DiagramPointSet& B)
@@ -495,12 +506,26 @@ double bottleneckDistSlow(DiagramPointSet& A, DiagramPointSet& B)
     */
 }
 
+// wrappers
 bool readDiagramPointSet(const std::string& fname, std::vector<std::pair<double, double>>& result)
 {
-    return readDiagramPointSet(fname.c_str(), result);
+    int decPrecision;
+    return readDiagramPointSet(fname.c_str(), result, decPrecision);
 }
 
 bool readDiagramPointSet(const char* fname, std::vector<std::pair<double, double>>& result)
+{
+    int decPrecision;
+    return readDiagramPointSet(fname, result, decPrecision);
+}
+
+bool readDiagramPointSet(const std::string& fname, std::vector<std::pair<double, double>>& result, int& decPrecision)
+{
+    return readDiagramPointSet(fname.c_str(), result, decPrecision);
+}
+
+// reading function
+bool readDiagramPointSet(const char* fname, std::vector<std::pair<double, double>>& result, int& decPrecision)
 {
     size_t lineNumber { 0 };
     result.clear();
@@ -530,6 +555,22 @@ bool readDiagramPointSet(const char* fname, std::vector<std::pair<double, double
             continue;
         }
         line = std::string(whiteSpaceFront,whiteSpaceBack);
+        bool fracPart = false;
+        int currDecPrecision = 0;
+        for(auto c : line) {
+            if (c == '.') {
+                fracPart = true;
+            } else if (fracPart) {
+                if (isdigit(c)) {
+                    currDecPrecision++;
+                } else {
+                    fracPart = false;
+                    if (currDecPrecision > decPrecision)
+                        decPrecision = currDecPrecision;
+                    currDecPrecision = 0;
+                }
+            } 
+        }
         double x, y;
         std::istringstream iss(line);
         if (not(iss >> x >> y)) {
@@ -542,7 +583,7 @@ bool readDiagramPointSet(const char* fname, std::vector<std::pair<double, double
             result.push_back(std::make_pair(x,y));
         } else {
 #ifndef FOR_R_TDA
-            std::cerr << "Warning: in file " << fname << ", line number " << lineNumber << ", zero persistence point: \"" << line << "\"" << std::endl;
+            //std::cerr << "Warning: in file " << fname << ", line number " << lineNumber << ", zero persistence point ignored: \"" << line << "\"" << std::endl;
 #endif
         }
     }

@@ -14,11 +14,12 @@ int main(int argc, char* argv[])
     }
 
     PairVector diagramA, diagramB;
-    if (!geom_bt::readDiagramPointSet(argv[1], diagramA)) {
+    int decPrecision { 0 };
+    if (!geom_bt::readDiagramPointSet(argv[1], diagramA, decPrecision)) {
         std::exit(1);
     }
 
-    if (!geom_bt::readDiagramPointSet(argv[2], diagramB)) {
+    if (!geom_bt::readDiagramPointSet(argv[2], diagramB, decPrecision)) {
         std::exit(1);
     }
 
@@ -30,14 +31,14 @@ int main(int argc, char* argv[])
         if (approxEpsilon > 0.0) {
             res = geom_bt::bottleneckDistApprox(diagramA, diagramB, approxEpsilon);
         } else if (approxEpsilon == 0.0) {
-            res = geom_bt::bottleneckDistExact(diagramA, diagramB);
+            res = geom_bt::bottleneckDistExact(diagramA, diagramB, decPrecision);
         } else {
             std::cerr << "The third parameter (relative error) must be positive!" << std::endl;
             std::exit(1);
         }
     } else {
         // only filenames have been supplied, return exact distance
-        res = geom_bt::bottleneckDistExact(diagramA, diagramB);
+        res = geom_bt::bottleneckDistExact(diagramA, diagramB, decPrecision);
     }
     std::cout << std::setprecision(15) << res << std::endl;
 
