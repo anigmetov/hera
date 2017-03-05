@@ -158,7 +158,7 @@ double bottleneckDistExact(DiagramPointSet& A, DiagramPointSet& B, const int dec
 {
     constexpr double epsilon = 0.001;
     auto interval = bottleneckDistApproxInterval(A, B, epsilon);
-    const double delta = 0.5 * (interval.second - interval.first);
+    const double delta = 0.50001 * (interval.second - interval.first);
     const double approxDist = 0.5 * ( interval.first + interval.second);
     const double minDist = interval.first;
     const double maxDist = interval.second;
