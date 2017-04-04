@@ -17,7 +17,14 @@ Your compiler must support C++11.
 
 bottleneck_dist file1 file2  [relative_error]. 
 
-If relative error is not supplied, the exact distance is computed.
+If relative error is not supplied, the exact distance is computed and printed.
+If two diagrams are equal, then the exact distance 0.0 is printed (the order
+of points in file1 and file2 need not be the same).
+Otherwise the output is an approximation of the exact distance. Precisely:
+if d_exact is the true distance and d_approx is the output, then 
+
+    | d_exact - d_approx | / d_exact < relative_error.
+
 file1 and file2 must contain persistence diagrams in plain text format 
 (one point per line, empty lines are ignored, comments can be made with #):
 

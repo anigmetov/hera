@@ -24,6 +24,13 @@ wasserstein_dist file1 file2  [wasserstein degree] [relative error] [internal no
 Parameter wasserstein degree corresponds to $q$, when it tends to infinity,
 Wasserstein distance tends to the bottleneck distance.
 
+If two diagrams are equal, then the exact distance 0.0 is printed (the order
+of points in file1 and file2 need not be the same).
+Otherwise the output is an approximation of the exact distance. Precisely:
+if d_exact is the true distance and d_approx is the output, then 
+
+    | d_exact - d_approx | / d_exact < relative_error.
+
 Parameter internal_p corresponds to p.
 
 Default values: 
