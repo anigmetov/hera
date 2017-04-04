@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     PairVector diagramA, diagramB;
 
     if (argc < 3 ) {
-        std::cerr << "Usage: " << argv[0] << " file1 file2 [wasserstein_degree] [relative_error] [internal norm]. By default power is 1.0, relative error is 0.01, internal norm is l_infinity." << std::endl;
+        std::cerr << "Usage: " << argv[0] << " file1 file2 [wasserstein_degree] [relative_error] [internal norm] [output_actual_error]. By default power is 1.0, relative error is 0.01, internal norm is l_infinity, actual relative error is not printed." << std::endl;
         return 1;
     }
 

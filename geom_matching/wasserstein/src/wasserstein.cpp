@@ -79,7 +79,8 @@ double wassersteinDistVec(const std::vector<DiagramPoint>& A,
 #else
     AuctionRunnerJac auction(A, B, q,  delta, _internal_p);
 #endif
-    return auction.getWassersteinDistance();
+    double result = auction.getWassersteinDistance();
+    return result;
 }
 
 double wassersteinCostVec(const std::vector<DiagramPoint>& A, 
@@ -119,7 +120,8 @@ double wassersteinCostVec(const std::vector<DiagramPoint>& A,
 #else
     AuctionRunnerJac auction(A, B, q,  delta, _internal_p);
 #endif
-    return auction.getWassersteinCost();
+    double result = auction.getWassersteinCost();
+    return result;
 }
 
 bool readDiagramPointSet(const std::string& fname, std::vector<std::pair<double, double>>& result)

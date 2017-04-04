@@ -79,6 +79,7 @@ public:
     double getEpsilon() const { return epsilon; }
     double getWassersteinDistance();
     double getWassersteinCost();
+    double getRelativeError() const { return relativeError; };
     static constexpr int maxIterNum { 25 }; // maximal number of iterations of epsilon-scaling
 private:
     // private data
@@ -96,6 +97,7 @@ private:
     double weightAdjConst;
     double wassersteinDistance;
     double wassersteinCost;
+    double relativeError;
     // to get the 2 best items
     std::unique_ptr<AuctionOracle> oracle;
 #ifdef KEEP_UNASSIGNED_ORDERED

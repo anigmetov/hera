@@ -188,7 +188,7 @@ void AuctionRunnerJac::flushAssignment(void)
 
 void AuctionRunnerJac::runAuction(void)
 {
-    // relative error 
+    relativeError = std::numeric_limits<double>::max();
     // choose some initial epsilon
     oracle->setEpsilon(oracle->maxVal / 4.0);
     assert( oracle->getEpsilon() > 0 );
@@ -210,6 +210,7 @@ void AuctionRunnerJac::runAuction(void)
         } else {
             denominator = pow(denominator, 1.0 / wassersteinPower);
             double numerator = currentResult - denominator;
+            relativeError = numerator / denominator;
             //std::cout << " numerator: " << numerator << " denominator: " << denominator << std::endl;
             //std::cout << " error bound: " << numerator / denominator << std::endl;
             // if relative error is greater than delta, continue

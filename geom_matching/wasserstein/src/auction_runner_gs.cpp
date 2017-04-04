@@ -122,6 +122,7 @@ void AuctionRunnerGS::flushAssignment(void)
 
 void AuctionRunnerGS::runAuction(void)
 {
+    relativeError = std::numeric_limits<double>::max();
 #ifdef PRINT_DETAILED_TIMING
     std::chrono::high_resolution_clock hrClock;
     std::chrono::time_point<std::chrono::high_resolution_clock> startMoment;
@@ -169,6 +170,7 @@ void AuctionRunnerGS::runAuction(void)
             std::cout << "; error bound: " << numerator / denominator << std::endl;
 #endif
 #endif
+            relativeError = numerator / denominator;
             // if relative error is greater than delta, continue
             notDone = ( numerator / denominator > delta );
         }
@@ -243,6 +245,7 @@ double AuctionRunnerGS::getDistanceToQthPowerInternal(void)
         auto pA = bidders[bIdx];
         assert( 0 <= biddersToItems[bIdx] and biddersToItems[bIdx] < static_cast<int>(items.size()) );
         auto pB = items[biddersToItems[bIdx]];
+        std::cout << "pA = " << pA << ", pB = " << pB << ", pow(distLp(pA, pB, internal_p), wassersteinPower) = " << pow(distLp(pA, pB, internal_p), wassersteinPower) << ", dist = " << distLp(pA, pB, internal_p) << std::endl;
         result += pow(distLp(pA, pB, internal_p), wassersteinPower);
     }
     wassersteinCost = result;

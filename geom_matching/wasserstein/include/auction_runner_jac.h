@@ -52,6 +52,7 @@ public:
     double getEpsilon() const { return epsilon; }
     double getWassersteinDistance();
     double getWassersteinCost();
+    double getRelativeError() const { return relativeError; };
     static constexpr double epsilonCommonRatio { 5 }; // next epsilon = current epsilon / epsilonCommonRatio
     static constexpr int maxIterNum { 25 }; // maximal number of iterations of epsilon-scaling
 private:
@@ -69,6 +70,7 @@ private:
     double wassersteinDistance;
     double wassersteinCost;
     std::vector<IdxValPair> bidTable;
+    double relativeError;
     // to get the 2 best items
     std::unique_ptr<AuctionOracle> oracle;
     std::list<size_t> unassignedBidders;
