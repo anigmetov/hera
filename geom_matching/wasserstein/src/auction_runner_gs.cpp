@@ -245,7 +245,7 @@ double AuctionRunnerGS::getDistanceToQthPowerInternal(void)
         auto pA = bidders[bIdx];
         assert( 0 <= biddersToItems[bIdx] and biddersToItems[bIdx] < static_cast<int>(items.size()) );
         auto pB = items[biddersToItems[bIdx]];
-        std::cout << "pA = " << pA << ", pB = " << pB << ", pow(distLp(pA, pB, internal_p), wassersteinPower) = " << pow(distLp(pA, pB, internal_p), wassersteinPower) << ", dist = " << distLp(pA, pB, internal_p) << std::endl;
+        //std::cout << "pA = " << pA << ", pB = " << pB << ", pow(distLp(pA, pB, internal_p), wassersteinPower) = " << pow(distLp(pA, pB, internal_p), wassersteinPower) << ", dist = " << distLp(pA, pB, internal_p) << std::endl;
         result += pow(distLp(pA, pB, internal_p), wassersteinPower);
     }
     wassersteinCost = result;

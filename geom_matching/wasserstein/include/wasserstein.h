@@ -40,6 +40,8 @@ derivative works thereof, in binary and source code form.
 
 namespace geom_ws {
 
+using PairVector = std::vector<std::pair<double, double>>;
+
 // get Wasserstein distance between two persistence diagrams
 double wassersteinDistVec(const std::vector<DiagramPoint>& A, 
                           const std::vector<DiagramPoint>& B, 
@@ -138,8 +140,9 @@ double wassersteinCost(PairContainer& A, PairContainer& B, const double q, const
 // fill in result with points from file fname
 // return false if file can't be opened
 // or error occurred while reading
-bool readDiagramPointSet(const char* fname, std::vector<std::pair<double, double>>& result);
-bool readDiagramPointSet(const std::string& fname, std::vector<std::pair<double, double>>& result);
+bool readDiagramPointSet(const char* fname, PairVector& result);
+bool readDiagramPointSet(const std::string& fname, PairVector& result);
+void removeDuplicates(PairVector& dgmA, PairVector& dgmB);
  
 } // end of namespace geom_ws
 

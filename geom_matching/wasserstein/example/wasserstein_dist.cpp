@@ -39,11 +39,9 @@ derivative works thereof, in binary and source code form.
 // any container of pairs of doubles can be used,
 // we use vector in this example.
 
-typedef std::vector<std::pair<double, double>>  PairVector;
-
 int main(int argc, char* argv[])
 {
-    PairVector diagramA, diagramB;
+    geom_ws::PairVector diagramA, diagramB;
 
     if (argc < 3 ) {
         std::cerr << "Usage: " << argv[0] << " file1 file2 [wasserstein_degree] [relative_error] [internal norm] [output_actual_error]. By default power is 1.0, relative error is 0.01, internal norm is l_infinity, actual relative error is not printed." << std::endl;
@@ -62,6 +60,10 @@ int main(int argc, char* argv[])
     if (wasserPower < 1.0) {
         std::cerr << "The third argument (wasserstein_degree) was \"" << argv[3] << "\", must be a number >= 1.0. Cannot proceed. " << std::endl;
         std::exit(1);
+    }
+
+    if (wasserPower == 1.0) {
+        geom_ws::removeDuplicates(diagramA, diagramB);
     }
 
     //default relative error:  1%
