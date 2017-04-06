@@ -6,6 +6,11 @@
 
 typedef std::vector<std::pair<double, double>>  PairVector;
 
+// estimate initial guess on sampled diagram?
+constexpr bool useSamplingHeur = false;
+// if diagrams contain fewer points, don't use heuristic
+constexpr int heurThreshold = 30000;
+
 int main(int argc, char* argv[])
 {
     if (argc < 3 ) {
@@ -29,7 +34,11 @@ int main(int argc, char* argv[])
         // return approximate distance (faster)
         double approxEpsilon =  atof(argv[3]);
         if (approxEpsilon > 0.0) {
-            res = geom_bt::bottleneckDistApprox(diagramA, diagramB, approxEpsilon);
+            if (useSamplingHeur && diagramA.size() > heurThreshold && diagramB.size() > heurThreshold) {
+                res = geom_bt::bottleneckDistApproxHeur(diagramA, diagramB, approxEpsilon);
+            } else {
+                res = geom_bt::bottleneckDistApprox(diagramA, diagramB, approxEpsilon);
+            }
         } else if (approxEpsilon == 0.0) {
             res = geom_bt::bottleneckDistExact(diagramA, diagramB, decPrecision);
         } else {

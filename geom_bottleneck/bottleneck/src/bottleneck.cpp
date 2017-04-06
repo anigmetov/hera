@@ -91,6 +91,128 @@ std::pair<double, double> bottleneckDistApproxInterval(DiagramPointSet& A, Diagr
     return result;
 }
 
+void sampleDiagramForHeur(const DiagramPointSet& dgmIn, DiagramPointSet& dgmOut)
+{
+    struct pair_hash {
+        std::size_t operator()(const std::pair<double, double> p) const
+        {
+            return std::hash<double>()(p.first) ^ std::hash<double>()(p.second);
+        }
+    };
+    std::unordered_map<std::pair<double, double>, int, pair_hash> m;
+    for(auto ptIter = dgmIn.cbegin(); ptIter != dgmIn.cend(); ++ptIter) {
+        m[std::make_pair(ptIter->getRealX(), ptIter->getRealY())]++;
+    }
+    if (m.size() < 2) {
+        dgmOut = dgmIn;
+        return;
+    }
+    std::vector<int> v;
+    for(const auto& ptQtyPair : m) {
+        v.push_back(ptQtyPair.second);
+    }
+    std::sort(v.begin(), v.end());
+    int maxLeap = v[1] - v[0];
+    int cutVal = v[0];
+    for(int i = 1; i < v.size() - 1; ++i) {
+        int currLeap = v[i+1] - v[i];
+        if (currLeap > maxLeap) {
+            maxLeap = currLeap;
+            cutVal = v[i];
+        }
+    }
+    std::vector<std::pair<double, double>> vv;
+    for(const auto& ptQty : m) {
+        if (ptQty.second < cutVal) {
+            for(int i = 0; i < ptQty.second; ++i) {
+                vv.push_back(std::make_pair(ptQty.first.first, ptQty.first.second));
+            }
+        }
+    }
+    // keep points whose multiplicites are at most cutVal
+    dgmOut.clear();
+    dgmOut = DiagramPointSet(vv.begin(), vv.end());
+}
+
+
+// return the interval (distMin, distMax) such that: 
+// a) actual bottleneck distance between A and B is contained in the interval
+// b) if the interval is not (0,0), then  (distMax - distMin) / distMin < epsilon 
+std::pair<double, double> bottleneckDistApproxIntervalWithInitial(DiagramPointSet& A, DiagramPointSet& B, const double epsilon, const std::pair<double, double> initialGuess)
+{
+    // empty diagrams are not considered as error
+    if (A.empty() and B.empty())
+        return std::make_pair(0.0, 0.0);
+
+    // link diagrams A and B by adding projections
+    addProjections(A, B);
+
+    constexpr double epsThreshold { 1.0e-10 };
+    std::pair<double, double> result { 0.0, 0.0 };
+    bool useRangeSearch { true };
+    // construct an oracle
+    BoundMatchOracle oracle(A, B, epsThreshold, useRangeSearch);
+    double& distMin {result.first};
+    double& distMax {result.second};
+
+    // initialize search interval from initialGuess
+    distMin = initialGuess.first;
+    distMax = initialGuess.second;
+
+    assert(distMin <= distMax);
+
+    // make sure that distMin is a lower bound
+    while(oracle.isMatchLess(distMin)) {
+        // distMin is in fact an upper bound, so assign it to distMax
+        distMax = distMin;
+        // and decrease distMin by 5 %
+        distMin = 0.95 * distMin;
+    }
+
+    // make sure that distMax is an upper bound
+    while(not oracle.isMatchLess(distMax)) {
+        // distMax is in fact a lower bound, so assign it to distMin
+        distMin = distMax;
+        // and increase distMax by 5 %
+        distMax = 1.05 * distMax;
+    }
+
+    // bounds are found, perform binary search
+    //std::cout << "Bounds found, distMin = " << distMin << ", distMax = " << distMax << ", ratio = " << ( distMax - distMin ) / distMin << std::endl ;
+    double distProbe = ( distMin + distMax ) / 2.0;
+    while (  ( distMax - distMin ) / distMin >= epsilon ) {
+        if (oracle.isMatchLess(distProbe)) {
+            distMax = distProbe;
+        } else {
+            distMin = distProbe;
+        }
+        distProbe = ( distMin + distMax ) / 2.0;
+    }
+    return result;
+}
+
+// return the interval (distMin, distMax) such that: 
+// a) actual bottleneck distance between A and B is contained in the interval
+// b) if the interval is not (0,0), then  (distMax - distMin) / distMin < epsilon 
+// use heuristic: initial estimate on sampled diagrams
+std::pair<double, double> bottleneckDistApproxIntervalHeur(DiagramPointSet& A, DiagramPointSet& B, const double epsilon)
+{
+    // empty diagrams are not considered as error
+    if (A.empty() and B.empty())
+        return std::make_pair(0.0, 0.0);
+
+    DiagramPointSet sampledA, sampledB;
+    sampleDiagramForHeur(A, sampledA);
+    sampleDiagramForHeur(B, sampledB);
+    //std::cout << "A : " << A.size() << ", sampled: " << sampledA.size() << std::endl;
+    //std::cout << "B : " << B.size() << ", sampled: " << sampledB.size() << std::endl;
+    std::pair<double, double> initGuess = bottleneckDistApproxInterval(sampledA, sampledB, epsilon);
+    //std::cout << "initial guess: " << initGuess.first << ", " << initGuess.second << std::endl;
+    return bottleneckDistApproxIntervalWithInitial(A, B, epsilon, initGuess);
+}
+
+
+
 // get approximate distance,
 // see bottleneckDistApproxInterval
 double bottleneckDistApprox(DiagramPointSet& A, DiagramPointSet& B, const double epsilon)

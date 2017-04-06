@@ -46,6 +46,10 @@ typedef std::pair<double, std::pair<size_t, size_t>> DistVerticesPair;
 // b) if the interval is not (0,0), then  (distMax - distMin) / distMin < epsilon 
 std::pair<double, double> bottleneckDistApproxInterval(DiagramPointSet& A, DiagramPointSet& B, const double epsilon);
 
+
+// heuristic (sample diagram to estimate the distance)
+std::pair<double, double> bottleneckDistApproxIntervalHeur(DiagramPointSet& A, DiagramPointSet& B, const double epsilon);
+
 // get approximate distance,
 // see bottleneckDistApproxInterval
 double bottleneckDistApprox(DiagramPointSet& A, DiagramPointSet& B, const double epsilon);
@@ -73,6 +77,17 @@ std::pair<double, double> bottleneckDistApproxInterval(PairContainer& A, PairCon
     DiagramPointSet b(B.begin(), B.end());
     return bottleneckDistApproxInterval(a, b, epsilon);
 }
+
+
+template<class PairContainer>
+double bottleneckDistApproxHeur(PairContainer& A, PairContainer& B, const double epsilon)
+{
+    DiagramPointSet a(A.begin(), A.end());
+    DiagramPointSet b(B.begin(), B.end());
+    std::pair<double,  double> resPair = bottleneckDistApproxIntervalHeur(a, b, epsilon);
+    return resPair.second;
+}
+
 
 // get approximate distance,
 // see bottleneckDistApproxInterval
