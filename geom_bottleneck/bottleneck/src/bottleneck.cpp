@@ -101,7 +101,9 @@ void sampleDiagramForHeur(const DiagramPointSet& dgmIn, DiagramPointSet& dgmOut)
     };
     std::unordered_map<std::pair<double, double>, int, pair_hash> m;
     for(auto ptIter = dgmIn.cbegin(); ptIter != dgmIn.cend(); ++ptIter) {
-        m[std::make_pair(ptIter->getRealX(), ptIter->getRealY())]++;
+        if (ptIter->isNormal()) {
+            m[std::make_pair(ptIter->getRealX(), ptIter->getRealY())]++;
+        }
     }
     if (m.size() < 2) {
         dgmOut = dgmIn;
@@ -122,6 +124,9 @@ void sampleDiagramForHeur(const DiagramPointSet& dgmIn, DiagramPointSet& dgmOut)
         }
     }
     std::vector<std::pair<double, double>> vv;
+    // keep points whose multiplicites are at most cutVal
+    // quick-and-dirty: fill in vv with copies of each point
+    // to construct DiagramPointSet from it later
     for(const auto& ptQty : m) {
         if (ptQty.second < cutVal) {
             for(int i = 0; i < ptQty.second; ++i) {
@@ -129,7 +134,6 @@ void sampleDiagramForHeur(const DiagramPointSet& dgmIn, DiagramPointSet& dgmOut)
             }
         }
     }
-    // keep points whose multiplicites are at most cutVal
     dgmOut.clear();
     dgmOut = DiagramPointSet(vv.begin(), vv.end());
 }
