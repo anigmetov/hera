@@ -970,6 +970,7 @@ AuctionOracleKDTreeRestricted::AuctionOracleKDTreeRestricted(const std::vector<D
         dnnPointHandles.push_back(&dnnPoints[i]);
     }
     DnnTraits traits;
+    traits.internal_p = internal_p;
     kdtree = new dnn::KDTree<DnnTraits>(traits, dnnPointHandles, wassersteinPower);
     
     size_t handleIdx {0};

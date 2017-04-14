@@ -241,6 +241,7 @@ double AuctionRunnerGS::getDistanceToQthPowerInternal(void)
 {
     sanityCheck();
     double result = 0.0;
+    //std::cout << "-------------------------------------------------------------------------\n";
     for(size_t bIdx = 0; bIdx < numBidders; ++bIdx) {
         auto pA = bidders[bIdx];
         assert( 0 <= biddersToItems[bIdx] and biddersToItems[bIdx] < static_cast<int>(items.size()) );
@@ -248,6 +249,7 @@ double AuctionRunnerGS::getDistanceToQthPowerInternal(void)
         //std::cout << "pA = " << pA << ", pB = " << pB << ", pow(distLp(pA, pB, internal_p), wassersteinPower) = " << pow(distLp(pA, pB, internal_p), wassersteinPower) << ", dist = " << distLp(pA, pB, internal_p) << std::endl;
         result += pow(distLp(pA, pB, internal_p), wassersteinPower);
     }
+    //std::cout << "-------------------------------------------------------------------------\n";
     wassersteinCost = result;
     wassersteinDistance = pow(result, 1.0 / wassersteinPower);
     return result;
