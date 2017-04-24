@@ -35,11 +35,20 @@ int main(int argc, char* argv[])
         double approxEpsilon =  atof(argv[3]);
         if (approxEpsilon > 0.0) {
             if (useSamplingHeur && diagramA.size() > heurThreshold && diagramB.size() > heurThreshold) {
+#ifdef VERBOSE_BOTTLENECK
+                std::cout << "using sampling heuristic" << std::endl;
+#endif
                 res = geom_bt::bottleneckDistApproxHeur(diagramA, diagramB, approxEpsilon);
             } else {
+#ifdef VERBOSE_BOTTLENECK
+                std::cout << "NOT using sampling heuristic" << std::endl;
+#endif
                 res = geom_bt::bottleneckDistApprox(diagramA, diagramB, approxEpsilon);
             }
         } else if (approxEpsilon == 0.0) {
+#ifdef VERBOSE_BOTTLENECK
+                std::cout << "NOT using sampling heuristic, computing EXACT answer" << std::endl;
+#endif
             res = geom_bt::bottleneckDistExact(diagramA, diagramB, decPrecision);
         } else {
             std::cerr << "The third parameter (relative error) must be positive!" << std::endl;
@@ -47,6 +56,9 @@ int main(int argc, char* argv[])
         }
     } else {
         // only filenames have been supplied, return exact distance
+#ifdef VERBOSE_BOTTLENECK
+        std::cout << "NOT using sampling heuristic, computing EXACT answer" << std::endl;
+#endif
         res = geom_bt::bottleneckDistExact(diagramA, diagramB, decPrecision);
     }
     std::cout << std::setprecision(15) << res << std::endl;
