@@ -208,10 +208,15 @@ std::pair<double, double> bottleneckDistApproxIntervalHeur(DiagramPointSet& A, D
     DiagramPointSet sampledA, sampledB;
     sampleDiagramForHeur(A, sampledA);
     sampleDiagramForHeur(B, sampledB);
-    //std::cout << "A : " << A.size() << ", sampled: " << sampledA.size() << std::endl;
-    //std::cout << "B : " << B.size() << ", sampled: " << sampledB.size() << std::endl;
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "A : " << A.size() << ", sampled: " << sampledA.size() << std::endl;
+    std::cout << "B : " << B.size() << ", sampled: " << sampledB.size() << std::endl;
+#endif
     std::pair<double, double> initGuess = bottleneckDistApproxInterval(sampledA, sampledB, epsilon);
-    //std::cout << "initial guess: " << initGuess.first << ", " << initGuess.second << std::endl;
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "initial guess with sampling: " << initGuess.first << ", " << initGuess.second << std::endl;
+    std::cout << "running on the original diagrams" << std::endl;
+#endif 
     return bottleneckDistApproxIntervalWithInitial(A, B, epsilon, initGuess);
 }
 

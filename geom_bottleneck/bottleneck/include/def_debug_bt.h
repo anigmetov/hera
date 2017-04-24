@@ -29,5 +29,6 @@
 // for R package TDA, to comply with some CRAN rules
 // like no usage of cout, cerr, cin, exit, etc.
 //#define FOR_R_TDA
+//#define VERBOSE_BOTTLENECK
 
 #endif

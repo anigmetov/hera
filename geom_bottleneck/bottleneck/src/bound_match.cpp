@@ -21,6 +21,11 @@ along with GeomBottleneck.  If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 #include "def_debug_bt.h"
 #include "bound_match.h"
+
+#ifdef VERBOSE_BOTTLENECK
+#include <chrono>
+#endif
+
 #ifndef FOR_R_TDA
 #include <iostream>
 #endif
@@ -245,7 +250,19 @@ BoundMatchOracle::BoundMatchOracle(DiagramPointSet psA, DiagramPointSet psB,
 
 bool BoundMatchOracle::isMatchLess(double r)
 {
-    return buildMatchingForThreshold(r);
+#ifdef VERBOSE_BOTTLENECK
+    std::chrono::high_resolution_clock hrClock;
+    std::chrono::time_point<std::chrono::high_resolution_clock> startMoment;
+    startMoment = hrClock.now();
+#endif
+    bool result = buildMatchingForThreshold(r);
+#ifdef VERBOSE_BOTTLENECK
+    auto endMoment = hrClock.now();
+    std::chrono::duration<double, std::milli> iterTime = endMoment - startMoment;
+    std::cout << "isMatchLess for r = " << r << " finished in " << std::chrono::duration<double, std::milli>(iterTime).count() << " ms." << std::endl;
+#endif
+    return result;
+
 }
 
 
