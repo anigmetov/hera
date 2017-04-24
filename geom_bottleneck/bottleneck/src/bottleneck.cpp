@@ -93,6 +93,9 @@ std::pair<double, double> bottleneckDistApproxInterval(DiagramPointSet& A, Diagr
 
 void sampleDiagramForHeur(const DiagramPointSet& dgmIn, DiagramPointSet& dgmOut)
 {
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "Entered sampleDiagramForHeur, dgmIn.size = " << dgmIn.size() << std::endl;
+#endif
     struct pair_hash {
         std::size_t operator()(const std::pair<double, double> p) const
         {
@@ -105,7 +108,10 @@ void sampleDiagramForHeur(const DiagramPointSet& dgmIn, DiagramPointSet& dgmOut)
             m[std::make_pair(ptIter->getRealX(), ptIter->getRealY())]++;
         }
     }
-    if (m.size() < 2) {
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "map filled in, m.size = " << m.size() << std::endl;
+#endif
+     if (m.size() < 2) {
         dgmOut = dgmIn;
         return;
     }
@@ -113,7 +119,13 @@ void sampleDiagramForHeur(const DiagramPointSet& dgmIn, DiagramPointSet& dgmOut)
     for(const auto& ptQtyPair : m) {
         v.push_back(ptQtyPair.second);
     }
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "v filled in, v.size = " << v.size() << std::endl;
+#endif
     std::sort(v.begin(), v.end());
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "v sorted" << std::endl;
+#endif
     int maxLeap = v[1] - v[0];
     int cutVal = v[0];
     for(int i = 1; i < v.size() - 1; ++i) {
@@ -123,7 +135,10 @@ void sampleDiagramForHeur(const DiagramPointSet& dgmIn, DiagramPointSet& dgmOut)
             cutVal = v[i];
         }
     }
-    std::vector<std::pair<double, double>> vv;
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "cutVal found, cutVal = " << cutVal << std::endl;
+#endif
+     std::vector<std::pair<double, double>> vv;
     // keep points whose multiplicites are at most cutVal
     // quick-and-dirty: fill in vv with copies of each point
     // to construct DiagramPointSet from it later
@@ -134,8 +149,14 @@ void sampleDiagramForHeur(const DiagramPointSet& dgmIn, DiagramPointSet& dgmOut)
             }
         }
     }
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "vv filled in, vv.size = " << v.size() << std::endl;
+#endif
     dgmOut.clear();
     dgmOut = DiagramPointSet(vv.begin(), vv.end());
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "dgmOut filled in, dgmOut.size = " << dgmOut.size() << std::endl;
+#endif
 }
 
 
@@ -714,7 +735,9 @@ bool readDiagramPointSet(const char* fname, std::vector<std::pair<double, double
             result.push_back(std::make_pair(x,y));
         } else {
 #ifndef FOR_R_TDA
+#ifndef VERBOSE_BOTTLENECK
             std::cerr << "Warning: in file " << fname << ", line number " << lineNumber << ", zero persistence point ignored: \"" << line << "\"" << std::endl;
+#endif
 #endif
         }
     }
