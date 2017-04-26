@@ -448,8 +448,9 @@ void BoundMatchOracle::printLayerGraph(void)
 
 void BoundMatchOracle::buildLayerGraph(double r)
 {
-    //bool isDebug {false};
-    //printDebug(isDebug,"Entered buildLayerGraph");
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "Entered buildLayerGraph, r = " << r << std::endl;
+#endif
     layerGraph.clear();
     DiagramPointSet L1 = M.getExposedVertices();
     //printDebug(isDebug,"Got exposed vertices");
@@ -524,7 +525,10 @@ void BoundMatchOracle::buildLayerGraph(double r)
     buildLayerOracles(r);
     //printDebug(isDebug,"layer oracles built, layer graph:");
     printLayerGraph();
-}
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "Exit buildLayerGraph, r = " << r << std::endl;
+#endif
+ }
 
 
 
