@@ -133,8 +133,9 @@ NeighbOracleAnn::NeighbOracleAnn(const DiagramPointSet& S, const double rr, cons
 
 void NeighbOracleAnn::rebuild(const DiagramPointSet& S, double rr)
 {
-    //bool isDebug { false };
-    //printDebug(isDebug, "Entered rebuild, r = ", rr);
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "Entered rebuild, r = " << rr << ", size  = " << S.size() << std::endl;
+#endif
     r = rr;
     size_t annNumPoints = S.size();
     //printDebug(isDebug, "S = ", S);
@@ -170,6 +171,9 @@ void NeighbOracleAnn::rebuild(const DiagramPointSet& S, double rr)
                                 1,                // bucket size
                                 ANN_KD_STD);
     }
+#ifdef VERBOSE_BOTTLENECK
+    std::cout << "Exit rebuild" << std::endl;
+#endif
 }
 
 void NeighbOracleAnn::deletePoint(const DiagramPoint& p)
