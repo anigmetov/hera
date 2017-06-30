@@ -777,11 +777,12 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
     // and vice versa.
 
     size_t bestItemIdx;
+    size_t secondBestItemIdx;
     double bestItemValue;
     double secondBestItemValue;
 
 
-    size_t projItemIdx = bidderIdx;
+    const size_t projItemIdx = bidderIdx;
     assert( 0 <= projItemIdx and projItemIdx < items.size() );
     DiagramPoint projItem = items[projItemIdx];
     assert(projItem.type != bidder.type);
@@ -817,14 +818,17 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
             bestItemIdx = projItemIdx;
             bestItemValue = projItemValue;
             secondBestItemValue = bestDiagonalItemValue;
+            secondBestItemIdx = bestDiagonalItemIdx;
         } else if (projItemValue < secondBestDiagonalItemValue) {
             bestItemIdx = bestDiagonalItemIdx;
             bestItemValue = bestDiagonalItemValue;
             secondBestItemValue = projItemValue;
+            secondBestItemIdx = projItemIdx;
         } else {
             bestItemIdx = bestDiagonalItemIdx;
             bestItemValue = bestDiagonalItemValue;
             secondBestItemValue = secondBestDiagonalItemValue;
+            secondBestItemIdx = secondBestDiagonalItemIdx;
         }
     } else {
         // for normal bidder get 2 best items among non-diagonal points from
@@ -839,19 +843,23 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
         // kd-tree will not return the second candidate.
         // Set its value to inf, so it will always lose to the value of the projection
         double secondBestNormalItemValue { twoBestItems.size() == 1 ? std::numeric_limits<double>::max() : twoBestItems[1].d };
+        size_t secondBestNormalItemIdx { twoBestItems.size() == 1 ? std::numeric_limits<size_t>::max() : twoBestItems[1].p->id() };
 
         if ( projItemValue < bestNormalItemValue) {
             bestItemIdx = projItemIdx;
             bestItemValue = projItemValue;
             secondBestItemValue = bestNormalItemValue;
+            secondBestItemIdx = bestNormalItemIdx;
         } else if (projItemValue < secondBestNormalItemValue) {
             bestItemIdx = bestNormalItemIdx;
             bestItemValue = bestNormalItemValue;
             secondBestItemValue = projItemValue;
+            secondBestItemIdx = projItemIdx;
         } else {
             bestItemIdx = bestNormalItemIdx;
             bestItemValue = bestNormalItemValue;
             secondBestItemValue = secondBestNormalItemValue;
+            secondBestItemIdx = secondBestNormalItemIdx;
         }
     }
 
@@ -870,6 +878,10 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
     debugNaiveResult.secondBestItemValue = 1e20;
     double currItemValue;
     for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
+        if (bidder.isNormal() and items[itemIdx].isDiagonal() and bidderIdx != itemIdx)
+            continue;
+        if (bidder.isDiagonal() and items[itemIdx].isNormal() and bidderIdx != itemIdx)
+            continue;
         currItemValue = pow(distLp(bidders[bidderIdx], items[itemIdx], internal_p), wassersteinPower) + prices[itemIdx];
         if (currItemValue < debugNaiveResult.bestItemValue) {
             debugNaiveResult.bestItemValue = currItemValue;
@@ -881,6 +893,10 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
         if (itemIdx == debugNaiveResult.bestItemIdx) {
             continue;
         }
+        if (bidder.isNormal() and items[itemIdx].isDiagonal() and bidderIdx != itemIdx)
+            continue;
+        if (bidder.isDiagonal() and items[itemIdx].isNormal() and bidderIdx != itemIdx)
+            continue;
         currItemValue = pow(distLp(bidders[bidderIdx], items[itemIdx], internal_p), wassersteinPower) + prices[itemIdx];
         if (currItemValue < debugNaiveResult.secondBestItemValue) {
             debugNaiveResult.secondBestItemValue = currItemValue;
@@ -891,15 +907,17 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
 
     if ( fabs( bestItemValue - debugNaiveResult.bestItemValue ) > 1e-6 or
             fabs( debugNaiveResult.secondBestItemValue - secondBestItemValue) > 1e-6 ) {
-        std::cerr << "bidderIdx = " << bidderIdx << "; ";
         std::cerr << bidders[bidderIdx] << std::endl;
         for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
             std::cout << itemIdx << ": " << items[itemIdx] << "; price = " << prices[itemIdx] << std::endl;
         }
+        std::cerr << "bidderIdx = " << bidderIdx << "; ";
+        std::cerr << "bestItemValue: " << bestItemValue << ", secondBestItemValue = " << secondBestItemValue;
+        std::cerr << ", bestItemIdx = " << bestItemIdx << ", secondBestItemIdx = " << secondBestItemIdx << std::endl;
         std::cerr << "result: " << result << std::endl;
         std::cerr << "debugNaiveResult: " << debugNaiveResult << std::endl;
         //std::cerr << "twoBestItems: " << twoBestItems[0].d << " " << twoBestItems[1].d << std::endl;
-        assert(false);
+        throw std::runtime_error("TOO BAD");
     }
     //std::cout << "returning" << std::endl;
 
