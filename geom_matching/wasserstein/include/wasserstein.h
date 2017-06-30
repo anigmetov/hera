@@ -1,5 +1,5 @@
 /*
- 
+
 Copyright (c) 2015, M. Kerber, D. Morozov, A. Nigmetov
 All rights reserved.
 
@@ -12,7 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- 
+
 
 You are under no obligation whatsoever to provide any bug fixes, patches, or
 upgrades to the features, functionality or performance of the source code
@@ -35,26 +35,29 @@ derivative works thereof, in binary and source code form.
 
 #include "basic_defs_ws.h"
 
+#define FR_AUCTION
 // use Gauss-Seidel version; comment out to switch to Jacobi (not recommended)
-#define GAUSS_SEIDEL_AUCTION
+//#define GAUSS_SEIDEL_AUCTION
+
+#define PRINT_DETAILED_TIMING
 
 namespace geom_ws {
 
 using PairVector = std::vector<std::pair<double, double>>;
 
 // get Wasserstein distance between two persistence diagrams
-double wassersteinDistVec(const std::vector<DiagramPoint>& A, 
-                          const std::vector<DiagramPoint>& B, 
-                          const double q, 
+double wassersteinDistVec(const std::vector<DiagramPoint>& A,
+                          const std::vector<DiagramPoint>& B,
+                          const double q,
                           const double delta,
                           const double _internal_p = std::numeric_limits<double>::infinity(),
                           const double _initialEpsilon = 0.0,
                           const double _epsFactor = 0.0);
 
 // get Wasserstein cost (distance^q) between two persistence diagrams
-double wassersteinCostVec(const std::vector<DiagramPoint>& A, 
-                          const std::vector<DiagramPoint>& B, 
-                          const double q, 
+double wassersteinCostVec(const std::vector<DiagramPoint>& A,
+                          const std::vector<DiagramPoint>& B,
+                          const double q,
                           const double delta,
                           const double _internal_p = std::numeric_limits<double>::infinity(),
                           const double _initialEpsilon = 0.0,
@@ -119,7 +122,7 @@ double wassersteinDist(PairContainer& A, PairContainer& B, const double q, const
 
     if (b_empty)
         dgmB.clear();
-    
+
     return wassersteinDistVec(dgmA, dgmB, q, delta, _internal_p, _initialEpsilon, _epsFactor);
 }
 
@@ -146,7 +149,7 @@ double wassersteinCost(PairContainer& A, PairContainer& B, const double q, const
         dgmA.push_back(DiagramPoint(x, y,  DiagramPoint::DIAG));
         dgmB.push_back(DiagramPoint(x, y,  DiagramPoint::NORMAL));
     }
-    
+
     return wassersteinCostVec(dgmA, dgmB, q, delta, _internal_p, _initialEpsilon, _epsFactor);
 }
 
@@ -157,7 +160,7 @@ double wassersteinCost(PairContainer& A, PairContainer& B, const double q, const
 bool readDiagramPointSet(const char* fname, PairVector& result);
 bool readDiagramPointSet(const std::string& fname, PairVector& result);
 void removeDuplicates(PairVector& dgmA, PairVector& dgmB);
- 
+
 } // end of namespace geom_ws
 
 #endif

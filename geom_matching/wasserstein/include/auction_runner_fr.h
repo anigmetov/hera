@@ -26,49 +26,26 @@ derivative works thereof, in binary and source code form.
 
   */
 
-#ifndef AUCTION_RUNNER_GS_H
-#define AUCTION_RUNNER_GS_H
+#ifndef AUCTION_RUNNER_FR_H
+#define AUCTION_RUNNER_FR_H
 
 #include <unordered_set>
+#include <ostream>
 
 #include "auction_oracle.h"
 
-//#define KEEP_UNASSIGNED_ORDERED
-// if this symbol is defined,
-// unassigned bidders are processed in a lexicographic order.
-// See LexicogrCompDiagramPoint comparator.
-
-
 namespace geom_ws {
 
-//using AuctionOracle = AuctionOracleLazyHeapRestricted;
 using AuctionOracle = AuctionOracleKDTreeRestricted;
-
-#ifdef KEEP_UNASSIGNED_ORDERED
-using IdxPointPair = std::pair<size_t, DiagramPoint>;
-
-struct LexicogrCompDiagramPoint {
-    bool operator ()(const IdxPointPair& a, const IdxPointPair& b) {
-        const auto& p1 = a.second;
-        const auto& p2 = b.second;
-
-        return ( (not p1.isDiagonal() and p2.isDiagonal()) or
-                ( p1.isDiagonal() == p2.isDiagonal() and p1.getRealX() < p2.getRealX() ) or
-                ( p1.isDiagonal() == p2.isDiagonal() and p1.getRealX() == p2.getRealX() and p1.getRealY() < p2.getRealY() ) or
-                ( p1.isDiagonal() == p2.isDiagonal() and p1.getRealX() == p2.getRealX() and p1.getRealY() == p2.getRealY() and a.first < b.first ) );
-    }
-};
-
-using OrderedUnassignedKeeper = std::set<IdxPointPair, LexicogrCompDiagramPoint>;
-#endif
+//using AuctionOracle = AuctionOracleLazyHeapRestricted;
 
 // the two parameters that you can tweak in auction algorithm are:
 // 1. epsilonCommonRatio
 // 2. maxIterNum
 
-class AuctionRunnerGS {
+class AuctionRunnerFR {
 public:
-    AuctionRunnerGS(const std::vector<DiagramPoint>& A,
+    AuctionRunnerFR(const std::vector<DiagramPoint>& A,
                     const std::vector<DiagramPoint>& B,
                     const double q,
                     const double _delta,
@@ -79,8 +56,8 @@ public:
     double getEpsilon() const { return epsilon; }
     double getWassersteinDistance();
     double getWassersteinCost();
-    double getRelativeError() const { return relativeError; };
     static constexpr int maxIterNum { 25 }; // maximal number of iterations of epsilon-scaling
+    friend std::ostream& operator<<(std::ostream& o, const AuctionRunnerFR& f);
 private:
     // private data
     std::vector<DiagramPoint> bidders, items;
@@ -97,29 +74,37 @@ private:
     double weightAdjConst;
     double wassersteinDistance;
     double wassersteinCost;
-    double relativeError;
     // to get the 2 best items
-    std::unique_ptr<AuctionOracle> oracle;
-#ifdef KEEP_UNASSIGNED_ORDERED
-    OrderedUnassignedKeeper unassignedBidders;
-#else
+    std::unique_ptr<AuctionOracle> oracleForward, oracleReverse;
     std::unordered_set<size_t> unassignedBidders;
-#endif
+    std::unordered_set<size_t> unassignedItems;
     // private methods
-    void assignItemToBidder(const IdxType bidderIdx, const IdxType itemsIdx);
-    void clearBidTable(void);
-    void runAuction(void);
-    void runAuctionPhase(void);
-    void flushAssignment(void);
+    void assignItemToBidder(const IdxType itemIdx, const IdxType bidderIdx);
+    void assignBidderToItem(const IdxType itemIdx, const IdxType bidderIdx);
+    void runAuction();
+    void runForwardAuctionPhase();
+    void runReverseAuctionPhase();
+    void runAuctionPhase();
+    void flushAssignment();
+
+    double getPairCost(size_t bidderIdx, size_t itemIdx) const;
+    double getPairCost(const DiagramPoint& pA, const DiagramPoint& pB) const;
 
     // for debug only
-    void sanityCheck(void);
-    void printDebug(void);
-    int countUnhappy(void);
-    void printMatching(void);
-    double getDistanceToQthPowerInternal(void);
+    void sanityCheck();
+    void checkAssignmentConsistency();
+    void checkEpsilonCS();
+    void printDebug();
+    int countUnhappy();
+    void printMatching();
+    double getDistanceToQthPowerInternal();
     int numRounds { 0 };
+    int numForwardRounds { 0 };
+    int numRevRounds { 0 };
 };
+
+
+std::ostream& operator<<(std::ostream& o, const AuctionRunnerFR& f);
 
 } // end of namespace geom_ws
 

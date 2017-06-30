@@ -1,5 +1,5 @@
 /*
- 
+
 Copyright (c) 2016, M. Kerber, D. Morozov, A. Nigmetov
 All rights reserved.
 
@@ -12,7 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- 
+
 
 You are under no obligation whatsoever to provide any bug fixes, patches, or
 upgrades to the features, functionality or performance of the source code
@@ -47,13 +47,12 @@ using AuctionOracle = AuctionOracleKDTreeRestricted;
 
 class AuctionRunnerJac {
 public:
-    AuctionRunnerJac(const std::vector<DiagramPoint>& A, const std::vector<DiagramPoint>& B, const double q,  const double _delta, const double _internal_p);
-    void setEpsilon(double newVal) { assert(epsilon > 0.0); epsilon = newVal; };
-    double getEpsilon() const { return epsilon; }
+    AuctionRunnerJac(const std::vector<DiagramPoint>& A, const std::vector<DiagramPoint>& B, const double q,  const double _delta, const double _internal_p, const double _initialEpsilon, const double _epsFactor);
+    //void setEpsilon(double newVal) { assert(epsilon > 0.0); epsilon = newVal; };
+    //double getEpsilon() const { return epsilon; }
     double getWassersteinDistance();
     double getWassersteinCost();
     double getRelativeError() const { return relativeError; };
-    static constexpr double epsilonCommonRatio { 5 }; // next epsilon = current epsilon / epsilonCommonRatio
     static constexpr int maxIterNum { 25 }; // maximal number of iterations of epsilon-scaling
 private:
     // private data
@@ -63,7 +62,8 @@ private:
     std::vector<IdxType> itemsToBidders;
     std::vector<IdxType> biddersToItems;
     double wassersteinPower;
-    double epsilon;
+    const double initialEpsilon;
+    const double epsilonCommonRatio; // next epsilon = current epsilon / epsilonCommonRatio
     double delta;
     double internal_p;
     double weightAdjConst;

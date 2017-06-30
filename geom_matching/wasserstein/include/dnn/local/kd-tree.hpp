@@ -161,20 +161,108 @@ search(PointHandle q, ResultsFunctor& rf) const
     }
 }
 
+
 template<class T>
 void
 dnn::KDTree<T>::
-increase_weight(PointHandle p, DistanceType w)
+change_weight(PointHandle p, DistanceType new_w)
 {
     size_t idx = indices_[p];
-    // weight should only increase
-    assert( weights_[idx] <= w );
+
+    if  (weights_[idx] == new_w)
+        return;
+
+    bool weight_increases = ( weights_[idx] < new_w);
+
+    weights_[idx] = new_w;
+
+    typedef     std::tuple<HCIterator, HCIterator>      KDTreeNode;
+
+    // find the path down the tree to this node
+    // not an ideal strategy, but
+    // it's not clear how to move up from the node in general
+    std::stack<KDTreeNode>  s;
+    s.push(KDTreeNode(tree_.begin(),tree_.end()));
+
+    do
+    {
+        HCIterator b,e;
+        std::tie(b,e) = s.top();
+
+        size_t im = b + (e - b)/2 - tree_.begin();
+
+        if (idx == im)
+            break;
+        else if (idx < im)
+            s.push(KDTreeNode(b, tree_.begin() + im));
+        else    // idx > im
+            s.push(KDTreeNode(tree_.begin() + im + 1, e));
+    } while(1);
+
+    // update subtree_weights_ on the path to the root
+    DistanceType min_w = new_w;
+    while (!s.empty())
+    {
+        HCIterator b,e;
+        std::tie(b,e) = s.top();
+        HCIterator m  = b + (e - b)/2;
+        size_t     im = m - tree_.begin();
+        s.pop();
+
+
+        // left and right children
+        if (b < m)
+        {
+            size_t lm = b + (m - b)/2 - tree_.begin();
+            if (subtree_weights_[lm] < min_w)
+                min_w = subtree_weights_[lm];
+        }
+
+        if (e > m + 1)
+        {
+            size_t rm = m + 1 + (e - (m+1))/2 - tree_.begin();
+            if (subtree_weights_[rm] < min_w)
+                min_w = subtree_weights_[rm];
+        }
+
+        if (weights_[im] < min_w) {
+            min_w = weights_[im];
+        }
+
+        if (weight_increases) {
+
+            if (subtree_weights_[im] < min_w )   // increase weight
+                subtree_weights_[im] = min_w;
+            else
+                break;
+
+        } else {
+
+            if (subtree_weights_[im] > min_w )   // decrease weight
+                subtree_weights_[im] = min_w;
+            else
+                break;
+
+        }
+    }
+}
+
+
+
+/*
+template<class T>
+void
+dnn::KDTree<T>::
+decrease_weight(PointHandle p, DistanceType w)
+{
+    size_t idx = indices_[p];
     weights_[idx] = w;
 
     typedef     std::tuple<HCIterator, HCIterator>      KDTreeNode;
 
     // find the path down the tree to this node
-    // not an ideal strategy, but // it's not clear how to move up from the node in general
+    // not an ideal strategy, but
+    // it's not clear how to move up from the node in general
     std::stack<KDTreeNode>  s;
     s.push(KDTreeNode(tree_.begin(),tree_.end()));
 
@@ -223,12 +311,83 @@ increase_weight(PointHandle p, DistanceType w)
             min_w = weights_[im];
         }
 
-        if (subtree_weights_[im] < min_w )   // increase weight 
+        if (subtree_weights_[im] > min_w )   // decrease weight
             subtree_weights_[im] = min_w;
         else
             break;
     }
 }
+
+
+
+template<class T>
+void
+dnn::KDTree<T>::
+increase_weight(PointHandle p, DistanceType w)
+{
+    size_t idx = indices_[p];
+    weights_[idx] = w;
+
+    typedef     std::tuple<HCIterator, HCIterator>      KDTreeNode;
+
+    // find the path down the tree to this node
+    // not an ideal strategy, but
+    // it's not clear how to move up from the node in general
+    std::stack<KDTreeNode>  s;
+    s.push(KDTreeNode(tree_.begin(),tree_.end()));
+
+    do
+    {
+        HCIterator b,e;
+        std::tie(b,e) = s.top();
+
+        size_t im = b + (e - b)/2 - tree_.begin();
+
+        if (idx == im)
+            break;
+        else if (idx < im)
+            s.push(KDTreeNode(b, tree_.begin() + im));
+        else    // idx > im
+            s.push(KDTreeNode(tree_.begin() + im + 1, e));
+    } while(1);
+
+    // update subtree_weights_ on the path to the root
+    DistanceType min_w = w;
+    while (!s.empty())
+    {
+        HCIterator b,e;
+        std::tie(b,e) = s.top();
+        HCIterator m  = b + (e - b)/2;
+        size_t     im = m - tree_.begin();
+        s.pop();
+
+
+        // left and right children
+        if (b < m)
+        {
+            size_t lm = b + (m - b)/2 - tree_.begin();
+            if (subtree_weights_[lm] < min_w)
+                min_w = subtree_weights_[lm];
+        }
+
+        if (e > m + 1)
+        {
+            size_t rm = m + 1 + (e - (m+1))/2 - tree_.begin();
+            if (subtree_weights_[rm] < min_w)
+                min_w = subtree_weights_[rm];
+        }
+
+        if (weights_[im] < min_w) {
+            min_w = weights_[im];
+        }
+
+        if (subtree_weights_[im] < min_w )   // increase weight
+            subtree_weights_[im] = min_w;
+        else
+            break;
+    }
+}
+*/
 
 template<class T>
 typename dnn::KDTree<T>::HandleDistance

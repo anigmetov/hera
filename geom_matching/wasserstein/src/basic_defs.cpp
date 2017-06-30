@@ -1,5 +1,5 @@
 /*
- 
+
 Copyright (c) 2015, M. Kerber, D. Morozov, A. Nigmetov
 All rights reserved.
 
@@ -12,7 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- 
+
 You are under no obligation whatsoever to provide any bug fixes, patches, or
 upgrades to the features, functionality or performance of the source code
 (Enhancements) to anyone; however, if you choose to make your Enhancements
@@ -92,14 +92,14 @@ double distLp(const DiagramPoint& a, const DiagramPoint& b, const double p)
         if ( a.isNormal() or b.isNormal() ) {
             // distance between normal points is a usual l-inf distance
             return fabs(a.getRealX() - b.getRealX()) + fabs(a.getRealY() - b.getRealY());
-        } else 
+        } else
             return 0.0;
-    } 
+    }
 
     if ( a.isNormal() or b.isNormal() ) {
         // distance between normal points is a usual l-inf distance
         return std::pow(std::pow(fabs(a.getRealX() - b.getRealX()), p) + std::pow(fabs(a.getRealY() - b.getRealY()), p), 1.0/p );
-    } else 
+    } else
         return 0.0;
 }
 
@@ -130,7 +130,7 @@ std::ostream& operator<<(std::ostream& output, const DiagramPoint p)
 }
 #endif
 
-DiagramPoint::DiagramPoint(double xx, double yy, Type ttype) : 
+DiagramPoint::DiagramPoint(double xx, double yy, Type ttype) :
     x(xx),
     y(yy),
     type(ttype)
@@ -145,7 +145,7 @@ double DiagramPoint::getRealX() const
 {
     if (isNormal())
         return x;
-    else 
+    else
         return 0.5 * ( x + y);
 }
 
@@ -153,7 +153,7 @@ double DiagramPoint::getRealY() const
 {
     if (isNormal())
         return y;
-    else 
+    else
         return 0.5 * ( x + y);
 }
 
