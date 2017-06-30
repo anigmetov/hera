@@ -1,5 +1,5 @@
 /*
- 
+
 Copyright (c) 2015, M. Kerber, D. Morozov, A. Nigmetov
 All rights reserved.
 
@@ -62,7 +62,7 @@ struct Point {
 #endif
 };
 
-struct DiagramPoint 
+struct DiagramPoint
 {
     // data members
     // Points above the diagonal have type NORMAL
@@ -114,6 +114,8 @@ double getFurthestDistance3Approx(DiagPointContainer& A, DiagPointContainer& B)
     }
     return result;
 }
+
+std::ostream& operator<<(std::ostream& s, const IdxValPair& p);
 
 } // end of namespace geom_ws
 #endif

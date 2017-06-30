@@ -861,6 +861,52 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
 
     result.first = bestItemIdx;
     result.second = ( secondBestItemValue - bestItemValue ) + prices[bestItemIdx] + epsilon;
+
+
+    // checking code
+    //
+    DebugOptimalBid debugNaiveResult;
+    debugNaiveResult.bestItemValue = 1e20;
+    debugNaiveResult.secondBestItemValue = 1e20;
+    double currItemValue;
+    for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
+        currItemValue = pow(distLp(bidders[bidderIdx], items[itemIdx], internal_p), wassersteinPower) + prices[itemIdx];
+        if (currItemValue < debugNaiveResult.bestItemValue) {
+            debugNaiveResult.bestItemValue = currItemValue;
+            debugNaiveResult.bestItemIdx  = itemIdx;
+        }
+    }
+
+    for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
+        if (itemIdx == debugNaiveResult.bestItemIdx) {
+            continue;
+        }
+        currItemValue = pow(distLp(bidders[bidderIdx], items[itemIdx], internal_p), wassersteinPower) + prices[itemIdx];
+        if (currItemValue < debugNaiveResult.secondBestItemValue) {
+            debugNaiveResult.secondBestItemValue = currItemValue;
+            debugNaiveResult.secondBestItemIdx = itemIdx;
+        }
+    }
+    //std::cout << "got naive result" << std::endl;
+
+    if ( fabs( bestItemValue - debugNaiveResult.bestItemValue ) > 1e-6 or
+            fabs( debugNaiveResult.secondBestItemValue - secondBestItemValue) > 1e-6 ) {
+        std::cerr << "bidderIdx = " << bidderIdx << "; ";
+        std::cerr << bidders[bidderIdx] << std::endl;
+        for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
+            std::cout << itemIdx << ": " << items[itemIdx] << "; price = " << prices[itemIdx] << std::endl;
+        }
+        std::cerr << "result: " << result << std::endl;
+        std::cerr << "debugNaiveResult: " << debugNaiveResult << std::endl;
+        //std::cerr << "twoBestItems: " << twoBestItems[0].d << " " << twoBestItems[1].d << std::endl;
+        assert(false);
+    }
+    //std::cout << "returning" << std::endl;
+
+    //std::cout << "getOptimalBid: bidderIdx = " << bidderIdx << "; bestItemIdx = " << bestItemIdx << "; bestItemValue = " << bestItemValue << "; bestItemsPrice = " << prices[bestItemIdx] << "; secondBestItemIdx = " << secondBestItemIdx << "; secondBestValue = " << secondBestItemValue << "; secondBestPrice = " << prices[secondBestItemIdx] <<  "; bid = " << prices[bestItemIdx] + ( bestItemValue - secondBestItemValue ) + epsilon << "; epsilon = " << epsilon << std::endl;
+    //std::cout << "getOptimalBid: bidderIdx = " << bidderIdx << "; bestItemIdx = " << bestItemIdx << "; bestItemsDist= " << (weightAdjConst - bestItemValue) << "; bestItemsPrice = " << prices[bestItemIdx] << "; secondBestItemIdx = " << secondBestItemIdx << "; secondBestDist= " << (weightAdjConst - secondBestItemValue) << "; secondBestPrice = " << prices[secondBestItemIdx] <<  "; bid = " << prices[bestItemIdx] + ( bestItemValue - secondBestItemValue ) + epsilon << "; epsilon = " << epsilon << std::endl;
+
+
     //std::cout << "kdtree oracle: bestItemValue = " << bestItemValue << ", secondBestItemValue = " << secondBestItemValue << ", eps = " << epsilon << std::endl;
     return result;
 }

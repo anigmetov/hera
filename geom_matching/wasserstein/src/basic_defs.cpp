@@ -157,4 +157,10 @@ double DiagramPoint::getRealY() const
         return 0.5 * ( x + y);
 }
 
+std::ostream& operator<<(std::ostream& s, const IdxValPair& p)
+{
+    s << "(idx = " << p.first << ", value = " << p.second << ")";
+    return s;
+}
+
 } // end of namespace geom_ws

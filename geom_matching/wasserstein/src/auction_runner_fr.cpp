@@ -190,8 +190,8 @@ void AuctionRunnerFR::runAuction(void)
     // choose some initial epsilon
     if (initialEpsilon == 0.0) {
         double minMaxVal = std::min(oracleReverse->maxVal, oracleForward->maxVal);
-        oracleForward->setEpsilon(minMaxVal / 6.0);
-        oracleReverse->setEpsilon(minMaxVal / 6.0);
+        oracleForward->setEpsilon(minMaxVal / 4.0);
+        oracleReverse->setEpsilon(minMaxVal / 4.0);
     } else {
         oracleForward->setEpsilon(initialEpsilon);
         oracleReverse->setEpsilon(initialEpsilon);
@@ -267,25 +267,26 @@ void AuctionRunnerFR::runAuctionPhase()
 {
     while(!unassignedItems.empty()) {
         //std::cout << *this;
-        //checkEpsilonCS();
-        //checkAssignmentConsistency();
+        checkEpsilonCS();
+        checkAssignmentConsistency();
 
         runForwardAuctionPhase();
 
-        //checkEpsilonCS();
-        //checkAssignmentConsistency();
+        checkEpsilonCS();
+        checkAssignmentConsistency();
 
         if (!unassignedBidders.empty()) {
             runReverseAuctionPhase();
         }
     }
 
-    //checkEpsilonCS();
+    checkEpsilonCS();
 }
 
 void AuctionRunnerFR::runReverseAuctionPhase()
 {
     const auto unassignedOrigQty = unassignedItems.size();
+    const long int requiredNewAssignments = std::max(1LU, unassignedOrigQty / 10);
 
     //std::cout << "Entered runAuctionReversePhase" << std::endl;
     do {
@@ -298,16 +299,16 @@ void AuctionRunnerFR::runReverseAuctionPhase()
 
         assignBidderToItem(itemIdx, optimalBidderIdx);
 
-        //auto oldBidderPrice = oracleReverse->getPrice(optimalBidderIdx);
-        //auto oldItemPrice = oracleForward->getPrice(itemIdx);
+        auto oldBidderPrice = oracleReverse->getPrice(optimalBidderIdx);
+        auto oldItemPrice = oracleForward->getPrice(itemIdx);
 
         // set prices in both oracles
         oracleReverse->setPrice(optimalBidderIdx, bidValue);
         auto newItemPrice = getPairCost(optimalBidderIdx, itemIdx) - bidValue;
         oracleForward->setPrice(itemIdx, newItemPrice);
 
-        //assert(oldBidderPrice < bidValue);
-        //assert(oldItemPrice > newItemPrice);
+        assert(oldBidderPrice < bidValue);
+        assert(oldItemPrice - newItemPrice >= -0.000001);
 
         if ( numRevRounds % 10000 == 0 ) {
             std::cout << "in Reverse ";
@@ -320,7 +321,8 @@ void AuctionRunnerFR::runReverseAuctionPhase()
             Rcpp::checkUserInterrupt();
         }
 #endif
-    } while (unassignedBidders.size() >= unassignedOrigQty);
+    //} while (unassignedItems.size() >= unassignedOrigQty);
+    } while (unassignedOrigQty - unassignedItems.size() < requiredNewAssignments);
     //} while (not unassignedBidders.empty());
     //std::cout << "runAuctionPhase finished" << std::endl;
 }
@@ -331,6 +333,7 @@ void AuctionRunnerFR::runReverseAuctionPhase()
 void AuctionRunnerFR::runForwardAuctionPhase()
 {
     const auto unassignedOrigQty = unassignedBidders.size();
+    const long int requiredNewAssignments = std::max(1LU, unassignedOrigQty / 10);
 
     //std::cout << "Entered runAuctionForwardPhase" << std::endl;
     do {
@@ -345,19 +348,19 @@ void AuctionRunnerFR::runForwardAuctionPhase()
 
 
 
-        //auto oldBidderPrice = oracleReverse->getPrice(bidderIdx);
-        //auto oldItemPrice = oracleForward->getPrice(optimalItemIdx);
+        auto oldBidderPrice = oracleReverse->getPrice(bidderIdx);
+        auto oldItemPrice = oracleForward->getPrice(optimalItemIdx);
 
         // update prices in both oracles
         oracleForward->setPrice(optimalItemIdx, bidValue);
         auto newBidderPrice = getPairCost(bidderIdx, optimalItemIdx) - bidValue;
         oracleReverse->setPrice(bidderIdx, newBidderPrice);
 
-        //assert(oldItemPrice < bidValue);
+        assert(oldItemPrice < bidValue);
         //if (oldBidderPrice <= newBidderPrice) {
             //std::cerr << "old bidder price = " << oldBidderPrice << ", new price = " << newBidderPrice << ", bidderIdx = " << bidderIdx << std::endl;
         //}
-        //assert(oldBidderPrice > newBidderPrice);
+        assert(oldBidderPrice - newBidderPrice >= -0.00001);
 
         if ( numForwardRounds % 10000 == 0 ) {
             std::cout << "in Forward ";
@@ -370,7 +373,8 @@ void AuctionRunnerFR::runForwardAuctionPhase()
             Rcpp::checkUserInterrupt();
         }
 #endif
-    } while (unassignedBidders.size() >= unassignedOrigQty);
+    //} while (unassignedBidders.size() >= unassignedOrigQty);
+    } while (unassignedOrigQty - unassignedBidders.size() < requiredNewAssignments);
     //} while (not unassignedBidders.empty());
     //std::cout << "runAuctionPhase finished" << std::endl;
 }
@@ -490,7 +494,7 @@ void AuctionRunnerFR::checkEpsilonCS()
                 (bidders[b].isNormal() && items[i].isDiagonal()) )
                 if (b != i)
                     continue;
-            if ( bPrices[b] + iPrices[i] < getPairCost(b, i) - eps ) {
+            if ( bPrices[b] + iPrices[i] + eps < getPairCost(b, i) - 0.000001 ) {
                 std::cerr << *this << std::endl;
                 std::cerr << "eps-CS violated I, b = " << b << ", i = " << i << ", b price  = " << bPrices[b] << ", i Price = " << iPrices[i];
                 std::cerr << ", cost = " << getPairCost(b, i) << ", eps = " << eps << std::endl;
