@@ -321,8 +321,8 @@ void AuctionRunnerFR::runReverseAuctionPhase()
             Rcpp::checkUserInterrupt();
         }
 #endif
-    //} while (unassignedItems.size() >= unassignedOrigQty);
-    } while (unassignedOrigQty - unassignedItems.size() < requiredNewAssignments);
+    } while (unassignedItems.size() >= unassignedOrigQty);
+    //} while (unassignedOrigQty - unassignedItems.size() < requiredNewAssignments);
     //} while (not unassignedBidders.empty());
     //std::cout << "runAuctionPhase finished" << std::endl;
 }
@@ -373,8 +373,7 @@ void AuctionRunnerFR::runForwardAuctionPhase()
             Rcpp::checkUserInterrupt();
         }
 #endif
-    //} while (unassignedBidders.size() >= unassignedOrigQty);
-    } while (unassignedOrigQty - unassignedBidders.size() < requiredNewAssignments);
+    } while (unassignedBidders.size() >= unassignedOrigQty);
     //} while (not unassignedBidders.empty());
     //std::cout << "runAuctionPhase finished" << std::endl;
 }
@@ -483,7 +482,6 @@ void AuctionRunnerFR::checkAssignmentConsistency()
 
 void AuctionRunnerFR::checkEpsilonCS()
 {
-#ifdef DEBUG_AUCTION
     std::vector<double> bPrices = oracleReverse->getPrices();
     std::vector<double> iPrices = oracleForward->getPrices();
     double eps = oracleReverse->getEpsilon();
@@ -513,7 +511,6 @@ void AuctionRunnerFR::checkEpsilonCS()
             }
         }
     }
-#endif
 }
 
 void AuctionRunnerFR::sanityCheck(void)

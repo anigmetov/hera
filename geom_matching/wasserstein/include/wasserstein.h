@@ -96,21 +96,17 @@ double wassersteinDist(PairContainer& A, PairContainer& B, const double q, const
     bool b_empty { true };
 
     std::vector<DiagramPoint> dgmA, dgmB;
-    // loop over A, add projections of A-points to corresponding positions
-    // in B-vector
     for(auto& pairA : A) {
         a_empty = false;
         double x = pairA.first;
         double y = pairA.second;
         dgmA.push_back(DiagramPoint(x, y,  DiagramPoint::NORMAL));
-        dgmB.push_back(DiagramPoint(x, y,  DiagramPoint::DIAG));
     }
     // the same for B
     for(auto& pairB : B) {
         b_empty = false;
         double x = pairB.first;
         double y = pairB.second;
-        dgmA.push_back(DiagramPoint(x, y,  DiagramPoint::DIAG));
         dgmB.push_back(DiagramPoint(x, y,  DiagramPoint::NORMAL));
     }
 
@@ -134,19 +130,16 @@ double wassersteinCost(PairContainer& A, PairContainer& B, const double q, const
     }
 
     std::vector<DiagramPoint> dgmA, dgmB;
-    // loop over A, add projections of A-points to corresponding positions
-    // in B-vector
+
     for(auto& pairA : A) {
         double x = pairA.first;
         double y = pairA.second;
         dgmA.push_back(DiagramPoint(x, y,  DiagramPoint::NORMAL));
-        dgmB.push_back(DiagramPoint(x, y,  DiagramPoint::DIAG));
     }
-    // the same for B
+
     for(auto& pairB : B) {
         double x = pairB.first;
         double y = pairB.second;
-        dgmA.push_back(DiagramPoint(x, y,  DiagramPoint::DIAG));
         dgmB.push_back(DiagramPoint(x, y,  DiagramPoint::NORMAL));
     }
 

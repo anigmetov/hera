@@ -219,9 +219,6 @@ struct AuctionOracleKDTreeRestricted final : AuctionOracleAbstract {
     std::vector<DnnPoint*> dnnPointHandles;
     std::vector<DnnPoint> dnnPointsAll;
     std::vector<DnnPoint*> dnnPointHandlesAll;
-    LossesHeap diagItemsHeap;
-    std::vector<LossesHeap::handle_type> diagHeapHandles;
-    std::vector<size_t> heapHandlesIndices;
     std::vector<size_t> kdtreeItems;
     // vector of heaps to find the best items
     void setPrice(const IdxType itemsIdx, const double newPrice) override final;
@@ -230,13 +227,6 @@ struct AuctionOracleKDTreeRestricted final : AuctionOracleAbstract {
     // debug routines
     DebugOptimalBid getOptimalBidDebug(IdxType bidderIdx);
     void setEpsilon(double newVal) override final;
-
-
-    bool bestDiagonalItemsComputed;
-    size_t bestDiagonalItemIdx;
-    double bestDiagonalItemValue;
-    size_t secondBestDiagonalItemIdx;
-    double secondBestDiagonalItemValue;
 };
 
 struct AuctionOracleRestricted final : AuctionOracleAbstract {

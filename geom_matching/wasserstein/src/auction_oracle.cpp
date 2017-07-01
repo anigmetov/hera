@@ -576,9 +576,7 @@ AuctionOracleKDTreeRestricted::AuctionOracleKDTreeRestricted(const std::vector<D
         const double _wassersteinPower,
         const double internal_p) :
     AuctionOracleAbstract(_bidders, _items, _wassersteinPower, internal_p),
-    heapHandlesIndices(items.size(), std::numeric_limits<size_t>::max()),
-    kdtreeItems(items.size(), std::numeric_limits<size_t>::max()),
-    bestDiagonalItemsComputed(false)
+    kdtreeItems(items.size(), std::numeric_limits<size_t>::max())
 {
     size_t dnnItemIdx { 0 };
     size_t trueIdx { 0 };
@@ -598,7 +596,6 @@ AuctionOracleKDTreeRestricted::AuctionOracleKDTreeRestricted(const std::vector<D
         trueIdx++;
     }
 
-    assert(dnnPoints.size() < items.size() );
     for(size_t i = 0; i < dnnPoints.size(); ++i) {
         dnnPointHandles.push_back(&dnnPoints[i]);
     }
@@ -606,13 +603,6 @@ AuctionOracleKDTreeRestricted::AuctionOracleKDTreeRestricted(const std::vector<D
     traits.internal_p = internal_p;
     kdtree = new dnn::KDTree<DnnTraits>(traits, dnnPointHandles, wassersteinPower);
 
-    size_t handleIdx {0};
-    for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
-        if (items[itemIdx].isDiagonal()) {
-            heapHandlesIndices[itemIdx] = handleIdx++;
-            diagHeapHandles.push_back(diagItemsHeap.push(std::make_pair(itemIdx, 0)));
-        }
-    }
     //to-do: remove maxVal from
     maxVal = 3*getFurthestDistance3Approx(_bidders, _items);
     maxVal = pow(maxVal, wassersteinPower);
@@ -621,148 +611,8 @@ AuctionOracleKDTreeRestricted::AuctionOracleKDTreeRestricted(const std::vector<D
 
 DebugOptimalBid AuctionOracleKDTreeRestricted::getOptimalBidDebug(IdxType bidderIdx)
 {
+    assert(false);
     DebugOptimalBid result;
-    DiagramPoint bidder = bidders[bidderIdx];
-
-    // corresponding point is always considered as a candidate
-    // if bidder is a diagonal point, projItem is a normal point,
-    // and vice versa.
-
-    size_t projItemIdx = bidderIdx;
-    assert( 0 <= projItemIdx and projItemIdx < items.size() );
-    DiagramPoint projItem = items[projItemIdx];
-    assert(projItem.type != bidder.type);
-    //assert(projItem.projId == bidder.id);
-    //assert(projItem.id == bidder.projId);
-    // todo: store precomputed distance?
-    double projItemValue = pow(distLp(bidder, projItem, internal_p), wassersteinPower) + prices[projItemIdx];
-
-    if (bidder.isDiagonal()) {
-        // for diagonal bidder the only normal point has already been added
-        // the other 2 candidates are diagonal items only, get from the heap
-        // with prices
-        assert(diagItemsHeap.size() > 1);
-        if (!bestDiagonalItemsComputed) {
-            auto topDiagIter = diagItemsHeap.ordered_begin();
-            bestDiagonalItemIdx = topDiagIter->first;
-            bestDiagonalItemValue = topDiagIter->second;
-            topDiagIter++;
-            secondBestDiagonalItemIdx = topDiagIter->first;
-            secondBestDiagonalItemValue = topDiagIter->second;
-            bestDiagonalItemsComputed = true;
-        }
-
-        if ( projItemValue < bestDiagonalItemValue) {
-            result.bestItemIdx = projItemIdx;
-            result.bestItemValue = projItemValue;
-            result.secondBestItemIdx = bestDiagonalItemIdx;
-            result.secondBestItemValue = bestDiagonalItemValue;
-        } else if (projItemValue < secondBestDiagonalItemValue) {
-            result.bestItemIdx = bestDiagonalItemIdx;
-            result.bestItemValue = bestDiagonalItemValue;
-            result.secondBestItemIdx = projItemIdx;
-            result.secondBestItemValue = projItemValue;
-        } else {
-            result.bestItemIdx = bestDiagonalItemIdx;
-            result.bestItemValue = bestDiagonalItemValue;
-            result.secondBestItemIdx = secondBestDiagonalItemIdx;
-            result.secondBestItemValue = secondBestDiagonalItemValue;
-        }
-    } else {
-        // for normal bidder get 2 best items among non-diagonal points from
-        // kdtree
-        DnnPoint bidderDnn;
-        bidderDnn[0] = bidder.getRealX();
-        bidderDnn[1] = bidder.getRealY();
-        auto twoBestItems = kdtree->findK(bidderDnn, 2);
-        size_t bestNormalItemIdx { twoBestItems[0].p->id() };
-        double bestNormalItemValue { twoBestItems[0].d };
-        size_t secondBestNormalItemIdx { twoBestItems[1].p->id() };
-        double secondBestNormalItemValue { twoBestItems[1].d };
-
-        if ( projItemValue < bestNormalItemValue) {
-            result.bestItemIdx = projItemIdx;
-            result.bestItemValue = projItemValue;
-            result.secondBestItemIdx = bestNormalItemIdx;
-            result.secondBestItemValue = bestNormalItemValue;
-        } else if (projItemValue < secondBestNormalItemValue) {
-            result.bestItemIdx = bestNormalItemIdx;
-            result.bestItemValue = bestNormalItemValue;
-            result.secondBestItemIdx = projItemIdx;
-            result.secondBestItemValue = projItemValue;
-        } else {
-            result.bestItemIdx = bestNormalItemIdx;
-            result.bestItemValue = bestNormalItemValue;
-            result.secondBestItemIdx = secondBestNormalItemIdx;
-            result.secondBestItemValue = secondBestNormalItemValue;
-        }
-    }
-
-    return result;
-
-    //std::cout << "got result: " << result << std::endl;
-    //double bestItemsPrice = prices[bestItemIdx];
-    //if (items[result.bestItemIdx].type == DiagramPoint::DIAG) {
-        //double bestItemValue1 = pow( distLp(bidder, items[result.bestItemIdx]), wassersteinPower) + prices[result.bestItemIdx];
-        //if ( fabs(result.bestItemValue - bestItemValue1) > 1e-6 ) {
-            //std::cerr << "XXX: " << result.bestItemValue << " vs " << bestItemValue1 << std::endl;
-            //result.bestItemValue = bestItemValue1;
-        //}
-
-    //}
-
-
-    // checking code
-
-    /*
-    DebugOptimalBid debugMyResult(result);
-    DebugOptimalBid debugNaiveResult;
-    debugNaiveResult.bestItemValue = 1e20;
-    debugNaiveResult.secondBestItemValue = 1e20;
-    double currItemValue;
-    for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
-        //if ( bidders[bidderIdx].type == DiagramPoint::NORMAL and
-                //items[itemIdx].type == DiagramPoint::DIAG and
-                //bidders[bidderIdx].projId != items[itemIdx].id)
-            //continue;
-
-        currItemValue = pow(distLp(bidders[bidderIdx], items[itemIdx]), wassersteinPower) + prices[itemIdx];
-        if (currItemValue < debugNaiveResult.bestItemValue) {
-            debugNaiveResult.bestItemValue = currItemValue;
-            debugNaiveResult.bestItemIdx  = itemIdx;
-        }
-    }
-
-    for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
-        if (itemIdx == debugNaiveResult.bestItemIdx) {
-            continue;
-        }
-        currItemValue = pow(distLp(bidders[bidderIdx], items[itemIdx]), wassersteinPower) + prices[itemIdx];
-        if (currItemValue < debugNaiveResult.secondBestItemValue) {
-            debugNaiveResult.secondBestItemValue = currItemValue;
-            debugNaiveResult.secondBestItemIdx = itemIdx;
-        }
-    }
-    //std::cout << "got naive result" << std::endl;
-
-    if ( fabs( debugMyResult.bestItemValue - debugNaiveResult.bestItemValue ) > 1e-6 or
-            fabs( debugNaiveResult.secondBestItemValue - debugMyResult.secondBestItemValue) > 1e-6 ) {
-        kdtreeAll->printWeights();
-        std::cerr << "bidderIdx = " << bidderIdx << "; ";
-        std::cerr << bidders[bidderIdx] << std::endl;
-        for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
-            std::cout << itemIdx << ": " << items[itemIdx] << "; price = " << prices[itemIdx] << std::endl;
-        }
-        std::cerr << "debugMyResult: " << debugMyResult << std::endl;
-        std::cerr << "debugNaiveResult: " << debugNaiveResult << std::endl;
-        //std::cerr << "twoBestItems: " << twoBestItems[0].d << " " << twoBestItems[1].d << std::endl;
-        assert(false);
-    }
-    //std::cout << "returning" << std::endl;
-
-    //std::cout << "getOptimalBid: bidderIdx = " << bidderIdx << "; bestItemIdx = " << bestItemIdx << "; bestItemValue = " << bestItemValue << "; bestItemsPrice = " << prices[bestItemIdx] << "; secondBestItemIdx = " << secondBestItemIdx << "; secondBestValue = " << secondBestItemValue << "; secondBestPrice = " << prices[secondBestItemIdx] <<  "; bid = " << prices[bestItemIdx] + ( bestItemValue - secondBestItemValue ) + epsilon << "; epsilon = " << epsilon << std::endl;
-    //std::cout << "getOptimalBid: bidderIdx = " << bidderIdx << "; bestItemIdx = " << bestItemIdx << "; bestItemsDist= " << (weightAdjConst - bestItemValue) << "; bestItemsPrice = " << prices[bestItemIdx] << "; secondBestItemIdx = " << secondBestItemIdx << "; secondBestDist= " << (weightAdjConst - secondBestItemValue) << "; secondBestPrice = " << prices[secondBestItemIdx] <<  "; bid = " << prices[bestItemIdx] + ( bestItemValue - secondBestItemValue ) + epsilon << "; epsilon = " << epsilon << std::endl;
-    */
     return result;
 }
 
@@ -782,86 +632,24 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
     double secondBestItemValue;
 
 
-    const size_t projItemIdx = bidderIdx;
-    assert( 0 <= projItemIdx and projItemIdx < items.size() );
-    DiagramPoint projItem = items[projItemIdx];
-    assert(projItem.type != bidder.type);
-    //assert(projItem.projId == bidder.id);
-    //assert(projItem.id == bidder.projId);
-    // todo: store precomputed distance?
-    double projItemValue = pow(distLp(bidder, projItem, internal_p), wassersteinPower) + prices[projItemIdx];
+    // for normal bidder get 2 best items among non-diagonal points from
+    // kdtree
+    DnnPoint bidderDnn;
+    bidderDnn[0] = bidder.getRealX();
+    bidderDnn[1] = bidder.getRealY();
+    auto twoBestItems = kdtree->findK(bidderDnn, 2);
+    size_t bestNormalItemIdx { twoBestItems[0].p->id() };
+    double bestNormalItemValue { twoBestItems[0].d };
+    // if there is only one off-diagonal point in the second diagram,
+    // kd-tree will not return the second candidate.
+    // Set its value to inf, so it will always lose to the value of the projection
+    double secondBestNormalItemValue { twoBestItems.size() == 1 ? std::numeric_limits<double>::max() : twoBestItems[1].d };
+    size_t secondBestNormalItemIdx { twoBestItems.size() == 1 ? std::numeric_limits<size_t>::max() : twoBestItems[1].p->id() };
 
-    if (bidder.isDiagonal()) {
-        // for diagonal bidder the only normal point has already been added
-        // the other 2 candidates are diagonal items only, get from the heap
-        // with prices
-
-        if (not bestDiagonalItemsComputed) {
-            auto topDiagIter = diagItemsHeap.ordered_begin();
-            bestDiagonalItemIdx = topDiagIter->first;
-            bestDiagonalItemValue = topDiagIter->second;
-            if (diagItemsHeap.size() > 1) {
-                topDiagIter++;
-                secondBestDiagonalItemIdx = topDiagIter->first;
-                secondBestDiagonalItemValue = topDiagIter->second;
-            } else {
-                // there is only one diagonal point at all,
-                // ensure that second best diagonal value
-                // will lose to projection item
-                secondBestDiagonalItemValue = std::numeric_limits<double>::max();
-                secondBestDiagonalItemIdx = -1;
-            }
-            bestDiagonalItemsComputed = true;
-        }
-
-        if ( projItemValue < bestDiagonalItemValue) {
-            bestItemIdx = projItemIdx;
-            bestItemValue = projItemValue;
-            secondBestItemValue = bestDiagonalItemValue;
-            secondBestItemIdx = bestDiagonalItemIdx;
-        } else if (projItemValue < secondBestDiagonalItemValue) {
-            bestItemIdx = bestDiagonalItemIdx;
-            bestItemValue = bestDiagonalItemValue;
-            secondBestItemValue = projItemValue;
-            secondBestItemIdx = projItemIdx;
-        } else {
-            bestItemIdx = bestDiagonalItemIdx;
-            bestItemValue = bestDiagonalItemValue;
-            secondBestItemValue = secondBestDiagonalItemValue;
-            secondBestItemIdx = secondBestDiagonalItemIdx;
-        }
-    } else {
-        // for normal bidder get 2 best items among non-diagonal points from
-        // kdtree
-        DnnPoint bidderDnn;
-        bidderDnn[0] = bidder.getRealX();
-        bidderDnn[1] = bidder.getRealY();
-        auto twoBestItems = kdtree->findK(bidderDnn, 2);
-        size_t bestNormalItemIdx { twoBestItems[0].p->id() };
-        double bestNormalItemValue { twoBestItems[0].d };
-        // if there is only one off-diagonal point in the second diagram,
-        // kd-tree will not return the second candidate.
-        // Set its value to inf, so it will always lose to the value of the projection
-        double secondBestNormalItemValue { twoBestItems.size() == 1 ? std::numeric_limits<double>::max() : twoBestItems[1].d };
-        size_t secondBestNormalItemIdx { twoBestItems.size() == 1 ? std::numeric_limits<size_t>::max() : twoBestItems[1].p->id() };
-
-        if ( projItemValue < bestNormalItemValue) {
-            bestItemIdx = projItemIdx;
-            bestItemValue = projItemValue;
-            secondBestItemValue = bestNormalItemValue;
-            secondBestItemIdx = bestNormalItemIdx;
-        } else if (projItemValue < secondBestNormalItemValue) {
-            bestItemIdx = bestNormalItemIdx;
-            bestItemValue = bestNormalItemValue;
-            secondBestItemValue = projItemValue;
-            secondBestItemIdx = projItemIdx;
-        } else {
-            bestItemIdx = bestNormalItemIdx;
-            bestItemValue = bestNormalItemValue;
-            secondBestItemValue = secondBestNormalItemValue;
-            secondBestItemIdx = secondBestNormalItemIdx;
-        }
-    }
+    bestItemIdx = bestNormalItemIdx;
+    bestItemValue = bestNormalItemValue;
+    secondBestItemValue = secondBestNormalItemValue;
+    secondBestItemIdx = secondBestNormalItemIdx;
 
     IdxValPair result;
 
@@ -878,10 +666,8 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
     debugNaiveResult.secondBestItemValue = 1e20;
     double currItemValue;
     for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
-        if (bidder.isNormal() and items[itemIdx].isDiagonal() and bidderIdx != itemIdx)
-            continue;
-        if (bidder.isDiagonal() and items[itemIdx].isNormal() and bidderIdx != itemIdx)
-            continue;
+        if (bidder.isDiagonal() or items[itemIdx].isDiagonal())
+            throw std::runtime_error("BUG in pure geometric verson: diagonal sneaked in 1");
         currItemValue = pow(distLp(bidders[bidderIdx], items[itemIdx], internal_p), wassersteinPower) + prices[itemIdx];
         if (currItemValue < debugNaiveResult.bestItemValue) {
             debugNaiveResult.bestItemValue = currItemValue;
@@ -893,10 +679,6 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
         if (itemIdx == debugNaiveResult.bestItemIdx) {
             continue;
         }
-        if (bidder.isNormal() and items[itemIdx].isDiagonal() and bidderIdx != itemIdx)
-            continue;
-        if (bidder.isDiagonal() and items[itemIdx].isNormal() and bidderIdx != itemIdx)
-            continue;
         currItemValue = pow(distLp(bidders[bidderIdx], items[itemIdx], internal_p), wassersteinPower) + prices[itemIdx];
         if (currItemValue < debugNaiveResult.secondBestItemValue) {
             debugNaiveResult.secondBestItemValue = currItemValue;
@@ -936,7 +718,6 @@ value_{ij} = a_{ij} + price_j
 void AuctionOracleKDTreeRestricted::setPrice(IdxType itemIdx, double newPrice)
 {
     assert(prices.size() == items.size());
-    assert( 0 < diagHeapHandles.size() and diagHeapHandles.size() <= items.size());
 
     auto oldPrice = prices[itemIdx];
     prices[itemIdx] = newPrice;
@@ -948,14 +729,7 @@ void AuctionOracleKDTreeRestricted::setPrice(IdxType itemIdx, double newPrice)
         kdtree->change_weight( dnnPointHandles[kdtreeItems[itemIdx]], newPrice);
 
     } else {
-        assert(diagHeapHandles.size() > heapHandlesIndices.at(itemIdx));
-
-        if (newPrice > oldPrice)
-            diagItemsHeap.decrease(diagHeapHandles[heapHandlesIndices[itemIdx]], std::make_pair(itemIdx, newPrice));
-        else
-            diagItemsHeap.increase(diagHeapHandles[heapHandlesIndices[itemIdx]], std::make_pair(itemIdx, newPrice));
-
-        bestDiagonalItemsComputed = false;
+        throw std::runtime_error("BUG in pure geometric verson: diagonal sneaked in 2");
     }
 }
 
