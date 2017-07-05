@@ -1,5 +1,5 @@
 /*
- 
+
 Copyright (c) 2015, M. Kerber, D. Morozov, A. Nigmetov
 All rights reserved.
 
@@ -62,7 +62,7 @@ struct Point {
 #endif
 };
 
-struct DiagramPoint 
+struct DiagramPoint
 {
     // data members
     // Points above the diagonal have type NORMAL

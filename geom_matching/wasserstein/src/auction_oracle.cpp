@@ -1,5 +1,5 @@
 /*
- 
+
 Copyright (c) 2015, M. Kerber, D. Morozov, A. Nigmetov
 All rights reserved.
 
@@ -12,7 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- 
+
 You are under no obligation whatsoever to provide any bug fixes, patches, or
 upgrades to the features, functionality or performance of the source code
 (Enhancements) to anyone; however, if you choose to make your Enhancements
@@ -53,8 +53,8 @@ double AuctionOracleAbstract::getValueForBidder(size_t bidderIdx, size_t itemIdx
 // AuctionOracleLazyHeap
 // *****************************
 
-AuctionOracleLazyHeap::AuctionOracleLazyHeap(const std::vector<DiagramPoint>& b, 
-                                     const std::vector<DiagramPoint>& g, 
+AuctionOracleLazyHeap::AuctionOracleLazyHeap(const std::vector<DiagramPoint>& b,
+                                     const std::vector<DiagramPoint>& g,
                                      double _wassersteinPower,
                                      const double internal_p) :
     AuctionOracleAbstract(b, g, _wassersteinPower, internal_p),
@@ -160,9 +160,9 @@ DebugOptimalBid AuctionOracleLazyHeap::getOptimalBidDebug(IdxType bidderIdx)
 
     updateQueueForBidder(bidderIdx);
     DebugOptimalBid result;
-    
+
     auto pHeap = lossesHeap[bidderIdx];
-    auto topIter = pHeap->ordered_begin(); 
+    auto topIter = pHeap->ordered_begin();
     result.bestItemIdx = topIter->first;
     result.bestItemValue = topIter->second;
     ++topIter; // now points to the second-best items
@@ -177,16 +177,16 @@ DebugOptimalBid AuctionOracleLazyHeap::getOptimalBidDebug(IdxType bidderIdx)
     return result;
 }
 
-IdxValPair AuctionOracleLazyHeap::getOptimalBid(const IdxType bidderIdx) 
+IdxValPair AuctionOracleLazyHeap::getOptimalBid(const IdxType bidderIdx)
 {
     assert(bidderIdx >=0 and bidderIdx < static_cast<IdxType>(bidders.size()) );
     assert(lossesHeap.at(bidderIdx) != nullptr);
     assert(lossesHeap[bidderIdx]->size() >= 2);
 
     updateQueueForBidder(bidderIdx);
-    
+
     auto pHeap = lossesHeap[bidderIdx];
-    auto topIter = pHeap->ordered_begin(); 
+    auto topIter = pHeap->ordered_begin();
     IdxType bestItemIdx = topIter->first;
     double bestItemValue = topIter->second;
     ++topIter; // now points to the second-best items
@@ -198,8 +198,8 @@ IdxValPair AuctionOracleLazyHeap::getOptimalBid(const IdxType bidderIdx)
 #endif
 
     // bid value: price + value difference + epsilon
-    return std::make_pair(bestItemIdx, 
-                          prices[bestItemIdx] + 
+    return std::make_pair(bestItemIdx,
+                          prices[bestItemIdx] +
                           ( secondBestItemValue - bestItemValue ) +
                           epsilon );
 }
@@ -208,8 +208,8 @@ IdxValPair AuctionOracleLazyHeap::getOptimalBid(const IdxType bidderIdx)
 // AuctionOracleLazyHeapRestricted
 // *****************************
 
-AuctionOracleLazyHeapRestricted::AuctionOracleLazyHeapRestricted(const std::vector<DiagramPoint>& b, 
-                                     const std::vector<DiagramPoint>& g, 
+AuctionOracleLazyHeapRestricted::AuctionOracleLazyHeapRestricted(const std::vector<DiagramPoint>& b,
+                                     const std::vector<DiagramPoint>& g,
                                      double _wassersteinPower,
                                      double internal_p) :
     AuctionOracleAbstract(b, g, _wassersteinPower),
@@ -299,7 +299,7 @@ void AuctionOracleLazyHeapRestricted::fillInLossesHeap(void)
                 assert( itemsIndicesForHeapHandles.at(bidderIdx).at(itemIdx) > 0 );
                 DiagramPoint item { items[itemIdx] };
                 if ( item.isNormal() ) {
-                    // item can be assigned to bidder, store in heap 
+                    // item can be assigned to bidder, store in heap
                     IdxValPair vp { itemIdx, weightMatrix[bidderIdx][itemIdx] + prices[itemIdx] };
                     lossesHeapHandles[bidderIdx].push_back(  lossesHeap[bidderIdx]->push(vp) );
                     // keep corresponding index in itemsIndicesForHeapHandles
@@ -363,14 +363,14 @@ DebugOptimalBid AuctionOracleLazyHeapRestricted::getOptimalBidDebug(IdxType bidd
     // todo: store precomputed distance?
     double projItemValue = pow(distLp(bidder, projItem, internal_p), wassersteinPower) + prices[projItemIdx];
     candItems.push_back( std::make_pair(projItemIdx, projItemValue) );
- 
+
     if (bidder.isNormal()) {
         assert(lossesHeap.at(bidderIdx) != nullptr);
         assert(lossesHeap[bidderIdx]->size() >= 2);
         updateQueueForBidder(bidderIdx);
         auto pHeap = lossesHeap[bidderIdx];
         assert( pHeap != nullptr );
-        auto topIter = pHeap->ordered_begin(); 
+        auto topIter = pHeap->ordered_begin();
         candItems.push_back( *topIter );
         ++topIter; // now points to the second-best items
         candItems.push_back( *topIter );
@@ -391,7 +391,7 @@ DebugOptimalBid AuctionOracleLazyHeapRestricted::getOptimalBidDebug(IdxType bidd
         assert(candItems[2].second >= candItems[1].second);
         assert(candItems[1].second >= candItems[0].second);
     }
-    
+
     result.bestItemIdx = candItems[0].first;
     result.secondBestItemIdx = candItems[1].first;
     result.bestItemValue = candItems[0].second;
@@ -460,7 +460,7 @@ DebugOptimalBid AuctionOracleLazyHeapRestricted::getOptimalBidDebug(IdxType bidd
     return result;
 }
 
-IdxValPair AuctionOracleLazyHeapRestricted::getOptimalBid(const IdxType bidderIdx) 
+IdxValPair AuctionOracleLazyHeapRestricted::getOptimalBid(const IdxType bidderIdx)
 {
     IdxType bestItemIdx;
     //IdxType secondBestItemIdx;
@@ -476,7 +476,7 @@ IdxValPair AuctionOracleLazyHeapRestricted::getOptimalBid(const IdxType bidderId
     //assert(projItem.id == bidder.projId);
     // todo: store precomputed distance?
     double projItemValue = pow(distLp(bidder, projItem, internal_p), wassersteinPower) + prices[projItemIdx];
-   
+
     if (bidder.isDiagonal()) {
         // for diagonal bidder the only normal point has already been added
         // the other 2 candidates are diagonal items only, get from the heap
@@ -509,8 +509,8 @@ IdxValPair AuctionOracleLazyHeapRestricted::getOptimalBid(const IdxType bidderId
             //secondBestItemIdx = secondBestDiagonalItemIdx;
         }
     } else {
-        // for normal bidder get 2 best items among non-diagonal (=normal) points 
-        // from the corresponding heap 
+        // for normal bidder get 2 best items among non-diagonal (=normal) points
+        // from the corresponding heap
         assert(diagItemsHeap.size() > 1);
         updateQueueForBidder(bidderIdx);
         auto topNormIter = lossesHeap[bidderIdx]->ordered_begin();
@@ -519,7 +519,7 @@ IdxValPair AuctionOracleLazyHeapRestricted::getOptimalBid(const IdxType bidderId
         topNormIter++;
         double secondBestNormalItemValue { topNormIter->second };
         //IdxType secondBestNormalItemIdx { topNormIter->first };
- 
+
         if ( projItemValue < bestNormalItemValue) {
             bestItemIdx = projItemIdx;
             bestItemValue = projItemValue;
@@ -618,8 +618,8 @@ IdxValPair AuctionOracleLazyHeapRestricted::getOptimalBid(const IdxType bidderId
 // AuctionOracleKDTree
 // *****************************
 
-AuctionOracleKDTree::AuctionOracleKDTree(const std::vector<DiagramPoint>& _bidders, 
-        const std::vector<DiagramPoint>& _items, 
+AuctionOracleKDTree::AuctionOracleKDTree(const std::vector<DiagramPoint>& _bidders,
+        const std::vector<DiagramPoint>& _items,
         double _wassersteinPower,
         double internal_p) :
     AuctionOracleAbstract(_bidders, _items, _wassersteinPower, internal_p),
@@ -668,7 +668,7 @@ AuctionOracleKDTree::AuctionOracleKDTree(const std::vector<DiagramPoint>& _bidde
         dnnPointHandlesAll.push_back(&dnnPointsAll[i]);
     }
     kdtreeAll = new dnn::KDTree<DnnTraits>(traits, dnnPointHandlesAll, wassersteinPower);
-    
+
     size_t handleIdx {0};
     for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
         if (items[itemIdx].isDiagonal() ) {
@@ -676,7 +676,7 @@ AuctionOracleKDTree::AuctionOracleKDTree(const std::vector<DiagramPoint>& _bidde
             diagHeapHandles.push_back(diagItemsHeap.push(std::make_pair(itemIdx, 0)));
         }
     }
-    //to-do: remove maxVal from 
+    //to-do: remove maxVal from
     maxVal = 3*getFurthestDistance3Approx(_bidders, _items);
     maxVal = pow(maxVal, wassersteinPower);
     weightAdjConst = maxVal;
@@ -691,10 +691,10 @@ DebugOptimalBid AuctionOracleKDTree::getOptimalBidDebug(IdxType bidderIdx)
     bidderDnn[1] = bidder.getRealY();
 
     std::vector<IdxValPair> candItems;
-    
+
 
     if ( bidder.isDiagonal() ) {
-        // 
+        //
         auto twoBestItems = kdtree->findK(bidderDnn, 2);
         candItems.push_back( std::make_pair(twoBestItems[0].p->id(), twoBestItems[0].d) );
         candItems.push_back( std::make_pair(twoBestItems[1].p->id(), twoBestItems[1].d) );
@@ -738,7 +738,7 @@ DebugOptimalBid AuctionOracleKDTree::getOptimalBidDebug(IdxType bidderIdx)
 
     // checking code
     /*
-    
+
     DebugOptimalBid debugMyResult(result);
     DebugOptimalBid debugNaiveResult;
     debugNaiveResult.bestItemValue = 1e20;
@@ -800,7 +800,7 @@ IdxValPair AuctionOracleKDTree::getOptimalBid(IdxType bidderIdx)
     return result;
 }
 /*
-a_{ij} = d_{ij} 
+a_{ij} = d_{ij}
 value_{ij} = a_{ij} + price_j
 */
 void AuctionOracleKDTree::setPrice(IdxType itemIdx, double newPrice)
@@ -812,13 +812,13 @@ void AuctionOracleKDTree::setPrice(IdxType itemIdx, double newPrice)
     if ( items[itemIdx].isNormal() ) {
         assert(0 <= itemIdx and itemIdx < kdtreeItems.size());
         assert(0 <= kdtreeItems[itemIdx] and kdtreeItems[itemIdx] < dnnPointHandles.size());
-        kdtree->increase_weight( dnnPointHandles[kdtreeItems[itemIdx]], newPrice);
-        kdtreeAll->increase_weight( dnnPointHandlesAll[itemIdx], newPrice);
+        kdtree->change_weight( dnnPointHandles[kdtreeItems[itemIdx]], newPrice);
+        kdtreeAll->change_weight( dnnPointHandlesAll[itemIdx], newPrice);
     } else {
-        kdtreeAll->increase_weight( dnnPointHandlesAll[itemIdx], newPrice);
+        kdtreeAll->change_weight( dnnPointHandlesAll[itemIdx], newPrice);
         assert(diagHeapHandles.size() > heapHandlesIndices.at(itemIdx));
         diagItemsHeap.decrease(diagHeapHandles[heapHandlesIndices[itemIdx]], std::make_pair(itemIdx, newPrice));
-    } 
+    }
 }
 
 void AuctionOracleKDTree::adjustPrices(void)
@@ -831,7 +831,7 @@ AuctionOracleKDTree::~AuctionOracleKDTree()
     delete kdtreeAll;
 }
 
-void AuctionOracleKDTree::setEpsilon(double newVal) 
+void AuctionOracleKDTree::setEpsilon(double newVal)
 {
     assert(newVal >= 0.0);
     epsilon = newVal;
@@ -840,8 +840,8 @@ void AuctionOracleKDTree::setEpsilon(double newVal)
 // *****************************
 // AuctionOracleRestricted
 // *****************************
-AuctionOracleRestricted::AuctionOracleRestricted(const std::vector<DiagramPoint>& b, 
-                                         const std::vector<DiagramPoint>& g, 
+AuctionOracleRestricted::AuctionOracleRestricted(const std::vector<DiagramPoint>& b,
+                                         const std::vector<DiagramPoint>& g,
                                          double _wassersteinPower,
                                          double internal_p) :
     AuctionOracleAbstract(b, g, _wassersteinPower, internal_p),
@@ -866,12 +866,12 @@ AuctionOracleRestricted::AuctionOracleRestricted(const std::vector<DiagramPoint>
     }
 }
 
-IdxValPair AuctionOracleRestricted::getOptimalBid(const IdxType bidderIdx) 
+IdxValPair AuctionOracleRestricted::getOptimalBid(const IdxType bidderIdx)
 {
     assert(bidderIdx >=0 and bidderIdx < static_cast<IdxType>(bidders.size()) );
 
     const auto bidder = bidders[bidderIdx];
-    
+
     IdxType bestItemIdx { -1 };
     double bestItemValue { std::numeric_limits<double>::max() };
     //IdxType secondBestItemIdx { -1 };
@@ -921,9 +921,9 @@ IdxValPair AuctionOracleRestricted::getOptimalBid(const IdxType bidderIdx)
     //std::cout << "getOptimalBid: bidderIdx = " << bidderIdx << "; bestItemIdx = " << bestItemIdx << "; bestItemsDist= " << (weightAdjConst -  bestItemValue) << "; bestItemsPrice = " << prices[bestItemIdx] << "; secondBestItemIdx = " << topIter->first << "; secondBestDist= " << (weightAdjConst - secondBestItemValue) << "; secondBestPrice = " << prices[topIter->first] <<  "; bid = " << prices[bestItemIdx] + ( bestItemValue - secondBestItemValue ) + epsilon << "; epsilon = " << epsilon << std::endl;
 
     // bid value: price + value difference + epsilon
-    
-    return std::make_pair(bestItemIdx, 
-                          prices[bestItemIdx] + 
+
+    return std::make_pair(bestItemIdx,
+                          prices[bestItemIdx] +
                           ( -bestItemValue + secondBestItemValue ) +
                           epsilon );
 }
@@ -938,8 +938,8 @@ void AuctionOracleRestricted::setPrice(const IdxType itemIdx, const double newPr
 // AuctionOracleKDTreeRestricted
 // *****************************
 
-AuctionOracleKDTreeRestricted::AuctionOracleKDTreeRestricted(const std::vector<DiagramPoint>& _bidders, 
-        const std::vector<DiagramPoint>& _items, 
+AuctionOracleKDTreeRestricted::AuctionOracleKDTreeRestricted(const std::vector<DiagramPoint>& _bidders,
+        const std::vector<DiagramPoint>& _items,
         const double _wassersteinPower,
         const double internal_p) :
     AuctionOracleAbstract(_bidders, _items, _wassersteinPower, internal_p),
@@ -972,7 +972,7 @@ AuctionOracleKDTreeRestricted::AuctionOracleKDTreeRestricted(const std::vector<D
     DnnTraits traits;
     traits.internal_p = internal_p;
     kdtree = new dnn::KDTree<DnnTraits>(traits, dnnPointHandles, wassersteinPower);
-    
+
     size_t handleIdx {0};
     for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
         if (items[itemIdx].isDiagonal()) {
@@ -980,7 +980,7 @@ AuctionOracleKDTreeRestricted::AuctionOracleKDTreeRestricted(const std::vector<D
             diagHeapHandles.push_back(diagItemsHeap.push(std::make_pair(itemIdx, 0)));
         }
     }
-    //to-do: remove maxVal from 
+    //to-do: remove maxVal from
     maxVal = 3*getFurthestDistance3Approx(_bidders, _items);
     maxVal = pow(maxVal, wassersteinPower);
     weightAdjConst = maxVal;
@@ -992,7 +992,7 @@ DebugOptimalBid AuctionOracleKDTreeRestricted::getOptimalBidDebug(IdxType bidder
     DiagramPoint bidder = bidders[bidderIdx];
 
     // corresponding point is always considered as a candidate
-    // if bidder is a diagonal point, projItem is a normal point, 
+    // if bidder is a diagonal point, projItem is a normal point,
     // and vice versa.
 
     size_t projItemIdx = bidderIdx;
@@ -1003,7 +1003,7 @@ DebugOptimalBid AuctionOracleKDTreeRestricted::getOptimalBidDebug(IdxType bidder
     //assert(projItem.id == bidder.projId);
     // todo: store precomputed distance?
     double projItemValue = pow(distLp(bidder, projItem, internal_p), wassersteinPower) + prices[projItemIdx];
-   
+
     if (bidder.isDiagonal()) {
         // for diagonal bidder the only normal point has already been added
         // the other 2 candidates are diagonal items only, get from the heap
@@ -1080,7 +1080,7 @@ DebugOptimalBid AuctionOracleKDTreeRestricted::getOptimalBidDebug(IdxType bidder
 
 
     // checking code
-    
+
     /*
     DebugOptimalBid debugMyResult(result);
     DebugOptimalBid debugNaiveResult;
@@ -1136,13 +1136,13 @@ DebugOptimalBid AuctionOracleKDTreeRestricted::getOptimalBidDebug(IdxType bidder
 IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
 {
 
-    
+
     DiagramPoint bidder = bidders[bidderIdx];
 
     // corresponding point is always considered as a candidate
-    // if bidder is a diagonal point, projItem is a normal point, 
+    // if bidder is a diagonal point, projItem is a normal point,
     // and vice versa.
-    
+
     size_t bestItemIdx;
     double bestItemValue;
     double secondBestItemValue;
@@ -1156,7 +1156,7 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
     //assert(projItem.id == bidder.projId);
     // todo: store precomputed distance?
     double projItemValue = pow(distLp(bidder, projItem, internal_p), wassersteinPower) + prices[projItemIdx];
-   
+
     if (bidder.isDiagonal()) {
         // for diagonal bidder the only normal point has already been added
         // the other 2 candidates are diagonal items only, get from the heap
@@ -1203,7 +1203,7 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
         size_t bestNormalItemIdx { twoBestItems[0].p->id() };
         double bestNormalItemValue { twoBestItems[0].d };
         // if there is only one off-diagonal point in the second diagram,
-        // kd-tree will not return the second candidate. 
+        // kd-tree will not return the second candidate.
         // Set its value to inf, so it will always lose to the value of the projection
         double secondBestNormalItemValue { twoBestItems.size() == 1 ? std::numeric_limits<double>::max() : twoBestItems[1].d };
 
@@ -1231,28 +1231,39 @@ IdxValPair AuctionOracleKDTreeRestricted::getOptimalBid(IdxType bidderIdx)
     return result;
 }
 /*
-a_{ij} = d_{ij} 
+a_{ij} = d_{ij}
 value_{ij} = a_{ij} + price_j
 */
 void AuctionOracleKDTreeRestricted::setPrice(IdxType itemIdx, double newPrice)
 {
     assert(prices.size() == items.size());
     assert( 0 < diagHeapHandles.size() and diagHeapHandles.size() <= items.size());
-    assert(newPrice > prices.at(itemIdx));
+	// adjustPrices decreases prices
+	bool itemGoesDown = newPrice > prices[itemIdx];
+    //assert(newPrice > prices.at(itemIdx));
     prices[itemIdx] = newPrice;
     if ( items[itemIdx].isNormal() ) {
         assert(0 <= itemIdx and itemIdx < kdtreeItems.size());
         assert(0 <= kdtreeItems[itemIdx] and kdtreeItems[itemIdx] < dnnPointHandles.size());
-        kdtree->increase_weight( dnnPointHandles[kdtreeItems[itemIdx]], newPrice);
+        kdtree->change_weight( dnnPointHandles[kdtreeItems[itemIdx]], newPrice);
     } else {
         assert(diagHeapHandles.size() > heapHandlesIndices.at(itemIdx));
-        diagItemsHeap.decrease(diagHeapHandles[heapHandlesIndices[itemIdx]], std::make_pair(itemIdx, newPrice));
+		if (itemGoesDown) {
+			diagItemsHeap.decrease(diagHeapHandles[heapHandlesIndices[itemIdx]], std::make_pair(itemIdx, newPrice));
+		} else {
+			diagItemsHeap.increase(diagHeapHandles[heapHandlesIndices[itemIdx]], std::make_pair(itemIdx, newPrice));
+		}
         bestDiagonalItemsComputed = false;
     }
 }
 
 void AuctionOracleKDTreeRestricted::adjustPrices(void)
 {
+    double minPrice = *(std::min_element(prices.begin(), prices.end()));
+    std::transform(prices.begin(), prices.end(), prices.begin(), [minPrice](double a) { return a - minPrice; });
+	for(size_t itemIdx = 0; itemIdx < items.size(); ++itemIdx) {
+		setPrice(itemIdx, prices[itemIdx]);
+	}
 }
 
 AuctionOracleKDTreeRestricted::~AuctionOracleKDTreeRestricted()
@@ -1260,7 +1271,7 @@ AuctionOracleKDTreeRestricted::~AuctionOracleKDTreeRestricted()
     delete kdtree;
 }
 
-void AuctionOracleKDTreeRestricted::setEpsilon(double newVal) 
+void AuctionOracleKDTreeRestricted::setEpsilon(double newVal)
 {
     assert(newVal >= 0.0);
     epsilon = newVal;

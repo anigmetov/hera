@@ -49,7 +49,7 @@ namespace dnn
             void            init(const Range& range);
 
             DistanceType   weight(PointHandle p) { return weights_[indices_[p]]; }
-            void            increase_weight(PointHandle p, DistanceType w);
+            void            change_weight(PointHandle p, DistanceType w);
 
             HandleDistance  find(PointHandle q) const;
             Result          findR(PointHandle q, DistanceType r) const;     // all neighbors within r

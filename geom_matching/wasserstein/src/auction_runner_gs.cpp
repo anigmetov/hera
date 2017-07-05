@@ -1,5 +1,5 @@
 /*
- 
+
 Copyright (c) 2016, M. Kerber, D. Morozov, A. Nigmetov
 All rights reserved.
 
@@ -12,7 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- 
+
 You are under no obligation whatsoever to provide any bug fixes, patches, or
 upgrades to the features, functionality or performance of the source code
 (Enhancements) to anyone; however, if you choose to make your Enhancements
@@ -46,7 +46,7 @@ derivative works thereof, in binary and source code form.
 namespace geom_ws {
 
 // *****************************
-// AuctionRunnerGS 
+// AuctionRunnerGS
 // *****************************
 
 AuctionRunnerGS::AuctionRunnerGS(const std::vector<DiagramPoint>& A, const std::vector<DiagramPoint>& B, const double q, const double _delta, const double _internal_p, const double _initialEpsilon, const double _epsFactor) :
@@ -60,7 +60,7 @@ AuctionRunnerGS::AuctionRunnerGS(const std::vector<DiagramPoint>& A, const std::
     delta(_delta),
     internal_p(_internal_p),
     initialEpsilon(_initialEpsilon),
-    epsilonCommonRatio(_epsFactor == 0.0 ? 5.0 : _epsFactor) 
+    epsilonCommonRatio(_epsFactor == 0.0 ? 5.0 : _epsFactor)
 {
     assert(initialEpsilon >= 0.0 );
     assert(epsilonCommonRatio >= 0.0 );
@@ -117,7 +117,7 @@ void AuctionRunnerGS::flushAssignment(void)
 #endif
     }
     assert(unassignedBidders.size() == bidders.size());
-    //oracle->adjustPrices();
+    oracle->adjustPrices();
 }
 
 void AuctionRunnerGS::runAuction(void)
@@ -134,7 +134,7 @@ void AuctionRunnerGS::runAuction(void)
     // choose some initial epsilon
     if (initialEpsilon == 0.0)
         oracle->setEpsilon(oracle->maxVal / 4.0);
-    else 
+    else
         oracle->setEpsilon(initialEpsilon);
     assert( oracle->getEpsilon() > 0 );
     int iterNum { 0 };
@@ -144,7 +144,7 @@ void AuctionRunnerGS::runAuction(void)
         flushAssignment();
         runAuctionPhase();
         iterNum++;
-        //std::cout << "Iteration " << iterNum << " completed. " << std::endl; 
+        //std::cout << "Iteration " << iterNum << " completed. " << std::endl;
         // result is d^q
         currentResult = getDistanceToQthPowerInternal();
         double denominator = currentResult - numBidders * oracle->getEpsilon();
@@ -178,7 +178,7 @@ void AuctionRunnerGS::runAuction(void)
         oracle->setEpsilon( oracle->getEpsilon() / epsilonCommonRatio );
         if (iterNum > maxIterNum) {
 #ifndef FOR_R_TDA
-            std::cerr << "Maximum iteration number exceeded, exiting. Current result is:"; 
+            std::cerr << "Maximum iteration number exceeded, exiting. Current result is:";
             std::cerr << wassersteinDistance << std::endl;
 #endif
             throw std::runtime_error("Maximum iteration number exceeded");
@@ -190,10 +190,10 @@ void AuctionRunnerGS::runAuction(void)
     for(size_t iterIdx = 0; iterIdx < iterResults.size(); ++iterIdx) {
         double trueRelError = ( iterResults.at(iterIdx) - currentResult ) / currentResult;
         auto iterCumulativeTime = iterTimes.at(iterIdx) - startMoment;
-        std::chrono::duration<double, std::milli> iterTime =  ( iterIdx > 0) ? iterTimes[iterIdx] - iterTimes[iterIdx - 1] : iterTimes[iterIdx] - startMoment; 
+        std::chrono::duration<double, std::milli> iterTime =  ( iterIdx > 0) ? iterTimes[iterIdx] - iterTimes[iterIdx - 1] : iterTimes[iterIdx] - startMoment;
         std::cout << "iteration " << iterIdx << ", true rel. error " <<
-                    trueRelError << ", elapsed time " << 
-                    std::chrono::duration<double, std::milli>(iterCumulativeTime).count() << 
+                    trueRelError << ", elapsed time " <<
+                    std::chrono::duration<double, std::milli>(iterCumulativeTime).count() <<
                     ", iteration time " << iterTime.count() << std::endl;
     }
 #endif
@@ -236,7 +236,7 @@ void AuctionRunnerGS::runAuctionPhase(void)
 #endif
 
 }
- 
+
 double AuctionRunnerGS::getDistanceToQthPowerInternal(void)
 {
     sanityCheck();

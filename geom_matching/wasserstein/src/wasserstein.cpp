@@ -1,5 +1,5 @@
 /*
- 
+
 Copyright (c) 2015, M. Kerber, D. Morozov, A. Nigmetov
 All rights reserved.
 
@@ -12,7 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- 
+
 You are under no obligation whatsoever to provide any bug fixes, patches, or
 upgrades to the features, functionality or performance of the source code
 (Enhancements) to anyone; however, if you choose to make your Enhancements
@@ -41,9 +41,9 @@ derivative works thereof, in binary and source code form.
 
 namespace geom_ws {
 
-double wassersteinDistVec(const std::vector<DiagramPoint>& A, 
-                          const std::vector<DiagramPoint>& B, 
-                          const double q, 
+double wassersteinDistVec(const std::vector<DiagramPoint>& A,
+                          const std::vector<DiagramPoint>& B,
+                          const double q,
                           const double delta,
                           const double _internal_p,
                           const double _initialEpsilon,
@@ -103,9 +103,9 @@ double wassersteinDistVec(const std::vector<DiagramPoint>& A,
     return result;
 }
 
-double wassersteinCostVec(const std::vector<DiagramPoint>& A, 
-                          const std::vector<DiagramPoint>& B, 
-                          const double q, 
+double wassersteinCostVec(const std::vector<DiagramPoint>& A,
+                          const std::vector<DiagramPoint>& B,
+                          const double q,
                           const double delta,
                           const double _internal_p,
                           const double _initialEpsilon,
@@ -171,7 +171,7 @@ bool readDiagramPointSet(const char* fname, PairVector& result)
         if (line.empty()) {
             continue;
         }
-         // trim whitespaces 
+         // trim whitespaces
         auto whiteSpaceFront = std::find_if_not(line.begin(),line.end(),isspace);
         auto whiteSpaceBack = std::find_if_not(line.rbegin(),line.rend(),isspace).base();
         if (whiteSpaceBack <= whiteSpaceFront) {

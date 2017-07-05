@@ -1,5 +1,5 @@
 /*
- 
+
 Copyright (c) 2015, M. Kerber, D. Morozov, A. Nigmetov
 All rights reserved.
 
@@ -12,7 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- 
+
 
 You are under no obligation whatsoever to provide any bug fixes, patches, or
 upgrades to the features, functionality or performance of the source code
@@ -54,7 +54,7 @@ struct CompPairsBySecondStruct {
     }
 };
 
-// 
+//
 struct CompPairsBySecondGreaterStruct {
     bool operator()(const IdxValPair& a, const IdxValPair& b) const
     {
@@ -105,17 +105,22 @@ public:
         handle = push(newVal);
     }
 
-    size_t size() const 
-    { 
+	void increase(handle_type& handle, const IdxValPair& newVal)
+    {
+        _heap.erase(handle);
+        handle = push(newVal);
+
+    size_t size() const
+    {
         return _heap.size();
     }
 
-    handle_type ordered_begin() 
+    handle_type ordered_begin()
     {
         return _heap.begin();
     }
 
-    handle_type ordered_end() 
+    handle_type ordered_end()
     {
         return _heap.end();
     }
@@ -211,9 +216,9 @@ struct AuctionOracleLazyHeapRestricted final : AuctionOracleAbstract {
     std::vector<LossesHeap::handle_type> diagHeapHandles;
     std::vector<size_t> heapHandlesIndices;
     // debug
-   
+
     DebugOptimalBid getOptimalBidDebug(const IdxType bidderIdx);
-    
+
     // for diagonal points
     bool bestDiagonalItemsComputed;
     size_t bestDiagonalItemIdx;
@@ -292,7 +297,7 @@ struct AuctionOracleRestricted final : AuctionOracleAbstract {
     void setPrice(const IdxType itemsIdx, const double newPrice) override;
     void adjustPrices(void) override {};
     void setEpsilon(double newEpsilon) override { assert(newEpsilon >= 0.0); epsilon = newEpsilon; };
-    // data 
+    // data
     std::vector<std::vector<double>> weightMatrix;
     double maxVal;
     constexpr static bool isRestricted = true;

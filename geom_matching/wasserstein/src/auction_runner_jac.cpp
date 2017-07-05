@@ -1,5 +1,5 @@
 /*
- 
+
 Copyright (c) 2016, M. Kerber, D. Morozov, A. Nigmetov
 All rights reserved.
 
@@ -12,7 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- 
+
 You are under no obligation whatsoever to provide any bug fixes, patches, or
 upgrades to the features, functionality or performance of the source code
 (Enhancements) to anyone; however, if you choose to make your Enhancements
@@ -37,7 +37,7 @@ derivative works thereof, in binary and source code form.
 namespace geom_ws {
 
 // *****************************
-// AuctionRunnerJac 
+// AuctionRunnerJac
 // *****************************
 
 AuctionRunnerJac::AuctionRunnerJac(const std::vector<DiagramPoint>& A, const std::vector<DiagramPoint>& B, const double q, const double _delta, const double _internal_p) :
@@ -88,7 +88,7 @@ void AuctionRunnerJac::assignGoodToBidder(IdxType itemIdx, IdxType bidderIdx)
     } else {
         // the current owner of itemIdx gets my old item (OK if it's -1)
         biddersToItems[currItemOwner] = myOldItem;
-        // add the old owner of bids to the list of 
+        // add the old owner of bids to the list of
         if ( -1 != myOldItem ) {
 #ifndef FOR_R_TDA
             std::cout << "This is not happening" << std::endl;
@@ -183,7 +183,7 @@ void AuctionRunnerJac::flushAssignment(void)
     for(auto& g2b : itemsToBidders) {
         g2b = -1;
     }
-    //oracle->adjustPrices();
+    oracle->adjustPrices();
 }
 
 void AuctionRunnerJac::runAuction(void)
@@ -198,7 +198,7 @@ void AuctionRunnerJac::runAuction(void)
         flushAssignment();
         runAuctionPhase();
         iterNum++;
-        //std::cout << "Iteration " << iterNum << " completed. " << std::endl; 
+        //std::cout << "Iteration " << iterNum << " completed. " << std::endl;
         // result is d^q
         double currentResult = getDistanceToQthPowerInternal();
         double denominator = currentResult - numBidders * oracle->getEpsilon();
@@ -220,7 +220,7 @@ void AuctionRunnerJac::runAuction(void)
         oracle->setEpsilon( oracle->getEpsilon() / epsilonCommonRatio );
         if (iterNum > maxIterNum) {
 #ifndef FOR_R_TDA
-            std::cerr << "Maximum iteration number exceeded, exiting. Current result is:"; 
+            std::cerr << "Maximum iteration number exceeded, exiting. Current result is:";
             std::cerr << wassersteinDistance << std::endl;
             std::exit(1);
 #else
@@ -274,7 +274,7 @@ void AuctionRunnerJac::runAuctionPhase(void)
 #endif
 
 }
- 
+
 // assertion: the matching must be perfect
 double AuctionRunnerJac::getDistanceToQthPowerInternal(void)
 {
