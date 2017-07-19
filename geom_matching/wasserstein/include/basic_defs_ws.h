@@ -29,12 +29,12 @@ derivative works thereof, in binary and source code form.
 #define BASIC_DEFS_WS_H
 
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <cstddef>
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
-#include <assert.h>
+#include <cassert>
 
 #ifdef _WIN32
 #include <ciso646>

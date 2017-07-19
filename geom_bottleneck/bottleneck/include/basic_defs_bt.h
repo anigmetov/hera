@@ -28,12 +28,12 @@
 
 #include <vector>
 #include <stdexcept>
-#include <math.h>
+#include <cmath>
 #include <cstddef>
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
-#include <assert.h>
+#include <cassert>
 
 #include "def_debug_bt.h"
 
@@ -59,7 +59,7 @@ struct Point {
 #endif
 };
 
-struct DiagramPoint 
+struct DiagramPoint
 {
     // Points above the diagonal have type NORMAL
     // Projections onto the diagonal have type DIAG
@@ -83,16 +83,16 @@ public:
         return x;
         //if (DiagramPoint::NORMAL == type)
             //return x;
-        //else 
+        //else
             //return 0.5 * ( x + y);
-    }    
+    }
 
     CoordinateType inline getRealY() const // return the y-coord
     {
         return y;
         //if (DiagramPoint::NORMAL == type)
             //return y;
-        //else 
+        //else
             //return 0.5 * ( x + y);
     }
 
@@ -185,7 +185,7 @@ void DiagramPointSet::fillIn(PairIterator start, PairIterator end)
 }
 
 template<class PairIterator>
-DiagramPointSet::DiagramPointSet(PairIterator start, PairIterator end) 
+DiagramPointSet::DiagramPointSet(PairIterator start, PairIterator end)
 {
     fillIn(start, end);
 }
