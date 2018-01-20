@@ -1,3 +1,31 @@
+/*
+
+Copyright (c) 2015, M. Kerber, D. Morozov, A. Nigmetov
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+You are under no obligation whatsoever to provide any bug fixes, patches, or
+upgrades to the features, functionality or performance of the source code
+(Enhancements) to anyone; however, if you choose to make your Enhancements
+available either publicly, or directly to copyright holder,
+without imposing a separate written license agreement for such Enhancements,
+then you hereby grant the following license: a  non-exclusive, royalty-free
+perpetual license to install, use, modify, prepare derivative works, incorporate
+into other computer software, distribute, and sublicense such enhancements or
+derivative works thereof, in binary and source code form.
+
+*/
+
 #include <iomanip>
 #include "bottleneck.h"
 
@@ -20,11 +48,11 @@ int main(int argc, char* argv[])
 
     PairVector diagramA, diagramB;
     int decPrecision { 0 };
-    if (!geom_bt::readDiagramPointSet(argv[1], diagramA, decPrecision)) {
+    if (!hera::bt::readDiagramPointSet(argv[1], diagramA, decPrecision)) {
         std::exit(1);
     }
 
-    if (!geom_bt::readDiagramPointSet(argv[2], diagramB, decPrecision)) {
+    if (!hera::bt::readDiagramPointSet(argv[2], diagramB, decPrecision)) {
         std::exit(1);
     }
 
@@ -32,24 +60,24 @@ int main(int argc, char* argv[])
     if (argc >= 4) {
         // the third parameter is epsilon,
         // return approximate distance (faster)
-        double approxEpsilon =  atof(argv[3]);
-        if (approxEpsilon > 0.0) {
+        double delta =  atof(argv[3]);
+        if (delta > 0.0) {
             if (useSamplingHeur && diagramA.size() > heurThreshold && diagramB.size() > heurThreshold) {
 #ifdef VERBOSE_BOTTLENECK
                 std::cout << "using sampling heuristic" << std::endl;
 #endif
-                res = geom_bt::bottleneckDistApproxHeur(diagramA, diagramB, approxEpsilon);
+                res = hera::bottleneckDistApproxHeur(diagramA, diagramB, delta);
             } else {
 #ifdef VERBOSE_BOTTLENECK
                 std::cout << "NOT using sampling heuristic" << std::endl;
 #endif
-                res = geom_bt::bottleneckDistApprox(diagramA, diagramB, approxEpsilon);
+                res = hera::bottleneckDistApprox(diagramA, diagramB, delta);
             }
-        } else if (approxEpsilon == 0.0) {
+        } else if (delta == 0.0) {
 #ifdef VERBOSE_BOTTLENECK
                 std::cout << "NOT using sampling heuristic, computing EXACT answer" << std::endl;
 #endif
-            res = geom_bt::bottleneckDistExact(diagramA, diagramB, decPrecision);
+            res = hera::bottleneckDistExact(diagramA, diagramB, decPrecision);
         } else {
             std::cerr << "The third parameter (relative error) must be positive!" << std::endl;
             std::exit(1);
@@ -59,7 +87,7 @@ int main(int argc, char* argv[])
 #ifdef VERBOSE_BOTTLENECK
         std::cout << "NOT using sampling heuristic, computing EXACT answer" << std::endl;
 #endif
-        res = geom_bt::bottleneckDistExact(diagramA, diagramB, decPrecision);
+        res = hera::bottleneckDistExact(diagramA, diagramB, decPrecision);
     }
     std::cout << std::setprecision(15) << res << std::endl;
 
@@ -67,10 +95,10 @@ int main(int argc, char* argv[])
     // using the constructor with iterators.
     // May be useful if the same diagram is used multiple times
     // to avoid copying data from user's container each time.
-    
-    //geom_bt::DiagramPointSet dA(diagramA.begin(), diagramA.end());
-    //geom_bt::DiagramPointSet dB(diagramB.begin(), diagramB.end());
-    //double result1 = geom_bt::bottleneckDistExact(dA, dB);
+
+    //hera::bt::DiagramPointSet dA(diagramA);
+    //hera::bt::DiagramPointSet dB(diagramB);
+    //double result1 = hera::bt::bottleneckDistExact(dA, dB);
     //std::cout << std::setprecision(15) << result1 << std::endl;
 
     return 0;
