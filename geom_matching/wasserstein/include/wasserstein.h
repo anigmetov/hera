@@ -228,6 +228,9 @@ namespace ws
             throw std::runtime_error("Bad epsilon factor in Wasserstein " + std::to_string(params.epsilon_common_ratio));
         }
 
+        if (A.empty() and B.empty())
+            return 0.0;
+
         RealType result;
 
         // just use Gauss-Seidel
