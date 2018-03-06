@@ -151,7 +151,13 @@ bool read_diagram_point_set(const char* fname, ContType_& result, int& decPrecis
             x = parse_real_from_str<RealType>(str_x);
             y = parse_real_from_str<RealType>(str_y);
 
-            result.push_back(std::make_pair(x, y));
+            if (x != y) {
+                result.push_back(std::make_pair(x, y));
+            } else {
+#ifndef FOR_R_TDA
+                std::cerr << "Warning: point with 0 persistence ignored in " << fname << ":" << lineNumber << "\n";
+#endif
+            }
         }
         catch (const std::invalid_argument& e) {
 #ifndef FOR_R_TDA
