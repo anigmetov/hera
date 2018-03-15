@@ -40,8 +40,10 @@ derivative works thereof, in binary and source code form.
 #include <string>
 #include <cctype>
 #include <algorithm>
-#include <unordered_map>
 #include <map>
+#include <limits>
+
+#include "basic_defs_ws.hpp"
 
 #ifdef WASSERSTEIN_PURE_GEOM
 #include "dnn/geometry/euclidean-dynamic.h"
@@ -198,6 +200,86 @@ bool read_diagram_point_set(const std::string& fname, ContType_& result)
 {
     int decPrecision;
     return read_diagram_point_set<RealType, ContType_>(fname.c_str(), result, decPrecision);
+}
+
+ template<class RealType = double, class ContType_ = std::vector<std::pair<RealType, RealType> > >
+ bool read_diagram_dipha(const std::string& fname, unsigned int degree, ContType_& result)
+{
+  std::ifstream file;
+  file.open(fname, std::ios::in | std::ios::binary);
+  
+  if (!file.is_open())
+  {
+    #ifndef FOR_R_TDA
+    std::cerr << "Could not open file " << fname << "." << std::endl;
+    #endif
+    return false;
+  }
+
+  if (read_le<int64_t>(file) != DIPHA_MAGIC)
+  {
+    #ifndef FOR_R_TDA
+    std::cerr << "File " << fname << " is not a valid DIPHA file." << std::endl;
+    #endif
+    file.close();
+    return false;
+  }
+
+  if (read_le<int64_t>(file) != DIPHA_PERSISTENCE_DIAGRAM)
+  {
+    #ifndef FOR_R_TDA
+    std::cerr << "File " << fname << " is not a valid DIPHA persistence diagram file." << std::endl;
+    #endif
+    file.close();
+    return false;
+  }
+
+  result.clear();
+
+  int n = read_le<int64_t>(file);
+
+  for (int i = 0; i < n; ++i)
+  {
+    int tmp_d = read_le<int64_t>(file);
+    double birth = read_le<double>(file);
+    double death = read_le<double>(file);
+
+    if (death < birth)
+    {
+      #ifndef FOR_R_TDA
+      std::cerr << "File " << fname << " is malformed." << std::endl;
+      #endif
+      file.close();
+      return false;
+    }
+    
+    int d = 0;
+    if (tmp_d < 0)
+    {
+      d = -tmp_d - 1;
+      death = std::numeric_limits<double>::infinity();
+    }
+    else
+      d = tmp_d;
+
+    if ((unsigned int)d == degree)
+    {
+      if (death == birth)
+      {
+        #ifndef FOR_R_TDA
+        std::cerr << "Warning: point with 0 persistence ignored in " << fname << "." << std::endl;
+        #endif
+      }
+      else
+      {
+        result.push_back(std::make_pair(birth, death));
+      }
+    }
+  }
+
+  file.close();
+  
+  return true;
 }
 
 

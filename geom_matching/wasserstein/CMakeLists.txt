@@ -5,6 +5,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include (GenerateExportHeader)
 
+include(TestBigEndian)
+test_big_endian(BIG_ENDIAN)
+if(BIG_ENDIAN)
+  add_definitions(-DBIGENDIAN)
+endif()
+
 # Default to Release
 
 if                          (NOT CMAKE_BUILD_TYPE)
@@ -42,6 +48,9 @@ set (libraries ${libraries}     ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(wasserstein_dist ${CMAKE_CURRENT_SOURCE_DIR}/example/wasserstein_dist.cpp ${WS_HEADERS})
 target_link_libraries(wasserstein_dist PUBLIC ${libraries})
+
+add_executable(wasserstein_dist_dipha ${CMAKE_CURRENT_SOURCE_DIR}/example/wasserstein_dist_dipha.cpp ${WS_HEADERS})
+target_link_libraries(wasserstein_dist_dipha PUBLIC ${libraries})
 
 # pure geometric version, arbitrary dimension
 add_executable(wasserstein_dist_point_cloud ${CMAKE_CURRENT_SOURCE_DIR}/example/wasserstein_dist_point_cloud.cpp ${WS_HEADERS})

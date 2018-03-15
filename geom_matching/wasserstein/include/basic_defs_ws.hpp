@@ -25,9 +25,14 @@ derivative works thereof, in binary and source code form.
 
 */
 
+#pragma once
+
 #include <algorithm>
 #include <cfloat>
 #include <set>
+#include <algorithm>
+#include <istream>
+#include <cstdint>
 #include "basic_defs_ws.h"
 
 #ifndef FOR_R_TDA
@@ -37,6 +42,9 @@ derivative works thereof, in binary and source code form.
 #include <sstream>
 
 namespace hera {
+static const int64_t DIPHA_MAGIC = 8067171840;
+static const int64_t DIPHA_PERSISTENCE_DIAGRAM = 2;
+
 namespace ws {
 // Point
 
@@ -190,4 +198,22 @@ std::string format_int(T i)
 
 
 } // end of namespace ws
+
+
+template <typename T> inline void reverse_endianness(T & x)
+{
+    uint8_t * p = reinterpret_cast<uint8_t *>(&x);
+    std::reverse(p, p + sizeof(T));
+}
+  
+template <typename T> inline T read_le(std::istream & s)
+{
+    T result;
+    s.read(reinterpret_cast<char *>(&result), sizeof(T));
+    #ifdef BIGENDIAN
+    reverse_endianness(result);
+    #endif
+    return result;
+}
+  
 } // hera
