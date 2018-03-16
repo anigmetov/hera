@@ -1,6 +1,7 @@
 /*
 
 Copyright (c) 2015, M. Kerber, D. Morozov, A. Nigmetov
+Copyright (c) 2018, G. Spreemann
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -49,12 +50,12 @@ int main(int argc, char* argv[])
     hera::AuctionParams<double> params;
 
     if (argc < 4 ) {
-        std::cerr << "Usage: " << argv[0] << " file1 file2 ph_degree [wasserstein_degree] [relative_error] [internal norm] [initial epsilon] [epsilon_factor] [max_bids_per_round] [gamma_threshold][log_filename_prefix]. By default power is 1.0, relative error is 0.01, internal norm is l_infinity, initall epsilon is chosen automatically, epsilon factor is 5.0, Jacobi variant is used (max bids per round is maximal), gamma_threshold = 0.0." << std::endl;
+        std::cerr << "Usage: " << argv[0] << " file1 file2 ph_dim [wasserstein_degree] [relative_error] [internal norm] [initial epsilon] [epsilon_factor] [max_bids_per_round] [gamma_threshold][log_filename_prefix]. By default power is 1.0, relative error is 0.01, internal norm is l_infinity, initall epsilon is chosen automatically, epsilon factor is 5.0, Jacobi variant is used (max bids per round is maximal), gamma_threshold = 0.0." << std::endl;
         return 1;
     }
 
     unsigned int dim = std::stoul(argv[3]);
-    
+
     if (!hera::read_diagram_dipha<double, PairVector>(argv[1], dim, diagramA)) {
         std::exit(1);
     }

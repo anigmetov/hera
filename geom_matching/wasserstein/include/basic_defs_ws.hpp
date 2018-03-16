@@ -1,6 +1,7 @@
 /*
 
 Copyright (c) 2015, M. Kerber, D. Morozov, A. Nigmetov
+Copyright (c) 2018, G. Spreemann
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -205,7 +206,7 @@ template <typename T> inline void reverse_endianness(T & x)
     uint8_t * p = reinterpret_cast<uint8_t *>(&x);
     std::reverse(p, p + sizeof(T));
 }
-  
+
 template <typename T> inline T read_le(std::istream & s)
 {
     T result;
@@ -215,5 +216,5 @@ template <typename T> inline T read_le(std::istream & s)
     #endif
     return result;
 }
-  
+
 } // hera
