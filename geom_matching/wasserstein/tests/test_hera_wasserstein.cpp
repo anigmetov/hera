@@ -200,6 +200,29 @@ TEST_CASE("file cases", "wasserstein_dist")
             std::cout << ts << " PASSED " << std::endl;
         }
     }
+
+    SECTION("from DIPHA file:") {
+        const char* file_name = "../tests/data/test_list.txt";
+        std::ifstream f;
+        f.open(file_name);
+        std::vector<TestFromFileCase> test_params;
+        std::string s;
+        while (std::getline(f, s)) {
+            test_params.emplace_back(s);
+        }
+
+        for(const auto& ts : test_params) {
+            params.wasserstein_power = ts.q;
+            params.internal_p = ts.internal_p;
+            bool read_file_A = hera::read_diagram_dipha<double, PairVector>(ts.file_1 + std::string(".pd.dipha"), 1, diagram_A);
+            bool read_file_B = hera::read_diagram_dipha<double, PairVector>(ts.file_2 + std::string(".pd.dipha"), 1, diagram_B);
+            REQUIRE( read_file_A );
+            REQUIRE( read_file_B );
+            double hera_answer = hera::wasserstein_dist(diagram_A, diagram_B, params);
+            REQUIRE( fabs(hera_answer - ts.answer) <= 0.01 * hera_answer );
+            std::cout << ts << " PASSED " << std::endl;
+        }
+    }
 }
 
 
