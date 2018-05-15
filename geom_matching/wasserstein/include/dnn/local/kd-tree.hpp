@@ -101,7 +101,7 @@ hera::ws::dnn::KDTree<T>::OrderTree
             size_t next_i = (i + 1) % traits.dimension();
 
             // Replace with a size condition instead?
-            if (b < m - 1)  q.push(KDTreeNode(b,   m, next_i));
+            if (m - b > 1)  q.push(KDTreeNode(b,   m, next_i));
             if (e - m > 2)  q.push(KDTreeNode(m+1, e, next_i));
         }
     }
