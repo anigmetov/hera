@@ -55,31 +55,31 @@ namespace hera {
 // cannot choose stod, stof or stold based on RealType,
 // lazy solution: partial specialization
 template<class RealType = double>
-RealType parse_real_from_str(const std::string& s);
+inline RealType parse_real_from_str(const std::string& s);
 
 template <>
-double parse_real_from_str<double>(const std::string& s)
+inline double parse_real_from_str<double>(const std::string& s)
 {
     return std::stod(s);
 }
 
 
 template <>
-long double parse_real_from_str<long double>(const std::string& s)
+inline long double parse_real_from_str<long double>(const std::string& s)
 {
     return std::stold(s);
 }
 
 
 template <>
-float parse_real_from_str<float>(const std::string& s)
+inline float parse_real_from_str<float>(const std::string& s)
 {
     return std::stof(s);
 }
 
 
 template<class RealType>
-RealType parse_real_from_str(const std::string& s)
+inline RealType parse_real_from_str(const std::string& s)
 {
     static_assert(sizeof(RealType) != sizeof(RealType), "Must be specialized for each type you want to use, see above");
 }
@@ -90,7 +90,7 @@ RealType parse_real_from_str(const std::string& s)
 // decPrecision is the maximal decimal precision in the input,
 // it is zero if all coordinates in the input are integers
 template<class RealType = double, class ContType_ = std::vector<std::pair<RealType, RealType>>>
-bool read_diagram_point_set(const char* fname, ContType_& result, int& decPrecision)
+inline bool read_diagram_point_set(const char* fname, ContType_& result, int& decPrecision)
 {
     size_t lineNumber { 0 };
     result.clear();
@@ -182,7 +182,7 @@ bool read_diagram_point_set(const char* fname, ContType_& result, int& decPrecis
 
 // wrappers
 template<class RealType = double, class ContType_ = std::vector<std::pair<RealType, RealType>>>
-bool read_diagram_point_set(const std::string& fname, ContType_& result, int& decPrecision)
+inline bool read_diagram_point_set(const std::string& fname, ContType_& result, int& decPrecision)
 {
     return read_diagram_point_set<RealType, ContType_>(fname.c_str(), result, decPrecision);
 }
@@ -190,21 +190,21 @@ bool read_diagram_point_set(const std::string& fname, ContType_& result, int& de
 // these two functions are now just wrappers for the previous ones,
 // in case someone needs them; decPrecision is ignored
 template<class RealType = double, class ContType_ = std::vector<std::pair<RealType, RealType>>>
-bool read_diagram_point_set(const char* fname, ContType_& result)
+inline bool read_diagram_point_set(const char* fname, ContType_& result)
 {
     int decPrecision;
     return read_diagram_point_set<RealType, ContType_>(fname, result, decPrecision);
 }
 
 template<class RealType = double, class ContType_ = std::vector<std::pair<RealType, RealType>>>
-bool read_diagram_point_set(const std::string& fname, ContType_& result)
+inline bool read_diagram_point_set(const std::string& fname, ContType_& result)
 {
     int decPrecision;
     return read_diagram_point_set<RealType, ContType_>(fname.c_str(), result, decPrecision);
 }
 
 template<class RealType = double, class ContType_ = std::vector<std::pair<RealType, RealType> > >
-bool read_diagram_dipha(const std::string& fname, unsigned int dim, ContType_& result)
+inline bool read_diagram_dipha(const std::string& fname, unsigned int dim, ContType_& result)
 {
     std::ifstream file;
     file.open(fname, std::ios::in | std::ios::binary);
@@ -274,7 +274,7 @@ bool read_diagram_dipha(const std::string& fname, unsigned int dim, ContType_& r
 
 
 template<class RealType, class ContType>
-void remove_duplicates(ContType& dgm_A, ContType& dgm_B)
+inline void remove_duplicates(ContType& dgm_A, ContType& dgm_B)
 {
     std::map<std::pair<RealType, RealType>, int> map_A, map_B;
     // copy points to maps
@@ -328,7 +328,7 @@ void remove_duplicates(ContType& dgm_A, ContType& dgm_B)
 #ifdef WASSERSTEIN_PURE_GEOM
 
 template<class Real>
-int get_point_dimension(const std::string& line)
+inline int get_point_dimension(const std::string& line)
 {
     Real x;
     int dim = 0;
@@ -341,7 +341,7 @@ int get_point_dimension(const std::string& line)
 
 
 template<class RealType = double >
-bool read_point_cloud(const char* fname, hera::ws::dnn::DynamicPointVector<RealType>& result, int& dimension, int& decPrecision)
+inline bool read_point_cloud(const char* fname, hera::ws::dnn::DynamicPointVector<RealType>& result, int& dimension, int& decPrecision)
 {
     using DynamicPointTraitsR = typename hera::ws::dnn::DynamicPointTraits<RealType>;
 
@@ -423,20 +423,20 @@ bool read_point_cloud(const char* fname, hera::ws::dnn::DynamicPointVector<RealT
 
 // wrappers
 template<class RealType = double >
-bool read_point_cloud(const char* fname, hera::ws::dnn::DynamicPointVector<RealType>& result, int& dimension)
+inline bool read_point_cloud(const char* fname, hera::ws::dnn::DynamicPointVector<RealType>& result, int& dimension)
 {
     int dec_precision;
     return read_point_cloud<RealType>(fname, result, dimension, dec_precision);
 }
 
 template<class RealType = double >
-bool read_point_cloud(std::string fname, hera::ws::dnn::DynamicPointVector<RealType>& result, int& dimension, int& dec_precision)
+inline bool read_point_cloud(std::string fname, hera::ws::dnn::DynamicPointVector<RealType>& result, int& dimension, int& dec_precision)
 {
     return read_point_cloud<RealType>(fname.c_str(), result, dimension, dec_precision);
 }
 
 template<class RealType = double >
-bool read_point_cloud(std::string fname, hera::ws::dnn::DynamicPointVector<RealType>& result, int& dimension)
+inline bool read_point_cloud(std::string fname, hera::ws::dnn::DynamicPointVector<RealType>& result, int& dimension)
 {
     return read_point_cloud<RealType>(fname.c_str(), result, dimension);
 }

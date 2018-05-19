@@ -64,7 +64,7 @@ bool Point<Real>::operator!=(const Point<Real>& other) const
 
 #ifndef FOR_R_TDA
 template <class Real>
-std::ostream& operator<<(std::ostream& output, const Point<Real> p)
+inline std::ostream& operator<<(std::ostream& output, const Point<Real> p)
 {
     output << "(" << p.x << ", " << p.y << ")";
     return output;
@@ -72,20 +72,20 @@ std::ostream& operator<<(std::ostream& output, const Point<Real> p)
 #endif
 
 template <class Real>
-Real sqr_dist(const Point<Real>& a, const Point<Real>& b)
+inline Real sqr_dist(const Point<Real>& a, const Point<Real>& b)
 {
     return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 }
 
 template <class Real>
-Real dist(const Point<Real>& a, const Point<Real>& b)
+inline Real dist(const Point<Real>& a, const Point<Real>& b)
 {
     return sqrt(sqr_dist(a, b));
 }
 
 
 template <class Real>
-Real DiagramPoint<Real>::persistence_lp(const Real p) const
+inline Real DiagramPoint<Real>::persistence_lp(const Real p) const
 {
     if (is_diagonal())
         return 0.0;
@@ -100,7 +100,7 @@ Real DiagramPoint<Real>::persistence_lp(const Real p) const
 
 #ifndef FOR_R_TDA
 template <class Real>
-std::ostream& operator<<(std::ostream& output, const DiagramPoint<Real> p)
+inline std::ostream& operator<<(std::ostream& output, const DiagramPoint<Real> p)
 {
     if ( p.type == DiagramPoint<Real>::DIAG ) {
         output << "(" << p.x << ", " << p.y << ", " <<  0.5 * (p.x + p.y) << " DIAG )";
@@ -142,7 +142,7 @@ Real DiagramPoint<Real>::getRealY() const
 }
 
 template<class Container>
-std::string format_container_to_log(const Container& cont)
+inline std::string format_container_to_log(const Container& cont)
 {
     std::stringstream result;
     result << "[";
@@ -157,7 +157,7 @@ std::string format_container_to_log(const Container& cont)
 }
 
 template<class Container>
-std::string format_pair_container_to_log(const Container& cont)
+inline std::string format_pair_container_to_log(const Container& cont)
 {
     std::stringstream result;
     result << "[";
@@ -173,7 +173,7 @@ std::string format_pair_container_to_log(const Container& cont)
 
 
 template<class Real, class IndexContainer>
-std::string format_point_set_to_log(const IndexContainer& indices,
+inline std::string format_point_set_to_log(const IndexContainer& indices,
                                     const std::vector<DiagramPoint<Real>>& points)
 {
     std::stringstream result;
@@ -189,7 +189,7 @@ std::string format_point_set_to_log(const IndexContainer& indices,
 }
 
 template<class T>
-std::string format_int(T i)
+inline std::string format_int(T i)
 {
     std::stringstream ss;
     ss.imbue(std::locale(""));

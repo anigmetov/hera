@@ -129,7 +129,7 @@ using LossesHeapOld = IdxValHeap<Real, CompPairsBySecondLexStruct<Real>>;
 #endif
 
 template <class Real>
-std::string losses_heap_to_string(const LossesHeapOld<Real>& h)
+inline std::string losses_heap_to_string(const LossesHeapOld<Real>& h)
 {
     std::stringstream result;
     result << "[";

@@ -73,7 +73,7 @@ namespace ws
 
     // compare as multisets
     template<class PairContainer>
-    bool are_equal(const PairContainer& dgm1, const PairContainer& dgm2)
+    inline bool are_equal(const PairContainer& dgm1, const PairContainer& dgm2)
     {
         if (dgm1.size() != dgm2.size()) {
             return false;
@@ -97,7 +97,7 @@ namespace ws
 
     // to handle points with one coordinate = infinity
     template<class RealType>
-    RealType get_one_dimensional_cost(std::vector<RealType>& set_A,
+    inline RealType get_one_dimensional_cost(std::vector<RealType>& set_A,
             std::vector<RealType>& set_B,
             const RealType wasserstein_power)
     {
@@ -210,7 +210,7 @@ namespace ws
     // this function assumes that all coordinates are finite
     // points at infinity are processed in wasserstein_cost
     template<class RealType>
-    RealType wasserstein_cost_vec(const std::vector<DiagramPoint<RealType>>& A,
+    inline RealType wasserstein_cost_vec(const std::vector<DiagramPoint<RealType>>& A,
                                   const std::vector<DiagramPoint<RealType>>& B,
                                   const AuctionParams<RealType>& params,
                                   const std::string& _log_filename_prefix)
@@ -245,7 +245,7 @@ namespace ws
 
 
 template<class PairContainer>
-typename DiagramTraits<PairContainer>::RealType
+inline typename DiagramTraits<PairContainer>::RealType
 wasserstein_cost(const PairContainer& A,
                 const PairContainer& B,
                 const AuctionParams< typename DiagramTraits<PairContainer>::RealType >& params,
@@ -332,7 +332,7 @@ wasserstein_cost(const PairContainer& A,
 }
 
 template<class PairContainer>
-typename DiagramTraits<PairContainer>::RealType
+inline typename DiagramTraits<PairContainer>::RealType
 wasserstein_dist(PairContainer& A,
                  PairContainer& B,
                  const AuctionParams<typename DiagramTraits<PairContainer>::RealType> params,

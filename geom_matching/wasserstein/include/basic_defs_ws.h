@@ -60,19 +60,19 @@ namespace hera
 {
 
 template<class Real = double>
-bool is_infinity(const Real& x)
+inline bool is_infinity(const Real& x)
 {
     return x == Real(-1);
 };
 
 template<class Real = double>
-Real get_infinity()
+inline Real get_infinity()
 {
     return Real( -1 );
 }
 
 template<class Real = double>
-bool is_p_valid_norm(const Real& p)
+inline bool is_p_valid_norm(const Real& p)
 {
     return is_infinity<Real>(p) or p >= Real(1);
 }
@@ -101,10 +101,8 @@ namespace ws
     template<class Real = double>
     using IdxValPair = std::pair<IdxType, Real>;
 
-
-
     template<class R>
-    std::ostream& operator<<(std::ostream& output, const IdxValPair<R> p)
+    inline std::ostream& operator<<(std::ostream& output, const IdxValPair<R> p)
     {
         output << fmt::format("({0}, {1})", p.first, p.second);
         return output;
@@ -112,7 +110,7 @@ namespace ws
 
     enum class OwnerType { k_none, k_normal, k_diagonal };
 
-    std::ostream& operator<<(std::ostream& s, const OwnerType t)
+    inline std::ostream& operator<<(std::ostream& s, const OwnerType t)
     {
         switch(t)
         {
@@ -210,11 +208,11 @@ namespace ws
 
 #ifndef FOR_R_TDA
     template <class Real = double>
-    std::ostream& operator<<(std::ostream& output, const DiagramPoint<Real> p);
+    inline std::ostream& operator<<(std::ostream& output, const DiagramPoint<Real> p);
 #endif
 
     template<class Real>
-    void format_arg(fmt::BasicFormatter<char> &f, const char *&format_str, const DiagramPoint<Real>&p) {
+    inline void format_arg(fmt::BasicFormatter<char> &f, const char *&format_str, const DiagramPoint<Real>&p) {
         if (p.is_diagonal()) {
             f.writer().write("({0},{1}, DIAG)", p.x, p.y);
         } else {
@@ -269,14 +267,14 @@ namespace ws
     };
 
     template<class R, class Pt>
-    R dist_lp(const Pt& a, const Pt& b, const R p, const int dim)
+    inline R dist_lp(const Pt& a, const Pt& b, const R p, const int dim)
     {
         return DistImpl<R, Pt>()(a, b, p, dim);
     }
 
     // TODO
     template<class Real, typename DiagPointContainer>
-    double getFurthestDistance3Approx(DiagPointContainer& A, DiagPointContainer& B, const Real p)
+    inline double getFurthestDistance3Approx(DiagPointContainer& A, DiagPointContainer& B, const Real p)
     {
         int dim = 2;
         Real result { 0.0 };
@@ -297,7 +295,7 @@ namespace ws
     }
 
     template<class Real>
-    Real getFurthestDistance3Approx_pg(const hera::ws::dnn::DynamicPointVector<Real>& A, const hera::ws::dnn::DynamicPointVector<Real>& B, const Real p, const int dim)
+    inline Real getFurthestDistance3Approx_pg(const hera::ws::dnn::DynamicPointVector<Real>& A, const hera::ws::dnn::DynamicPointVector<Real>& B, const Real p, const int dim)
     {
         Real result { 0.0 };
         int opt_b_idx = 0;
@@ -317,13 +315,13 @@ namespace ws
 
 
     template<class Container>
-    std::string format_container_to_log(const Container& cont);
+    inline std::string format_container_to_log(const Container& cont);
 
     template<class Real, class IndexContainer>
-    std::string format_point_set_to_log(const IndexContainer& indices, const std::vector<DiagramPoint<Real>>& points);
+    inline std::string format_point_set_to_log(const IndexContainer& indices, const std::vector<DiagramPoint<Real>>& points);
 
     template<class T>
-    std::string format_int(T i);
+    inline std::string format_int(T i);
 
 } // ws
 } // hera
