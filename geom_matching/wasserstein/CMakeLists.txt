@@ -46,17 +46,17 @@ file(GLOB WS_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h ${CMAKE_CURRENT_SOU
 find_package (Threads)
 set (libraries ${libraries}     ${CMAKE_THREAD_LIBS_INIT})
 
-add_executable(wasserstein_dist ${CMAKE_CURRENT_SOURCE_DIR}/example/wasserstein_dist.cpp ${WS_HEADERS})
+add_executable(wasserstein_dist ${CMAKE_CURRENT_SOURCE_DIR}/example/wasserstein_dist.cpp ${WS_HEADERS} include/hera_infinity.h)
 target_link_libraries(wasserstein_dist PUBLIC ${libraries})
 
-add_executable(wasserstein_dist_dipha ${CMAKE_CURRENT_SOURCE_DIR}/example/wasserstein_dist_dipha.cpp ${WS_HEADERS})
+add_executable(wasserstein_dist_dipha ${CMAKE_CURRENT_SOURCE_DIR}/example/wasserstein_dist_dipha.cpp ${WS_HEADERS} include/hera_infinity.h)
 target_link_libraries(wasserstein_dist_dipha PUBLIC ${libraries})
 
 # pure geometric version, arbitrary dimension
-add_executable(wasserstein_dist_point_cloud ${CMAKE_CURRENT_SOURCE_DIR}/example/wasserstein_dist_point_cloud.cpp ${WS_HEADERS})
+add_executable(wasserstein_dist_point_cloud ${CMAKE_CURRENT_SOURCE_DIR}/example/wasserstein_dist_point_cloud.cpp ${WS_HEADERS} include/hera_infinity.h)
 target_link_libraries(wasserstein_dist_point_cloud PUBLIC ${libraries})
 
 # Tests
-add_executable(wasserstein_test  ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests_main.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_hera_wasserstein.cpp)
+add_executable(wasserstein_test  ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests_main.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_hera_wasserstein.cpp include/hera_infinity.h)
 #add_executable(wasserstein_test EXCLUDE_FROM_ALL ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_hera_wasserstein.cpp)
 target_link_libraries(wasserstein_test PUBLIC ${libraries})

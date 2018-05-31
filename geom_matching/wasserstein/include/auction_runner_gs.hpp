@@ -244,6 +244,12 @@ void AuctionRunnerGS<R, AO, PC>::run_auction_phases(const int max_num_phases, co
         flush_assignment();
         run_auction_phase();
         Real current_result = getDistanceToQthPowerInternal();
+//        Real current_result_1 = 0.0;
+//        for(size_t i = 0; i < num_bidders; ++i) {
+//            current_result_1 += oracle.traits.distance(bidders[i], items[bidders_to_items[i]]);
+//        }
+//        current_result = current_result_1;
+//        assert(fabs(current_result - current_result_1) < 0.001);
         Real denominator = current_result - num_bidders * oracle.get_epsilon();
         current_result = pow(current_result, 1.0 / wasserstein_power);
 #ifdef LOG_AUCTION
@@ -259,6 +265,7 @@ void AuctionRunnerGS<R, AO, PC>::run_auction_phases(const int max_num_phases, co
             denominator = pow(denominator, 1.0 / wasserstein_power);
             Real numerator = current_result - denominator;
             relative_error = numerator / denominator;
+            // spdlog::get("console")->info("relative error = {} / {} = {}, result = {}", numerator, denominator, relative_error, current_result);
 #ifdef LOG_AUCTION
             console_logger->info("error = {0} / {1} = {2}",
                     numerator, denominator, relative_error);
@@ -319,7 +326,7 @@ void AuctionRunnerGS<R, AO, PC>::run_auction_phase()
 
 #ifdef DEBUG_AUCTION
     for(size_t bidder_idx = 0; bidder_idx < num_bidders; ++bidder_idx) {
-        if ( bidders_to_items[bidder_idx] < 0 or bidders_to_items[bidder_idx] >= num_bidders) {
+        if ( bidders_to_items[bidder_idx] < 0 or bidders_to_items[bidder_idx] >= (IdxType)num_bidders) {
             std::cerr << "After auction terminated bidder " << bidder_idx;
             std::cerr << " has no items assigned" << std::endl;
             throw std::runtime_error("Auction did not give a perfect matching");
@@ -333,8 +340,7 @@ template<class R, class AO, class PC>
 R AuctionRunnerGS<R, AO, PC>::get_item_bidder_cost(const size_t item_idx, const size_t bidder_idx, const bool tolerate_invalid_idx) const
 {
     if (item_idx != k_invalid_index and bidder_idx != k_invalid_index) {
-        return std::pow(dist_lp(bidders[bidder_idx], items[item_idx], internal_p, dimension),
-                        wasserstein_power);
+        return std::pow(dist_lp(bidders[bidder_idx], items[item_idx], internal_p, dimension), wasserstein_power);
     } else {
         if (tolerate_invalid_idx)
             return R(0.0);
@@ -416,7 +422,7 @@ void AuctionRunnerGS<R, AO, PC>::sanity_check()
     }
 
     for(size_t bidder_idx = 0; bidder_idx < num_bidders; ++bidder_idx) {
-        assert( bidders_to_items[bidder_idx] == k_invalid_index or ( bidders_to_items[bidder_idx] < num_items and bidders_to_items[bidder_idx] >= 0));
+        assert( bidders_to_items[bidder_idx] == k_invalid_index or ( bidders_to_items[bidder_idx] < (IdxType)num_items and bidders_to_items[bidder_idx] >= 0));
 
         if ( bidders_to_items[bidder_idx] != k_invalid_index) {
 
@@ -440,7 +446,7 @@ void AuctionRunnerGS<R, AO, PC>::sanity_check()
     }
 
     for(IdxType item_idx = 0; item_idx < static_cast<IdxType>(num_bidders); ++item_idx) {
-        assert( items_to_bidders[item_idx] == k_invalid_index or ( items_to_bidders[item_idx] < num_items and items_to_bidders[item_idx] >= 0));
+        assert( items_to_bidders[item_idx] == k_invalid_index or ( items_to_bidders[item_idx] < static_cast<IdxType>(num_items) and items_to_bidders[item_idx] >= 0));
         if ( items_to_bidders.at(item_idx) != k_invalid_index) {
 
             // check for uniqueness

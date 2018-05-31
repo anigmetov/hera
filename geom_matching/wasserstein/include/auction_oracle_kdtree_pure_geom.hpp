@@ -111,11 +111,9 @@ AuctionOracleKDTreePureGeom<Real_, PointContainer_>::get_optimal_bid_debug(IdxTy
     Real best_item_value = std::numeric_limits<Real>::max();
     Real second_best_item_value = std::numeric_limits<Real>::max();
 
-    for(IdxType item_idx = 0; item_idx < this->items.size(); ++item_idx) {
+    for(size_t item_idx = 0; item_idx < this->items.size(); ++item_idx) {
         auto item = this->items[item_idx];
-        if (item.type != bidder.type and item_idx != bidder_idx)
-            continue;
-        auto item_value = std::pow(dist_lp(bidder, item, this->internal_p), this->wasserstein_power, this->dim) + this->prices[item_idx];
+        auto item_value = std::pow(traits.distance(bidder, item), this->wasserstein_power) + this->prices[item_idx];
         if (item_value < best_item_value) {
             best_item_value = item_value;
             best_item_idx = item_idx;
@@ -126,11 +124,10 @@ AuctionOracleKDTreePureGeom<Real_, PointContainer_>::get_optimal_bid_debug(IdxTy
 
     for(size_t item_idx = 0; item_idx < this->items.size(); ++item_idx) {
         auto item = this->items[item_idx];
-        if (item.type != bidder.type and item_idx != bidder_idx)
-            continue;
         if (item_idx == best_item_idx)
             continue;
-        auto item_value = std::pow(dist_lp(bidder, item, this->internal_p), this->wasserstein_power, this->dim) + this->prices[item_idx];
+
+        auto item_value = std::pow(traits.distance(bidder, item), this->wasserstein_power) + this->prices[item_idx];
         if (item_value < second_best_item_value) {
             second_best_item_value = item_value;
             second_best_item_idx = item_idx;
@@ -165,6 +162,12 @@ IdxValPair<Real_> AuctionOracleKDTreePureGeom<Real_, PointContainer_>::get_optim
 
     result.first = best_item_idx;
     result.second = ( second_best_item_value - best_item_value ) + this->prices[best_item_idx] + this->epsilon;
+
+#ifdef DEBUG_KDTREE_RESTR_ORACLE
+    auto bid_debug = get_optimal_bid_debug(bidder_idx);
+    assert(fabs(bid_debug.best_item_value - best_item_value) < 0.000000001);
+    assert(fabs(bid_debug.second_best_item_value - second_best_item_value) < 0.000000001);
+#endif
 
     return result;
 }

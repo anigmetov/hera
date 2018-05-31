@@ -247,7 +247,7 @@ AuctionOracleKDTreeRestricted<Real_, PointContainer_>::get_optimal_bid_debug(Idx
         auto item = this->items[item_idx];
         if (item.type != bidder.type and item_idx != bidder_idx)
             continue;
-        auto item_value = std::pow(dist_lp(bidder, item, this->internal_p), this->wasserstein_power) + this->prices[item_idx];
+        auto item_value = std::pow(dist_lp(bidder, item, this->internal_p, 2), this->wasserstein_power) + this->prices[item_idx];
         if (item_value < best_item_value) {
             best_item_value = item_value;
             best_item_idx = item_idx;
@@ -262,7 +262,7 @@ AuctionOracleKDTreeRestricted<Real_, PointContainer_>::get_optimal_bid_debug(Idx
             continue;
         if (item_idx == best_item_idx)
             continue;
-        auto item_value = std::pow(dist_lp(bidder, item, this->internal_p), this->wasserstein_power) + this->prices[item_idx];
+        auto item_value = std::pow(dist_lp(bidder, item, this->internal_p, 2), this->wasserstein_power) + this->prices[item_idx];
         if (item_value < second_best_item_value) {
             second_best_item_value = item_value;
             second_best_item_idx = item_idx;

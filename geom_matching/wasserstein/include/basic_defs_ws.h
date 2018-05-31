@@ -51,6 +51,7 @@ derivative works thereof, in binary and source code form.
 #include "spdlog/fmt/ostr.h"
 #endif
 
+#include "hera_infinity.h"
 #include "dnn/geometry/euclidean-dynamic.h"
 #include "def_debug_ws.h"
 
@@ -59,17 +60,17 @@ derivative works thereof, in binary and source code form.
 namespace hera
 {
 
-template<class Real = double>
-inline bool is_infinity(const Real& x)
-{
-    return x == Real(-1);
-};
-
-template<class Real = double>
-inline Real get_infinity()
-{
-    return Real( -1 );
-}
+//template<class Real = double>
+//inline bool is_infinity(const Real& x)
+//{
+//    return x == Real(-1);
+//};
+//
+//template<class Real = double>
+//inline Real get_infinity()
+//{
+//    return Real( -1 );
+//}
 
 template<class Real = double>
 inline bool is_p_valid_norm(const Real& p)
