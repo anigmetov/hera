@@ -72,7 +72,6 @@ inline double wasserstein_cost(const DynamicPointVector<double>& set_A, const Dy
         auction.run_auction();
         return auction.get_wasserstein_cost();
     }
-
 }
 
 inline double wasserstein_dist(const DynamicPointVector<double>& set_A, const DynamicPointVector<double>& set_B, const AuctionParams<double>& params)

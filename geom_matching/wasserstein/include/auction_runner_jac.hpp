@@ -42,7 +42,6 @@ derivative works thereof, in binary and source code form.
 #undef DEBUG_AUCTION
 #endif
 
-
 namespace hera {
 namespace ws {
 
@@ -350,6 +349,8 @@ namespace ws {
     typename AuctionRunnerJac<R, AO, PC>::Real
     AuctionRunnerJac<R, AO, PC>::get_relative_error(const bool debug_output) const
     {
+        if (partial_cost == 0.0 and unassigned_bidders.empty())
+            return 0.0;
         Real result;
 #ifndef WASSERSTEIN_PURE_GEOM
         Real gamma = get_gamma();
@@ -560,7 +561,7 @@ namespace ws {
             wasserstein_cost = get_item_bidder_cost(0,0);
             return;
         }
-        double init_eps = (initial_epsilon > 0.0) ? initial_epsilon : oracle.max_val_ / 4.0;
+        R init_eps = (initial_epsilon > 0.0) ? initial_epsilon : oracle.max_val_ / 4.0;
         run_auction_phases(max_num_phases, init_eps);
         is_distance_computed = true;
         wasserstein_cost = partial_cost;
@@ -703,7 +704,11 @@ namespace ws {
     template<class R, class AO, class PC>
     bool AuctionRunnerJac<R, AO, PC>::continue_auction_phase() const
     {
+#ifdef WASSERSTEIN_PURE_GEOM
+        return not unassigned_bidders.empty();
+#else
         return not unassigned_bidders.empty() and not is_done();
+#endif
     }
 
     template<class R, class AO, class PC>

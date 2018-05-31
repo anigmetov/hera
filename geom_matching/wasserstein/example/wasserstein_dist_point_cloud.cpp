@@ -35,6 +35,7 @@ derivative works thereof, in binary and source code form.
 
 int main(int argc, char* argv[])
 {
+
     //{
     //int n_points = 3;
     //int dim = 3;
@@ -105,7 +106,6 @@ int main(int argc, char* argv[])
     }
 
     params.dim = dimension_A;
-
 
     params.wasserstein_power = (4 <= argc) ? atof(argv[3]) : 1.0;
     if (params.wasserstein_power < 1.0) {

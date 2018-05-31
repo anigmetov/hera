@@ -243,7 +243,7 @@ AuctionOracleKDTreeRestricted<Real_, PointContainer_>::get_optimal_bid_debug(Idx
     Real best_item_value = std::numeric_limits<Real>::max();
     Real second_best_item_value = std::numeric_limits<Real>::max();
 
-    for(IdxType item_idx = 0; item_idx < this->items.size(); ++item_idx) {
+    for(IdxType item_idx = 0; item_idx < static_cast<IdxType>(this->items.size()); ++item_idx) {
         auto item = this->items[item_idx];
         if (item.type != bidder.type and item_idx != bidder_idx)
             continue;
@@ -258,7 +258,7 @@ AuctionOracleKDTreeRestricted<Real_, PointContainer_>::get_optimal_bid_debug(Idx
 
     for(size_t item_idx = 0; item_idx < this->items.size(); ++item_idx) {
         auto item = this->items[item_idx];
-        if (item.type != bidder.type and item_idx != bidder_idx)
+        if (item.type != bidder.type and static_cast<IdxType>(item_idx) != bidder_idx)
             continue;
         if (item_idx == best_item_idx)
             continue;
