@@ -559,6 +559,7 @@ namespace ws {
         if (num_bidders == 1) {
             assign_item_to_bidder(0, 0);
             wasserstein_cost = get_item_bidder_cost(0,0);
+            is_distance_computed = true;
             return;
         }
         R init_eps = (initial_epsilon > 0.0) ? initial_epsilon : oracle.max_val_ / 4.0;

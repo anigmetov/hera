@@ -13,7 +13,7 @@ namespace hera {
     };
 
     template<class Real = double>
-    inline Real get_infinity()
+    inline constexpr Real get_infinity()
     {
         return Real(-1);
     }

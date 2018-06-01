@@ -57,6 +57,6 @@ add_executable(wasserstein_dist_point_cloud ${CMAKE_CURRENT_SOURCE_DIR}/example/
 target_link_libraries(wasserstein_dist_point_cloud PUBLIC ${libraries})
 
 # Tests
-add_executable(wasserstein_test  ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests_main.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_hera_wasserstein.cpp include/hera_infinity.h)
+add_executable(wasserstein_test  ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests_main.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_hera_wasserstein.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_hera_wasserstein_pure_geom.cpp  include/hera_infinity.h tests/tests_reader.h)
 #add_executable(wasserstein_test EXCLUDE_FROM_ALL ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_hera_wasserstein.cpp)
 target_link_libraries(wasserstein_test PUBLIC ${libraries})

@@ -287,6 +287,7 @@ void AuctionRunnerGS<R, AO, PC>::run_auction()
     if (num_bidders == 1) {
             assign_item_to_bidder(0, 0);
             wasserstein_cost = get_item_bidder_cost(0,0);
+            is_distance_computed = true;
             return;
     }
 
