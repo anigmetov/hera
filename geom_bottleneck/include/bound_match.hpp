@@ -217,6 +217,19 @@ void Matching<R>::trimMatching(const R newThreshold)
     sanityCheck();
 }
 
+template<class R>
+MatchingEdge<R> Matching<R>::get_longest_edge() const
+{
+    R max_dist = -1.0;
+    MatchingEdge<R> edge;
+    for(const auto& x : AToB) {
+        if (max_dist < distLInf(x.first, x.second)) {
+            edge = x;
+        }
+    }
+    return edge;
+}
+
 // ------- BoundMatchOracle --------------
 
 template<class R, class NO>

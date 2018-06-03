@@ -33,3 +33,6 @@ set (libraries ${libraries}     ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(bottleneck_dist ${CMAKE_CURRENT_SOURCE_DIR}/example/bottleneck_dist.cpp ${WS_HEADERS})
 target_link_libraries(bottleneck_dist PUBLIC ${libraries})
+
+add_executable(bottleneck_test  ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests_main.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_hera_bottleneck.cpp)
+target_link_libraries(bottleneck_test PUBLIC ${libraries})
