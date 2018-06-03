@@ -333,8 +333,8 @@ wasserstein_cost(const PairContainer& A,
 
 template<class PairContainer>
 inline typename DiagramTraits<PairContainer>::RealType
-wasserstein_dist(PairContainer& A,
-                 PairContainer& B,
+wasserstein_dist(const PairContainer& A,
+                 const PairContainer& B,
                  const AuctionParams<typename DiagramTraits<PairContainer>::RealType> params,
                  const std::string& _log_filename_prefix = "")
 {
