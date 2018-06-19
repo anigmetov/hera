@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
     }
 
     double res;
+    hera::bt::MatchingEdge<double> e;
     if (argc >= 4) {
         // the third parameter is epsilon,
         // return approximate distance (faster)
@@ -65,7 +66,7 @@ int main(int argc, char* argv[])
             if (useSamplingHeur && diagramA.size() > heurThreshold && diagramB.size() > heurThreshold) {
                 res = hera::bottleneckDistApproxHeur(diagramA, diagramB, delta);
             } else {
-                res = hera::bottleneckDistApprox(diagramA, diagramB, delta);
+                res = hera::bottleneckDistApprox(diagramA, diagramB, delta, e, true);
             }
         } else if (delta == 0.0) {
             res = hera::bottleneckDistExact(diagramA, diagramB, decPrecision);
@@ -75,10 +76,12 @@ int main(int argc, char* argv[])
         }
     } else {
         // only filenames have been supplied, return exact distance
-        res = hera::bottleneckDistExact(diagramA, diagramB, decPrecision);
+        res = hera::bottleneckDistExact(diagramA, diagramB, decPrecision, e, true);
+
     }
     std::cout << std::setprecision(15) << res << std::endl;
-
+    //std::cout << "Longest edge " << e.first.get_user_id() << " <-> " << e.second.get_user_id() << std::endl;
+    //std::cout << "Longest edge " << e.first << " <-> " << e.second << std::endl;
     // Alternative could be to construct DiagramPointSet
     // using the constructor with iterators.
     // May be useful if the same diagram is used multiple times

@@ -117,6 +117,7 @@ namespace hera {
         public:
             Type type;
             IdType id;
+            IdType user_id;
 
             // operators, constructors
             bool operator==(const DiagramPoint<Real>& other) const
@@ -138,15 +139,17 @@ namespace hera {
                     x(0.0),
                     y(0.0),
                     type(DiagramPoint::DIAG),
-                    id(MinValidId - 1)
+                    id(MinValidId - 1),
+                    user_id(-1)
             {
             }
 
-            DiagramPoint(Real _x, Real _y, Type _type, IdType _id) :
+            DiagramPoint(Real _x, Real _y, Type _type, IdType _id, IdType _user_id) :
                     x(_x),
                     y(_y),
                     type(_type),
-                    id(_id)
+                    id(_id),
+                    user_id(_user_id)
             {
                 if (_y == _x and _type != DIAG) {
                     throw std::runtime_error("Point on the main diagonal must have DIAG type");
@@ -179,6 +182,28 @@ namespace hera {
                 return y;
             }
 
+            IdType inline get_user_id() const
+            {
+                if (isNormal())
+                    return user_id;
+                else
+                    return -1;
+            }
+
+            Real inline get_persistence(const Real internal_p = get_infinity()) const
+            {
+                if (isDiagonal())
+                    return 0.0;
+                Real pers = (y - x) / 2;
+                if (internal_p == get_infinity()) {
+                    return pers;
+                } else if (internal_p == 1.0) {
+                    return 2 * pers;
+                } else {
+                    return std::pow(static_cast<Real>(2), static_cast<Real>(1) / internal_p);
+                }
+            }
+
 #ifndef FOR_R_TDA
 
             template<class R>
@@ -191,9 +216,7 @@ namespace hera {
                 }
                 return output;
             }
-
 #endif
-
         };
 
         template<class Real>
@@ -201,7 +224,7 @@ namespace hera {
 
         // compute l-inf distance between two diagram points
         template<class Real>
-        Real distLInf(const DiagramPoint<Real>& a, const DiagramPoint<Real>& b)
+        inline Real distLInf(const DiagramPoint<Real>& a, const DiagramPoint<Real>& b)
         {
             if (a.isDiagonal() and b.isDiagonal()) {
                 // distance between points on the diagonal is 0
@@ -211,9 +234,29 @@ namespace hera {
             return std::max(fabs(a.getRealX() - b.getRealX()), fabs(a.getRealY() - b.getRealY()));
         }
 
+        // this function works with points at infinity as well
+        // not needed in actual computation, since these points are processed
+        // separately, but is useful in tests
+        template<class Real>
+        inline Real dist_l_inf_slow(const DiagramPoint<Real>& a, const DiagramPoint<Real>& b)
+        {
+            if (a.isDiagonal() and b.isDiagonal()) {
+                // distance between points on the diagonal is 0
+                return 0.0;
+            }
+            // otherwise distance is a usual l-inf distance
+            Real dx = (a.getRealX() == b.getRealX()) ? 0.0 : fabs(a.getRealX() - b.getRealX());
+            Real dy = (a.getRealY() == b.getRealY()) ? 0.0 : fabs(a.getRealY() - b.getRealY());
+            Real result = std::max(dx, dy);
+            if (std::isnan(result))
+                result = std::numeric_limits<Real>::infinity();
+            return result;
+        }
+
+
 
         template<class Real = double>
-        Real get_infinity()
+        inline Real get_infinity()
         {
             return Real(-1.0);
         }
@@ -384,8 +427,9 @@ namespace hera {
                 isLinked = false;
                 clear();
                 IdType uniqueId = MinValidId + 1;
+                IdType user_id = 0;
                 for (auto iter = begin_iter; iter != end_iter; ++iter) {
-                    insert(DgmPoint(iter->first, iter->second, DgmPoint::NORMAL, uniqueId++));
+                    insert(DgmPoint(iter->first, iter->second, DgmPoint::NORMAL, uniqueId++, user_id++));
                 }
             }
 
@@ -396,10 +440,11 @@ namespace hera {
                 isLinked = false;
                 clear();
                 IdType uniqueId = MinValidId + 1;
+                IdType user_id = 0;
                 for (const auto& pt : dgm_cont) {
                     Real x = Traits::get_x(pt);
                     Real y = Traits::get_y(pt);
-                    insert(DgmPoint(x, y, DgmPoint::NORMAL, uniqueId++));
+                    insert(DgmPoint(x, y, DgmPoint::NORMAL, uniqueId++, user_id++));
                 }
             }
 
@@ -469,9 +514,9 @@ namespace hera {
             for (auto& pA : A) {
                 if (pA.isNormal() and not pA.isInfinity()) {
                     // add pA's projection to B
-                    DgmPoint dpA { pA.getRealX(), pA.getRealY(), DgmPoint::NORMAL, uniqueId++ };
+                    DgmPoint dpA { pA.getRealX(), pA.getRealY(), DgmPoint::NORMAL, uniqueId++, pA.get_user_id() };
                     DgmPoint dpB { (pA.getRealX() + pA.getRealY()) / 2, (pA.getRealX() + pA.getRealY()) / 2,
-                                   DgmPoint::DIAG, uniqueId++ };
+                                   DgmPoint::DIAG, uniqueId++, -1 };
                     newA.insert(dpA);
                     newB.insert(dpB);
                 }
@@ -480,9 +525,9 @@ namespace hera {
             for (auto& pB : B) {
                 if (pB.isNormal() and not pB.isInfinity()) {
                     // add pB's projection to A
-                    DgmPoint dpB { pB.getRealX(), pB.getRealY(), DgmPoint::NORMAL, uniqueId++ };
+                    DgmPoint dpB { pB.getRealX(), pB.getRealY(), DgmPoint::NORMAL, uniqueId++, pB.get_user_id() };
                     DgmPoint dpA { (pB.getRealX() + pB.getRealY()) / 2, (pB.getRealX() + pB.getRealY()) / 2,
-                                   DgmPoint::DIAG, uniqueId++ };
+                                   DgmPoint::DIAG, uniqueId++, -1 };
                     newB.insert(dpB);
                     newA.insert(dpA);
                 }

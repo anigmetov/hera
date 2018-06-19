@@ -40,6 +40,7 @@ derivative works thereof, in binary and source code form.
 #include <sstream>
 #include <string>
 #include <cctype>
+#include <set>
 
 #include "bottleneck_detail.h"
 
@@ -106,31 +107,35 @@ namespace hera {
             distMax = std::max(distMax, infinityCost);
         }
 
+        //        template<class Real>
+        //        inline Real getOneDimensionalCost(std::vector<Real>& set_A, std::vector<Real>& set_B)
+        //        {
+        //            if (set_A.size() != set_B.size()) {
+        //                return std::numeric_limits<Real>::infinity();
+        //            }
+        //
+        //            if (set_A.empty()) {
+        //                return Real(0.0);
+        //            }
+        //
+        //            std::sort(set_A.begin(), set_A.end());
+        //            std::sort(set_B.begin(), set_B.end());
+        //
+        //            Real result = 0.0;
+        //            for (size_t i = 0; i < set_A.size(); ++i) {
+        //                result = std::max(result, (std::fabs(set_A[i] - set_B[i])));
+        //            }
+        //
+        //            return result;
+        //        }
+
+
         template<class Real>
-        inline Real getOneDimensionalCost(std::vector<Real>& set_A, std::vector<Real>& set_B)
+        struct CostEdgePair
         {
-            if (set_A.size() != set_B.size()) {
-                return std::numeric_limits<Real>::infinity();
-            }
-
-            if (set_A.empty()) {
-                return Real(0.0);
-            }
-
-            std::sort(set_A.begin(), set_A.end());
-            std::sort(set_B.begin(), set_B.end());
-
-            Real result = 0.0;
-            for (size_t i = 0; i < set_A.size(); ++i) {
-                result = std::max(result, (std::fabs(set_A[i] - set_B[i])));
-            }
-
-            return result;
-        }
-
-
-        template<class Real>
-        using CostEdgePair = std::pair<Real, typename hera::bt::MatchingEdge<Real>>;
+            Real cost;
+            typename hera::bt::MatchingEdge<Real> edge;
+        };
 
         template<class Real>
         using CoordPointPair = std::pair<Real, typename hera::bt::DiagramPoint<Real>>;
@@ -148,27 +153,31 @@ namespace hera {
         };
 
         template<class Real>
-        inline typename hera::bt::CostEdgePair<Real> getOneDimensionalCost(typename hera::bt::CoordPointVector<Real>& set_A, typename hera::bt::CoordPointVector<Real>& set_B)
+        inline typename hera::bt::CostEdgePair<Real>
+        getOneDimensionalCost(typename hera::bt::CoordPointVector<Real>& set_A,
+                              typename hera::bt::CoordPointVector<Real>& set_B)
         {
             using MatchingEdgeR = hera::bt::MatchingEdge<Real>;
+            using CostEdgePairR = CostEdgePair<Real>;
+
             if (set_A.size() != set_B.size()) {
-                return std::make_pair(std::numeric_limits<Real>::infinity(), MatchingEdgeR());
+                return CostEdgePairR { std::numeric_limits<Real>::infinity(), MatchingEdgeR() };
             }
 
             if (set_A.empty()) {
-                return std::make_pair(Real(0.0), MatchingEdgeR());
+                return CostEdgePairR { Real(0.0), MatchingEdgeR() };
             }
 
             std::sort(set_A.begin(), set_A.end(), CoordPointPairComparator<Real>());
             std::sort(set_B.begin(), set_B.end(), CoordPointPairComparator<Real>());
 
-            CostEdgePair<Real> result(-1.0, MatchingEdgeR());
+            CostEdgePairR result { -1.0, MatchingEdgeR() };
 
             for (size_t i = 0; i < set_A.size(); ++i) {
                 Real curr_cost = std::fabs(set_A[i].first - set_B[i].first);
-                if (curr_cost > result.first) {
-                    result.first = curr_cost;
-                    result.second = MatchingEdgeR(set_A[i].second, set_B[i].second);
+                if (curr_cost > result.cost) {
+                    result.cost = curr_cost;
+                    result.edge = MatchingEdgeR(set_A[i].second, set_B[i].second);
                 }
             }
             return result;
@@ -176,23 +185,26 @@ namespace hera {
 
 
         template<class Real>
-        inline Real getInfinityCost(const DiagramPointSet <Real>& A, const DiagramPointSet <Real>& B,
-                                    bool compute_longest_edge = false)
+        inline CostEdgePair<Real> getInfinityCost(const DiagramPointSet <Real>& A, const DiagramPointSet <Real>& B,
+                                                  bool compute_longest_edge = false)
         {
-            std::vector<Real> x_plus_A, x_minus_A, y_plus_A, y_minus_A;
-            std::vector<Real> x_plus_B, x_minus_B, y_plus_B, y_minus_B;
+            using CostEdgePairR = CostEdgePair<Real>;
+            using CoordPointVectorR = CoordPointVector<Real>;
+
+            CoordPointVectorR x_plus_A, x_minus_A, y_plus_A, y_minus_A;
+            CoordPointVectorR x_plus_B, x_minus_B, y_plus_B, y_minus_B;
 
             for (auto iter_A = A.cbegin(); iter_A != A.cend(); ++iter_A) {
                 Real x = iter_A->getRealX();
                 Real y = iter_A->getRealY();
                 if (x == std::numeric_limits<Real>::infinity()) {
-                    y_plus_A.push_back(y);
+                    y_plus_A.emplace_back(y, *iter_A);
                 } else if (x == -std::numeric_limits<Real>::infinity()) {
-                    y_minus_A.push_back(y);
+                    y_minus_A.emplace_back(y, *iter_A);
                 } else if (y == std::numeric_limits<Real>::infinity()) {
-                    x_plus_A.push_back(x);
+                    x_plus_A.emplace_back(x, *iter_A);
                 } else if (y == -std::numeric_limits<Real>::infinity()) {
-                    x_minus_A.push_back(x);
+                    x_minus_A.emplace_back(x, *iter_A);
                 }
             }
 
@@ -200,45 +212,60 @@ namespace hera {
                 Real x = iter_B->getRealX();
                 Real y = iter_B->getRealY();
                 if (x == std::numeric_limits<Real>::infinity()) {
-                    y_plus_B.push_back(y);
+                    y_plus_B.emplace_back(y, *iter_B);
                 } else if (x == -std::numeric_limits<Real>::infinity()) {
-                    y_minus_B.push_back(y);
+                    y_minus_B.emplace_back(y, *iter_B);
                 } else if (y == std::numeric_limits<Real>::infinity()) {
-                    x_plus_B.push_back(x);
+                    x_plus_B.emplace_back(x, *iter_B);
                 } else if (y == -std::numeric_limits<Real>::infinity()) {
-                    x_minus_B.push_back(x);
+                    x_minus_B.emplace_back(x, *iter_B);
                 }
             }
 
-            Real infinity_cost = getOneDimensionalCost(x_plus_A, x_plus_B);
-            infinity_cost = std::max(infinity_cost, getOneDimensionalCost(x_minus_A, x_minus_B));
-            infinity_cost = std::max(infinity_cost, getOneDimensionalCost(y_plus_A, y_plus_B));
-            infinity_cost = std::max(infinity_cost, getOneDimensionalCost(y_minus_A, y_minus_B));
+            CostEdgePairR result = getOneDimensionalCost(x_plus_A, x_plus_B);
 
-            return infinity_cost;
+            CostEdgePairR next_cost_edge = getOneDimensionalCost(x_minus_A, x_minus_B);
+            if (next_cost_edge.cost > result.cost) {
+                result = next_cost_edge;
+            }
+
+            next_cost_edge = getOneDimensionalCost(y_plus_A, y_plus_B);
+            if (next_cost_edge.cost > result.cost) {
+                result = next_cost_edge;
+            }
+
+            next_cost_edge = getOneDimensionalCost(y_minus_A, y_minus_B);
+            if (next_cost_edge.cost > result.cost) {
+                result = next_cost_edge;
+            }
+
+            return result;
         }
 
-// return the interval (distMin, distMax) such that:
-// a) actual bottleneck distance between A and B is contained in the interval
-// b) if the interval is not (0,0), then  (distMax - distMin) / distMin < epsilon
+        // return the interval (distMin, distMax) such that:
+        // a) actual bottleneck distance between A and B is contained in the interval
+        // b) if the interval is not (0,0), then  (distMax - distMin) / distMin < epsilon
         template<class Real>
         inline std::pair<Real, Real>
-        bottleneckDistApproxInterval(DiagramPointSet <Real>& A, DiagramPointSet <Real>& B, const Real epsilon,
-                                     MatchingEdge <Real>& edge, bool compute_longest_edge)
+        bottleneckDistApproxInterval(DiagramPointSet<Real>& A, DiagramPointSet<Real>& B, const Real epsilon,
+                                     MatchingEdge<Real>& edge, bool compute_longest_edge)
         {
+            using MatchingEdgeR = MatchingEdge<Real>;
+            using CostEdgePairR = CostEdgePair<Real>;
+
+            edge = MatchingEdgeR();
             // empty diagrams are not considered as error
             if (A.empty() and B.empty()) {
                 return std::make_pair(0.0, 0.0);
             }
 
-            if (compute_longest_edge) {
-                auto inf_cost_edge = getInfinityCost(A, B, true);
-            } else {
-            }
+            CostEdgePairR inf_cost_edge = getInfinityCost(A, B, true);
 
-            Real infinity_cost = getInfinityCost(A, B);
+            Real infinity_cost = inf_cost_edge.cost;
             if (infinity_cost == std::numeric_limits<Real>::infinity()) {
                 return std::make_pair(infinity_cost, infinity_cost);
+            } else {
+                edge = inf_cost_edge.edge;
             }
 
             // link diagrams A and B by adding projections
@@ -254,15 +281,20 @@ namespace hera {
             BoundMatchOracle<Real> oracle(A, B, epsThreshold, useRangeSearch);
             // check for distance = 0
             if (oracle.isMatchLess(2 * epsThreshold)) {
-                result.first = std::max(result.first, infinity_cost);
-                result.second = std::max(result.first, infinity_cost);
+                if (infinity_cost > epsThreshold) {
+                    result.first = infinity_cost;
+                    result.second = infinity_cost;
+                    edge = inf_cost_edge.edge;
+                }
                 return result;
             }
             // get a 3-approximation of maximal distance between A and B
             // as a starting value for probe distance
             Real distProbe { getFurthestDistance3Approx<Real, DiagramPointSet<Real>>(A, B) };
             binarySearch(epsilon, result, oracle, infinity_cost, false, distProbe);
-            if (compute_longest_edge) {
+            // to compute longest edge a perfect matching is needed
+            if (compute_longest_edge and result.first > infinity_cost) {
+                oracle.isMatchLess(result.second);
                 edge = oracle.get_longest_edge();
             }
             return result;
@@ -318,9 +350,9 @@ namespace hera {
         }
 
 
-// return the interval (distMin, distMax) such that:
-// a) actual bottleneck distance between A and B is contained in the interval
-// b) if the interval is not (0,0), then  (distMax - distMin) / distMin < epsilon
+        // return the interval (distMin, distMax) such that:
+        // a) actual bottleneck distance between A and B is contained in the interval
+        // b) if the interval is not (0,0), then  (distMax - distMin) / distMin < epsilon
         template<class Real>
         std::pair<Real, Real>
         bottleneckDistApproxIntervalWithInitial(DiagramPointSet <Real>& A, DiagramPointSet <Real>& B,
@@ -378,10 +410,10 @@ namespace hera {
             return result;
         }
 
-// return the interval (distMin, distMax) such that:
-// a) actual bottleneck distance between A and B is contained in the interval
-// b) if the interval is not (0,0), then  (distMax - distMin) / distMin < epsilon
-// use heuristic: initial estimate on sampled diagrams
+        // return the interval (distMin, distMax) such that:
+        // a) actual bottleneck distance between A and B is contained in the interval
+        // b) if the interval is not (0,0), then  (distMax - distMin) / distMin < epsilon
+        // use heuristic: initial estimate on sampled diagrams
         template<class Real>
         std::pair<Real, Real>
         bottleneckDistApproxIntervalHeur(DiagramPointSet <Real>& A, DiagramPointSet <Real>& B, const Real epsilon,
@@ -410,13 +442,13 @@ namespace hera {
         }
 
 
-// get approximate distance,
-// see bottleneckDistApproxInterval
+        // get approximate distance,
+        // see bottleneckDistApproxInterval
         template<class Real>
         Real bottleneckDistApprox(DiagramPointSet <Real>& A, DiagramPointSet <Real>& B, const Real epsilon,
                                   MatchingEdge <Real>& longest_edge, bool compute_longest_edge)
         {
-            auto interval = bottleneckDistApproxInterval<Real>(A, B, epsilon, longest_edge);
+            auto interval = bottleneckDistApproxInterval<Real>(A, B, epsilon, longest_edge, compute_longest_edge);
             return interval.second;
         }
 
@@ -444,7 +476,7 @@ namespace hera {
                     distEpsilon = diff;
                 }
             }
-            distEpsilon /= 3.0;
+            distEpsilon = std::min(diffThreshold, distEpsilon / 3.0);
 
             BoundMatchOracle<Real> oracle(A, B, distEpsilon, useRangeSearch);
             // binary search
@@ -462,16 +494,19 @@ namespace hera {
                 }
             }
             idxMid = static_cast<size_t>(floor(idxMin + idxMax) / 2.0);
+            Real result = pairwiseDist[idxMid];
             if (compute_longest_edge) {
+                oracle.isMatchLess(result + distEpsilon / 2.0);
                 longest_edge = oracle.get_longest_edge();
             }
-            return pairwiseDist[idxMid];
+            return result;
         }
 
 
         template<class Real>
-        Real bottleneckDistExact(DiagramPointSet <Real>& A, DiagramPointSet <Real>& B, MatchingEdge <Real>& longest_edge,
-                                 bool compute_longest_edge)
+        Real
+        bottleneckDistExact(DiagramPointSet <Real>& A, DiagramPointSet <Real>& B, MatchingEdge <Real>& longest_edge,
+                            bool compute_longest_edge)
         {
             return bottleneckDistExact(A, B, 14, longest_edge, compute_longest_edge);
         }
@@ -483,7 +518,10 @@ namespace hera {
             using DgmPoint = DiagramPoint<Real>;
 
             constexpr Real epsilon = 0.001;
-            auto interval = bottleneckDistApproxInterval(A, B, epsilon, longest_edge);
+            auto interval = bottleneckDistApproxInterval(A, B, epsilon, longest_edge, true);
+            // if the longest edge is on infinity, the answer is already exact
+            // this will be detected here and all the code after if
+            // may assume that the longest edge is on finite points
             if (interval.first == interval.second) {
                 return interval.first;
             }
@@ -504,7 +542,7 @@ namespace hera {
 
             // in this vector we store the distances between the points
             // that are candidates to realize
-            std::vector<Real> pairwiseDist;
+            std::set<Real> pairwiseDist;
             {
                 // vector to store centers of vertical stripes
                 // two for each point in A and the id of the corresponding point
@@ -540,7 +578,7 @@ namespace hera {
                         // check if distance fits into the interval we've found
                         Real pwDist = distLInf(iterA->second, ptB);
                         if (pwDist >= minDist and pwDist <= maxDist) {
-                            pairwiseDist.push_back(pwDist);
+                            pairwiseDist.insert(pwDist);
                         }
                     }
                 }
@@ -577,15 +615,19 @@ namespace hera {
                         }
                         Real pwDist = distLInf(iterA->second, ptB);
                         if (pwDist >= minDist and pwDist <= maxDist) {
-                            pairwiseDist.push_back(pwDist);
+                            pairwiseDist.insert(pwDist);
                         }
                     }
                 }
             }
 
-            std::sort(pairwiseDist.begin(), pairwiseDist.end());
+            std::vector<Real> pw_dists;
+            pw_dists.reserve(pairwiseDist.size());
+            for(Real d : pairwiseDist) {
+                pw_dists.push_back(d);
+            }
 
-            return bottleneckDistExactFromSortedPwDist(A, B, pairwiseDist, decPrecision, longest_edge,
+            return bottleneckDistExactFromSortedPwDist(A, B, pw_dists, decPrecision, longest_edge,
                                                        compute_longest_edge);
         }
 
