@@ -206,8 +206,7 @@ namespace hera {
 
 #ifndef FOR_R_TDA
 
-            template<class R>
-            friend std::ostream& operator<<(std::ostream& output, const DiagramPoint<R>& p)
+            friend std::ostream& operator<<(std::ostream& output, const DiagramPoint& p)
             {
                 if (p.isDiagonal()) {
                     output << "(" << p.x << ", " << p.y << ", " << 0.5 * (p.x + p.y) << ", " << p.id << " DIAG )";
@@ -245,6 +244,7 @@ namespace hera {
                 return 0.0;
             }
             // otherwise distance is a usual l-inf distance
+            //
             Real dx = (a.getRealX() == b.getRealX()) ? 0.0 : fabs(a.getRealX() - b.getRealX());
             Real dy = (a.getRealY() == b.getRealY()) ? 0.0 : fabs(a.getRealY() - b.getRealY());
             Real result = std::max(dx, dy);
@@ -406,8 +406,7 @@ namespace hera {
 
 #ifndef FOR_R_TDA
 
-            template<class R>
-            friend std::ostream& operator<<(std::ostream& output, const DiagramPointSet<R>& ps)
+            friend std::ostream& operator<<(std::ostream& output, const DiagramPointSet& ps)
             {
                 output << "{ ";
                 for (auto pit = ps.cbegin(); pit != ps.cend(); ++pit) {

@@ -468,7 +468,7 @@ namespace hera {
             Real distEpsilon = std::numeric_limits<Real>::max();
             Real diffThreshold = 0.1;
             for (int k = 0; k < decPrecision; ++k) {
-                diffThreshold /= 10.0;
+                diffThreshold /= 10;
             }
             for (size_t k = 0; k < pairwiseDist.size() - 2; ++k) {
                 auto diff = pairwiseDist[k + 1] - pairwiseDist[k];
@@ -476,7 +476,7 @@ namespace hera {
                     distEpsilon = diff;
                 }
             }
-            distEpsilon = std::min(diffThreshold, distEpsilon / 3.0);
+            distEpsilon = std::min(diffThreshold, distEpsilon / 3);
 
             BoundMatchOracle<Real> oracle(A, B, distEpsilon, useRangeSearch);
             // binary search
@@ -484,19 +484,19 @@ namespace hera {
             size_t idxMin { 0 }, idxMax { pairwiseDist.size() - 1 };
             size_t idxMid;
             while (idxMax > idxMin) {
-                idxMid = static_cast<size_t>(floor(idxMin + idxMax) / 2.0);
+                idxMid = static_cast<size_t>(floor(idxMin + idxMax) / 2);
                 iterNum++;
                 // not A[imid] < dist <=>  A[imid] >= dist  <=> A[imid[ >= dist + eps
-                if (oracle.isMatchLess(pairwiseDist[idxMid] + distEpsilon / 2.0)) {
+                if (oracle.isMatchLess(pairwiseDist[idxMid] + distEpsilon / 2)) {
                     idxMax = idxMid;
                 } else {
                     idxMin = idxMid + 1;
                 }
             }
-            idxMid = static_cast<size_t>(floor(idxMin + idxMax) / 2.0);
+            idxMid = static_cast<size_t>(floor(idxMin + idxMax) / 2);
             Real result = pairwiseDist[idxMid];
             if (compute_longest_edge) {
-                oracle.isMatchLess(result + distEpsilon / 2.0);
+                oracle.isMatchLess(result + distEpsilon / 2);
                 longest_edge = oracle.get_longest_edge();
             }
             return result;

@@ -6,6 +6,7 @@
 #include "bottleneck.h"
 
 using PairVector = std::vector<std::pair<double, double>>;
+using PairVectorF = std::vector<std::pair<float, float>>;
 
 std::vector<std::string> split_on_delim(const std::string& s, char delim)
 {
@@ -106,6 +107,33 @@ TEST_CASE("simple cases", "bottleneckDistApprox")
         double d1 = hera::bottleneckDistApprox<>(diagram_A, diagram_B, delta);
         double d2 = hera::bottleneckDistApprox<>(diagram_B, diagram_A, delta);
         double correct_answer = 5.0;
+        REQUIRE(  fabs(d1 - correct_answer) <= delta * correct_answer );
+        REQUIRE(  fabs(d2 - correct_answer) <= delta * correct_answer );
+
+    }
+
+}
+
+TEST_CASE("float version", "check_template")
+{
+    PairVectorF diagram_A, diagram_B;
+    float delta = 0.01;
+    //float internal_p = hera::get_infinity<double>();
+
+    SECTION("trivial: two empty diagrams") {
+        REQUIRE(  0.0 == hera::bottleneckDistApprox<PairVectorF>(diagram_A, diagram_B, delta));
+        REQUIRE(  0.0 == hera::bottleneckDistExact<PairVectorF>(diagram_A, diagram_B));
+    }
+
+    SECTION("trivial: two single-point diagrams-2") {
+
+        diagram_A.emplace_back(10, 20);  // (5, 5)
+        diagram_B.emplace_back(130, 138);  // (4, 4)
+
+        float d1 = hera::bottleneckDistApprox<PairVectorF>(diagram_A, diagram_B, delta);
+        float d2 = hera::bottleneckDistApprox<PairVectorF>(diagram_B, diagram_A, delta);
+        float d3 = hera::bottleneckDistExact<PairVectorF>(diagram_B, diagram_A);
+        float correct_answer = 5;
         REQUIRE(  fabs(d1 - correct_answer) <= delta * correct_answer );
         REQUIRE(  fabs(d2 - correct_answer) <= delta * correct_answer );
 
