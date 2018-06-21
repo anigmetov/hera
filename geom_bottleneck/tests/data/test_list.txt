@@ -3,6 +3,8 @@ test_002_A test_002_B 0.01 0.2 0 0
 test_003_A test_003_B 0.01 2 1 1
 test_004_A test_004_B 0.01 inf -1 -1
 test_005_A test_005_B 0.01 4 5 5
+test_008_A test_008_B 0.01 0.55 0 -1
+test_009_A test_009_B 0.01 0.55 0 -1
 test_010_A test_010_B 0.01 1.32937
 test_011_A test_011_B 0.01 1.03125
 test_014_A test_014_B 0.01 0
