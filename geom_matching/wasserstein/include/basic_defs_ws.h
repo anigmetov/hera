@@ -88,8 +88,10 @@ struct AuctionParams
     Real epsilon_common_ratio { 5.0 };
     Real gamma_threshold { 0.0 };  // for experiments, not in use now
     int max_num_phases { std::numeric_limits<decltype(max_num_phases)>::max() };
+    int max_rounds { std::numeric_limits<decltype(max_rounds)>::max() }; // if this number of rounds is exceeded, exception will be thrown
     size_t max_bids_per_round { 1 };  // imitate Gauss-Seidel is default behaviour
     unsigned int dim { 2 }; // for pure geometric version only; ignored in persistence diagrams
+    size_t num_rounds_ran { 0 };
 };
 
 namespace ws

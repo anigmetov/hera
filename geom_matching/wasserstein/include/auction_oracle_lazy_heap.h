@@ -146,7 +146,9 @@ struct AuctionOracleLazyHeapRestricted : AuctionOracleBase<Real> {
     using DiagramPointR = typename ws::DiagramPoint<Real>;
 
 
-     AuctionOracleLazyHeapRestricted(const std::vector<DiagramPointR>& bidders, const std::vector<DiagramPointR>& items, const Real wasserstein_power, const Real _internal_p = get_infinity<Real>());
+     AuctionOracleLazyHeapRestricted(const std::vector<DiagramPointR>& bidders, const std::vector<DiagramPointR>& items,
+                                     const AuctionParams<Real>& params,
+                                     const std::vector<Real>& _init_prices);
     ~AuctionOracleLazyHeapRestricted();
     // data members
     // temporarily make everything public

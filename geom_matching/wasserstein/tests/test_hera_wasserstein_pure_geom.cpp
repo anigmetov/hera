@@ -45,7 +45,7 @@ TEST_CASE("simple point clouds", "wasserstein_dist_pure_geom")
 //    dgm_b[2][2] = 0.9;
 
     const int dim = 3;
-    using Traits = hera::ws::dnn::DynamicPointTraits<double>;
+    // using Traits = hera::ws::dnn::DynamicPointTraits<double>;
     hera::ws::dnn::DynamicPointTraits<double> traits(dim);
     hera::AuctionParams<double> params;
     params.dim = dim;

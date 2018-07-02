@@ -26,16 +26,57 @@ derivative works thereof, in binary and source code form.
 
   */
 
-#ifndef HERA_AUCTION_ORACLE_H
-#define HERA_AUCTION_ORACLE_H
+#ifndef AUCTION_ORACLE_BRUTEFORCE_H
+#define AUCTION_ORACLE_BRUTEFORCE_H
 
-// all oracle classes are in separate h-hpp files
-// this file comprises all of them
+#include <map>
+#include <memory>
+#include <set>
 
+#include "basic_defs_ws.h"
 #include "auction_oracle_base.h"
-#include "auction_oracle_kdtree_restricted.h"
-#include "auction_oracle_kdtree_single_diag.h"
-#include "auction_oracle_bruteforce.h"
-//#include "auction_oracle_stupid_sparse_restricted.h"
 
-#endif // HERA_AUCTION_ORACLE_H
+
+namespace hera {
+namespace ws {
+
+template <class Real_ = double, class PointContainer_ = std::vector<DiagramPoint<Real_>>>
+struct AuctionOracleBruteforce : AuctionOracleBase<Real_, PointContainer_> {
+
+    using PointContainer    = PointContainer_;
+    using Real              = Real_;
+
+    using DiagramPointR     = typename ws::DiagramPoint<Real>;
+    using DebugOptimalBidR  = typename ws::DebugOptimalBid<Real>;
+
+    AuctionOracleBruteforce(const PointContainer& bidders, const PointContainer& items, const AuctionParams<Real>& params);
+    // data members
+    // temporarily make everything public
+    size_t num_bidders_;
+    size_t num_items_;
+    std::vector<std::vector<Real>> cost_matrix_;
+    Real max_val_;
+
+    // methods
+    void set_price(const IdxType items_idx, const Real new_priced);
+    IdxValPair<Real> get_optimal_bid(const IdxType bidder_idx);
+    void adjust_prices();
+    void adjust_prices(const Real delta);
+
+    // debug routines
+    DebugOptimalBidR get_optimal_bid_debug(IdxType bidder_idx) const;
+    void sanity_check();
+
+    std::shared_ptr<spdlog::logger> console_logger;
+
+    std::pair<Real, Real> get_minmax_price() const;
+
+};
+
+} // ws
+} // hera
+
+
+#include "auction_oracle_bruteforce.hpp"
+
+#endif

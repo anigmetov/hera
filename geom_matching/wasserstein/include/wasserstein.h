@@ -213,6 +213,8 @@ namespace ws
     inline RealType wasserstein_cost_vec(const std::vector<DiagramPoint<RealType>>& A,
                                   const std::vector<DiagramPoint<RealType>>& B,
                                   const AuctionParams<RealType>& params,
+                                         const std::vector<RealType>& prices_in,
+                                         std::vector<RealType>& prices_out,
                                   const std::string& _log_filename_prefix)
     {
         if (params.wasserstein_power < 1.0) {
@@ -232,16 +234,78 @@ namespace ws
             return 0.0;
 
         RealType result;
+        AuctionParams<RealType> params_copy = params;
 
-        // just use Gauss-Seidel
         AuctionRunnerGS<RealType> auction(A, B, params, _log_filename_prefix);
-        auction.run_auction();
+        auction.run_auction(prices_in, prices_out, params_copy);
         result = auction.get_wasserstein_cost();
         return result;
     }
 
-} // ws
+    template<class RealType>
+    inline RealType wasserstein_cost_vec(const std::vector<DiagramPoint<RealType>>& A,
+                                  const std::vector<DiagramPoint<RealType>>& B,
+                                  const AuctionParams<RealType>& params,
+                                  const std::string& _log_filename_prefix)
+    {
+        std::vector<RealType> prices_in;
+        std::vector<RealType> prices_out;
+        return wasserstein_cost_vec(A, B, params, prices_in, prices_out, _log_filename_prefix);
+    }
 
+    // uses bruteforce oracle, assumes no points at infinity
+    // use for small point sets
+    // NB: params is passed as non-const reference,
+    // initial_epsilon will be set to the last epsilon value in the auction algorithm
+    template<class RealType>
+    inline RealType wasserstein_cost_vec_bf(const std::vector<DiagramPoint<RealType>>& A,
+                                            const std::vector<DiagramPoint<RealType>>& B,
+                                            AuctionParams<RealType>& params,
+                                            const std::vector<RealType>& prices_in,
+                                            std::vector<RealType>& prices_out,
+                                            const std::string& _log_filename_prefix)
+    {
+        if (A.empty() and B.empty())
+            return 0.0;
+
+        RealType result;
+
+        // just use Gauss-Seidel
+        AuctionRunnerGS<RealType, AuctionOracleBruteforce<RealType>> auction(A, B, params, _log_filename_prefix);
+        auction.run_auction(prices_in, prices_out, params);
+        result = auction.get_wasserstein_cost();
+        return result;
+    }
+
+    // assuming there are no points with infinite coords in A and B,
+    // fill in dgm_A, dgm_B with off-diagonal points and their diagonal projections
+    template<class Real, class PairContainer>
+    void add_projections_no_inf(const PairContainer& A, const PairContainer& B, std::vector<DiagramPoint<Real>>& dgm_A, std::vector<DiagramPoint<Real>>& dgm_B)
+    {
+        using Traits = DiagramTraits<PairContainer>;
+        using DgmPoint = DiagramPoint<Real>;
+        size_t n_pts = A.size() + B.size();
+        dgm_A.clear();
+        dgm_B.clear();
+        dgm_A.reserve(n_pts);
+        dgm_B.reserve(n_pts);
+
+        for(auto& pair_A : A) {
+            Real x = Traits::get_x(pair_A);
+            Real y = Traits::get_y(pair_A);
+            dgm_A.emplace_back(x, y,  DgmPoint::NORMAL);
+            dgm_B.emplace_back(x, y,  DgmPoint::DIAG);
+        }
+
+        for(auto& pair_B : B) {
+            Real x = Traits::get_x(pair_B);
+            Real y = Traits::get_y(pair_B);
+            dgm_A.emplace_back(x, y,  DgmPoint::DIAG);
+            dgm_B.emplace_back(x, y,  DgmPoint::NORMAL);
+        }
+     }
+
+}; // ws
 
 
 template<class PairContainer>
@@ -330,6 +394,7 @@ wasserstein_cost(const PairContainer& A,
     }
 
 }
+
 
 template<class PairContainer>
 inline typename DiagramTraits<PairContainer>::RealType

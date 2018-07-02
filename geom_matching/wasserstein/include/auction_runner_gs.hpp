@@ -54,7 +54,7 @@ namespace ws {
 template<class R, class AO, class PC>
 AuctionRunnerGS<R, AO, PC>::AuctionRunnerGS(const PC& A,
                                         const PC& B,
-                                        const AuctionParams<Real>& params,
+                                        const AuctionParams<Real>& _params,
                                         const std::string& _log_filename_prefix) :
     bidders(A),
     items(B),
@@ -62,13 +62,7 @@ AuctionRunnerGS<R, AO, PC>::AuctionRunnerGS(const PC& A,
     num_items(B.size()),
     items_to_bidders(B.size(), k_invalid_index),
     bidders_to_items(A.size(), k_invalid_index),
-    wasserstein_power(params.wasserstein_power),
-    delta(params.delta),
-    internal_p(params.internal_p),
-    initial_epsilon(params.initial_epsilon),
-    epsilon_common_ratio(params.epsilon_common_ratio == 0.0 ? 5.0 : params.epsilon_common_ratio),
-    max_num_phases(params.max_num_phases),
-    dimension(params.dim),
+    params(_params),
     oracle(bidders, items, params)
 #ifdef LOG_AUCTION
     , total_items_persistence(std::accumulate(items.begin(),
@@ -90,8 +84,8 @@ AuctionRunnerGS<R, AO, PC>::AuctionRunnerGS(const PC& A,
 #endif
 
 {
-    assert(initial_epsilon >= 0.0 );
-    assert(epsilon_common_ratio >= 0.0 );
+    assert(params.initial_epsilon >= 0.0 );
+    assert(params.epsilon_common_ratio >= 0.0 );
     assert(A.size() == B.size());
 #ifdef LOG_AUCTION
 
@@ -156,15 +150,15 @@ void AuctionRunnerGS<R, AO, PC>::assign_item_to_bidder(IdxType item_idx, IdxType
 
     unassigned_items.erase(item_idx);
 
-    unassigned_bidders_persistence -= std::pow(bidders[bidder_idx].persistence_lp(internal_p), wasserstein_power);
+    unassigned_bidders_persistence -= std::pow(bidders[bidder_idx].persistence_lp(internal_p), params.wasserstein_power);
 
     if (old_item_owner != k_invalid_index) {
         // item has been assigned to some other bidder,
         // and he became unassigned
-        unassigned_bidders_persistence += std::pow(bidders[old_item_owner].persistence_lp(internal_p), wasserstein_power);
+        unassigned_bidders_persistence += std::pow(bidders[old_item_owner].persistence_lp(internal_p), params.wasserstein_power);
     } else {
         // item was unassigned before
-        unassigned_items_persistence -= std::pow(items[item_idx].persistence_lp(internal_p), wasserstein_power);
+        unassigned_items_persistence -= std::pow(items[item_idx].persistence_lp(internal_p), params.wasserstein_power);
     }
 
     if (log_auction)
@@ -234,13 +228,13 @@ void AuctionRunnerGS<R, AO, PC>::flush_assignment()
 
 
 template<class R, class AO, class PC>
-void AuctionRunnerGS<R, AO, PC>::run_auction_phases(const int max_num_phases, const Real _initial_epsilon)
+void AuctionRunnerGS<R, AO, PC>::run_auction_phases()
 {
     relative_error = std::numeric_limits<Real>::max();
     // choose some initial epsilon
-    oracle.set_epsilon(_initial_epsilon);
+    oracle.set_epsilon(params.initial_epsilon);
     assert( oracle.get_epsilon() > 0 );
-    for(int phase_num = 0; phase_num < max_num_phases; ++phase_num) {
+    for(int phase_num = 0; phase_num < params.max_num_phases; ++phase_num) {
         flush_assignment();
         run_auction_phase();
         Real current_result = getDistanceToQthPowerInternal();
@@ -251,7 +245,7 @@ void AuctionRunnerGS<R, AO, PC>::run_auction_phases(const int max_num_phases, co
 //        current_result = current_result_1;
 //        assert(fabs(current_result - current_result_1) < 0.001);
         Real denominator = current_result - num_bidders * oracle.get_epsilon();
-        current_result = pow(current_result, 1.0 / wasserstein_power);
+        current_result = pow(current_result, 1.0 / params.wasserstein_power);
 #ifdef LOG_AUCTION
         console_logger->info("Phase {0} done, num_rounds (cumulative) = {1}, current_result = {2}, epsilon = {3}",
                               phase_num, format_int(num_rounds), current_result,
@@ -262,7 +256,7 @@ void AuctionRunnerGS<R, AO, PC>::run_auction_phases(const int max_num_phases, co
             console_logger->info("Epsilon is too large");
 #endif
         } else {
-            denominator = pow(denominator, 1.0 / wasserstein_power);
+            denominator = pow(denominator, 1.0 / params.wasserstein_power);
             Real numerator = current_result - denominator;
             relative_error = numerator / denominator;
             // spdlog::get("console")->info("relative error = {} / {} = {}, result = {}", numerator, denominator, relative_error, current_result);
@@ -270,18 +264,25 @@ void AuctionRunnerGS<R, AO, PC>::run_auction_phases(const int max_num_phases, co
             console_logger->info("error = {0} / {1} = {2}",
                     numerator, denominator, relative_error);
 #endif
-            if (relative_error <= delta) {
+            if (relative_error <= params.delta) {
                 break;
             }
         }
         // decrease epsilon for the next iteration
-        oracle.set_epsilon( oracle.get_epsilon() / epsilon_common_ratio );
+        oracle.set_epsilon( oracle.get_epsilon() / params.epsilon_common_ratio );
     }
+}
+
+template<class R, class AO, class PC>
+void AuctionRunnerGS<R, AO, PC>::run_auction()
+{
+    std::vector<R> prices_in, prices_out;
+    run_auction(prices_in, prices_out, params);
 }
 
 
 template<class R, class AO, class PC>
-void AuctionRunnerGS<R, AO, PC>::run_auction()
+void AuctionRunnerGS<R, AO, PC>::run_auction(const std::vector<R>& prices_in, std::vector<R>& prices_out, AuctionParamsR& par)
 {
 
     if (num_bidders == 1) {
@@ -291,13 +292,33 @@ void AuctionRunnerGS<R, AO, PC>::run_auction()
             return;
     }
 
-    double init_eps = ( initial_epsilon > 0.0 ) ? initial_epsilon : oracle.max_val_ / 4.0 ;
-    run_auction_phases(max_num_phases, init_eps);
+    if (par.initial_epsilon == 0.0) {
+        par.initial_epsilon = oracle.max_val_ / 4.0;
+    }
+
+    if (par.epsilon_common_ratio == 0.0) {
+        par.epsilon_common_ratio = 5.0;
+    }
+
+    params = par;
+
+    if (not prices_in.empty()) {
+        for (size_t i = 0; i < num_items; ++i) {
+            oracle.set_price(i, prices_in[i]);
+        }
+    }
+
+    run_auction_phases();
+
+    par.num_rounds_ran = this->num_rounds;
+    par.initial_epsilon = oracle.get_epsilon();
+
     is_distance_computed = true;
-    if (relative_error > delta) {
+    prices_out = oracle.get_prices();
+    if (relative_error > params.delta) {
 #ifndef FOR_R_TDA
             std::cerr << "Maximum iteration number exceeded, exiting. Current result is: ";
-            std::cerr << pow(wasserstein_cost, 1.0/wasserstein_power) << std::endl;
+            std::cerr << pow(wasserstein_cost, 1.0 / params.wasserstein_power) << std::endl;
 #endif
             throw std::runtime_error("Maximum iteration number exceeded");
     }
@@ -308,6 +329,7 @@ template<class R, class AO, class PC>
 void AuctionRunnerGS<R, AO, PC>::run_auction_phase()
 {
     num_phase++;
+    int num_rounds_in_phase = 0;
     //std::cout << "Entered run_auction_phase" << std::endl;
     do {
         size_t bidder_idx = *unassigned_bidders.begin();
@@ -316,6 +338,10 @@ void AuctionRunnerGS<R, AO, PC>::run_auction_phase()
         auto bid_value = optimal_bid.second;
         assign_item_to_bidder(optimal_bid.first, bidder_idx);
         oracle.set_price(optimal_item_idx, bid_value);
+        num_rounds_in_phase++;
+        if (num_rounds_in_phase > params.max_rounds) {
+            throw RoundsExceededException("Max rounds exceeded. ");
+        }
         //print_debug();
 #ifdef FOR_R_TDA
         if ( num_rounds % 10000 == 0 ) {
@@ -341,7 +367,7 @@ template<class R, class AO, class PC>
 R AuctionRunnerGS<R, AO, PC>::get_item_bidder_cost(const size_t item_idx, const size_t bidder_idx, const bool tolerate_invalid_idx) const
 {
     if (item_idx != k_invalid_index and bidder_idx != k_invalid_index) {
-        return std::pow(dist_lp(bidders[bidder_idx], items[item_idx], internal_p, dimension), wasserstein_power);
+        return std::pow(dist_lp(bidders[bidder_idx], items[item_idx], params.internal_p, params.dim), params.wasserstein_power);
     } else {
         if (tolerate_invalid_idx)
             return R(0.0);
@@ -368,7 +394,7 @@ template<class R, class AO, class PC>
 R AuctionRunnerGS<R, AO, PC>::get_wasserstein_distance()
 {
     assert(is_distance_computed);
-    return pow(get_wasserstein_cost(), 1.0/wasserstein_power);
+    return pow(get_wasserstein_cost(), 1.0/params.wasserstein_power);
 }
 
 template<class R, class AO, class PC>
@@ -481,7 +507,7 @@ void AuctionRunnerGS<R, AO, PC>::print_matching()
         if (bidders_to_items[bIdx] != k_invalid_index) {
             auto pA = bidders[bIdx];
             auto pB = items[bidders_to_items[bIdx]];
-            std::cout <<  pA << " <-> " << pB << "+" << pow(dist_lp(pA, pB, internal_p, dimension), wasserstein_power) << std::endl;
+            std::cout <<  pA << " <-> " << pB << "+" << pow(dist_lp(pA, pB, params.internal_p, params.dimension), params.wasserstein_power) << std::endl;
         } else {
             assert(false);
         }

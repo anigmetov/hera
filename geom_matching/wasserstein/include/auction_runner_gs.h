@@ -31,6 +31,7 @@ derivative works thereof, in binary and source code form.
 
 #include <memory>
 #include <unordered_set>
+#include <exception>
 
 #include "spdlog/spdlog.h"
 #include "auction_oracle.h"
@@ -38,13 +39,22 @@ derivative works thereof, in binary and source code form.
 namespace hera {
 namespace ws {
 
+struct RoundsExceededException : public std::runtime_error
+{
+    RoundsExceededException(const std::string& message) :
+            std::runtime_error(message + ": max_num_rounds exceeded")
+    {
+    }
+};
+
 template<class RealType_ = double, class AuctionOracle_ = AuctionOracleKDTreeRestricted<RealType_>, class PointContainer_ = std::vector<DiagramPoint<RealType_>> >      // alternatively: AuctionOracleLazyHeap --- TODO
 class AuctionRunnerGS {
 public:
-    using Real          = RealType_;
-    using AuctionOracle = AuctionOracle_;
-    using DgmPoint      = typename AuctionOracle::DiagramPointR;
-    using IdxValPairR   = IdxValPair<Real>;
+    using Real           = RealType_;
+    using AuctionOracle  = AuctionOracle_;
+    using AuctionParamsR = AuctionParams<Real>;
+    using DgmPoint       = typename AuctionOracle::DiagramPointR;
+    using IdxValPairR    = IdxValPair<Real>;
     using PointContainer = PointContainer_;
 
 
@@ -53,7 +63,6 @@ public:
                     const AuctionParams<Real>& params,
                     const std::string& _log_filename_prefix = "");
 
-    void set_epsilon(Real new_val) { assert(epsilon > 0.0); epsilon = new_val; };
     Real get_epsilon() const { return oracle.get_epsilon(); }
     Real get_wasserstein_cost();
     Real get_wasserstein_distance();
@@ -66,24 +75,18 @@ public:
     const size_t num_items;
     std::vector<IdxType> items_to_bidders;
     std::vector<IdxType> bidders_to_items;
-    Real wasserstein_power;
-    Real epsilon;
-    Real delta;
-    Real internal_p;
-    Real initial_epsilon;
-    Real epsilon_common_ratio; // next epsilon = current epsilon / epsilon_common_ratio
-    const int max_num_phases; // maximal number of iterations of epsilon-scaling
+    AuctionParamsR params;
     Real weight_adj_const;
     Real wasserstein_cost;
     Real relative_error;
-    int dimension;
     // to get the 2 best items
     AuctionOracle oracle;
     std::unordered_set<size_t> unassigned_bidders;
     // private methods
     void assign_item_to_bidder(const IdxType bidder_idx, const IdxType items_idx);
     void run_auction();
-    void run_auction_phases(const int max_num_phases, const Real _initial_epsilon);
+    void run_auction(const std::vector<Real>& prices_in, std::vector<Real>& prices_out, AuctionParamsR& par);
+    void run_auction_phases();
     void run_auction_phase();
     void flush_assignment();
     // return 0, if item_idx is invalid

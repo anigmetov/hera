@@ -36,6 +36,51 @@ derivative works thereof, in binary and source code form.
 int main(int argc, char* argv[])
 {
 
+//    {
+//        int n_points = 3;
+//        int dim = 3;
+//        using Traits = hera::ws::dnn::DynamicPointTraits<double>;
+//        hera::ws::dnn::DynamicPointTraits<double> traits(dim);
+//        hera::ws::dnn::DynamicPointVector<double> dgm_a = traits.container(n_points);
+//        hera::ws::dnn::DynamicPointVector<double> dgm_b = traits.container(n_points);
+//        dgm_a[0][0] = 0.0;
+//        dgm_a[0][1] = 0.0;
+//        dgm_a[0][2] = 0.0;
+//
+//        dgm_a[1][0] = 1.0;
+//        dgm_a[1][1] = 0.0;
+//        dgm_a[1][2] = 0.0;
+//
+//        dgm_a[2][0] = 0.0;
+//        dgm_a[2][1] = 1.0;
+//        dgm_a[2][2] = 1.0;
+//
+//        dgm_b[0][0] = -0.550105;
+//        dgm_b[0][1] = 0.237063;
+//        dgm_b[0][2] = 0.58884;
+//
+//        dgm_b[1][0] = 0.0534714;
+//        dgm_b[1][1] = -0.38765;
+//        dgm_b[1][2] = -0.449552;
+//
+//        dgm_b[2][0] = 0.0815901;
+//        dgm_b[2][1] = -0.00852456;
+//        dgm_b[2][2] = 0.972346;
+//
+//
+//        hera::AuctionParams<double> params;
+//        params.dim = dim;
+////        params.delta = .01;
+////        params.internal_p = 4.0;
+//
+//
+//        double cost2 = hera::ws::wasserstein_cost(dgm_a, dgm_b, params);
+//        double cost1 = hera::ws::wasserstein_cost(dgm_b, dgm_a, params);
+//
+//        std::cout << cost1 << ", " << cost2 << ", " << params.delta * cost1 << ", " << fabs(cost1 - cost2) << std::endl;
+//
+//        return 0;
+//    }
     //{
     //int n_points = 3;
     //int dim = 3;

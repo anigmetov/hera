@@ -530,3 +530,35 @@ TEST_CASE("infinity points", "wasserstein_dist")
 
 }
 
+/*
+TEST_CASE("bruteforce_oracle", "bruteforce_oracle")
+{
+    using DiagramPointR = hera::ws::DiagramPoint<double>;
+    std::vector<DiagramPointR> diagram_A, diagram_B;
+    hera::AuctionParams<double> params;
+    params.wasserstein_power = 1.0;
+    params.delta = 0.01;
+    params.internal_p = hera::get_infinity<double>();
+    params.initial_epsilon = 0.0;
+    params.epsilon_common_ratio = 0.0;
+    params.max_num_phases = 30;
+    params.gamma_threshold = 0.0;
+    params.max_bids_per_round = 1;  // use Jacobi
+
+    // do not use Hera's infinity! it is -1
+    double inf = std::numeric_limits<double>::infinity();
+
+    SECTION("simple test") {
+
+        // edge cost 1.0
+        diagram_A.emplace_back(1.0, 2.0, DiagramPointR::NORMAL);
+        diagram_B.emplace_back(2.0, 3.0, DiagramPointR::NORMAL);
+        std::vector<double> prices_in, prices_out;
+
+        double d = hera::ws::wasserstein_cost_vec_bf<>(diagram_A, diagram_B, params, prices_in, prices_out, "");
+
+        double corr_answer = 1.0;
+        REQUIRE(  fabs(d - corr_answer) <= 0.00000000001 );
+    }
+}
+*/

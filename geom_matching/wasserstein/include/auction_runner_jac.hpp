@@ -53,7 +53,7 @@ namespace ws {
     template<class R, class AO, class PC>
     AuctionRunnerJac<R, AO, PC>::AuctionRunnerJac(const PointContainer& A,
                                               const PointContainer& B,
-                                              const AuctionParams<Real>& params,
+                                              const AuctionParams<Real>& _params,
                                               const std::string &_log_filename_prefix
     ) :
             bidders(A),
@@ -62,29 +62,22 @@ namespace ws {
             num_items(A.size()),
             items_to_bidders(A.size(), k_invalid_index),
             bidders_to_items(A.size(), k_invalid_index),
-            wasserstein_power(params.wasserstein_power),
-            delta(params.delta),
-            internal_p(params.internal_p),
-            initial_epsilon(params.initial_epsilon),
-            epsilon_common_ratio(params.epsilon_common_ratio == 0.0 ? 5.0 : params.epsilon_common_ratio),
-            max_num_phases(params.max_num_phases),
+            params(_params),
             bid_table(A.size(), std::make_pair(k_invalid_index, k_lowest_bid_value)),
             oracle(bidders, items, params),
-            max_bids_per_round(params.max_bids_per_round),
-            dimension(params.dim),
 #ifndef WASSERSTEIN_PURE_GEOM
             total_items_persistence(std::accumulate(items.begin(),
                                                     items.end(),
                                                     R(0.0),
-                                                    [params](const Real &ps, const DgmPoint &item) {
-                                                        return ps + std::pow(item.persistence_lp(params.internal_p), params.wasserstein_power);
+                                                    [_params](const Real &ps, const DgmPoint &item) {
+                                                        return ps + std::pow(item.persistence_lp(_params.internal_p), _params.wasserstein_power);
                                                     }
             )),
             total_bidders_persistence(std::accumulate(bidders.begin(),
                                                       bidders.end(),
                                                       R(0.0),
-                                                      [params](const Real &ps, const DgmPoint &bidder) {
-                                                          return ps + std::pow(bidder.persistence_lp(params.internal_p), params.wasserstein_power);
+                                                      [_params](const Real &ps, const DgmPoint &bidder) {
+                                                          return ps + std::pow(bidder.persistence_lp(_params.internal_p), _params.wasserstein_power);
                                                       }
             )),
             unassigned_bidders_persistence(total_bidders_persistence),
@@ -193,14 +186,14 @@ namespace ws {
     template<class R, class AO, class PC>
     typename AuctionRunnerJac<R, AO, PC>::Real
     AuctionRunnerJac<R, AO, PC>::get_cost_to_diagonal(const DgmPoint &pt) const {
-        return std::pow(pt.persistence_lp(internal_p), wasserstein_power);
+        return std::pow(pt.persistence_lp(params.internal_p), params.wasserstein_power);
     }
 
     template<class R, class AO, class PC>
     typename AuctionRunnerJac<R, AO, PC>::Real
     AuctionRunnerJac<R, AO, PC>::get_gamma() const {
         return std::pow(std::fabs(unassigned_items_persistence + unassigned_bidders_persistence),
-                        1.0 / wasserstein_power);
+                        1.0 / params.wasserstein_power);
     }
 #endif
 
@@ -257,8 +250,8 @@ namespace ws {
     typename AuctionRunnerJac<R, AO, PC>::Real
     AuctionRunnerJac<R, AO, PC>::get_item_bidder_cost(const size_t item_idx, const size_t bidder_idx) const
     {
-        return std::pow(dist_lp(bidders[bidder_idx], items[item_idx], internal_p, dimension),
-                        wasserstein_power);
+        return std::pow(dist_lp(bidders[bidder_idx], items[item_idx], params.internal_p, params.dim),
+                        params.wasserstein_power);
     }
 
     template<class R, class AO, class PC>
@@ -367,7 +360,7 @@ namespace ws {
 #endif
             result = k_max_relative_error;
         } else {
-            Real denominator = std::pow(reduced_cost, 1.0 / wasserstein_power) - gamma;
+            Real denominator = std::pow(reduced_cost, 1.0 / params.wasserstein_power) - gamma;
             if (denominator <= 0) {
 #ifdef LOG_AUCTION
                 if (debug_output) {
@@ -378,8 +371,8 @@ namespace ws {
                 result = k_max_relative_error;
             } else {
                 Real numerator = 2 * gamma +
-                                 std::pow(partial_cost, 1.0 / wasserstein_power) -
-                                 std::pow(reduced_cost, 1.0 / wasserstein_power);
+                                 std::pow(partial_cost, 1.0 / params.wasserstein_power) -
+                                 std::pow(reduced_cost, 1.0 / params.wasserstein_power);
 
                 result = numerator / denominator;
 #ifdef LOG_AUCTION
@@ -469,15 +462,14 @@ namespace ws {
     template<class R, class AO, class PC>
     void AuctionRunnerJac<R, AO, PC>::set_epsilon(Real new_val) {
         assert(new_val > 0.0);
-        epsilon = new_val;
         oracle.set_epsilon(new_val);
     }
 
     template<class R, class AO, class PC>
-    void AuctionRunnerJac<R, AO, PC>::run_auction_phases(const int max_num_phases, const Real _initial_epsilon) {
-        set_epsilon(_initial_epsilon);
+    void AuctionRunnerJac<R, AO, PC>::run_auction_phases() {
+        set_epsilon(params.initial_epsilon);
         assert(oracle.get_epsilon() > 0);
-        for (int phase_num = 0; phase_num < max_num_phases; ++phase_num) {
+        for (int phase_num = 0; phase_num < params.max_num_phases; ++phase_num) {
             flush_assignment();
             run_auction_phase();
 
@@ -550,11 +542,18 @@ namespace ws {
 
     template<class R, class AO, class PC>
     void AuctionRunnerJac<R, AO, PC>::decrease_epsilon() {
-        set_epsilon(get_epsilon() / epsilon_common_ratio);
+        set_epsilon(get_epsilon() / params.epsilon_common_ratio);
     }
 
     template<class R, class AO, class PC>
     void AuctionRunnerJac<R, AO, PC>::run_auction()
+    {
+        std::vector<Real> prices_in,  prices_out;
+        run_auction(prices_in, prices_out, params);
+    }
+
+    template<class R, class AO, class PC>
+    void AuctionRunnerJac<R, AO, PC>::run_auction(const std::vector<Real>& prices_in, std::vector<Real>& prices_out, AuctionParamsR par)
     {
         if (num_bidders == 1) {
             assign_item_to_bidder(0, 0);
@@ -562,8 +561,18 @@ namespace ws {
             is_distance_computed = true;
             return;
         }
-        R init_eps = (initial_epsilon > 0.0) ? initial_epsilon : oracle.max_val_ / 4.0;
-        run_auction_phases(max_num_phases, init_eps);
+
+        if (par.initial_epsilon == 0.0) {
+            par.initial_epsilon = oracle.max_val_ / 4.0;
+        }
+
+        if (par.epsilon_common_ratio == 0.0) {
+            par.epsilon_common_ratio = 5.0;
+        }
+
+        params = par;
+
+        run_auction_phases();
         is_distance_computed = true;
         wasserstein_cost = partial_cost;
         if (not is_done()) {
@@ -699,7 +708,7 @@ namespace ws {
     template<class R, class AO, class PC>
     bool AuctionRunnerJac<R, AO, PC>::is_done() const
     {
-        return get_relative_error() <= delta;
+        return get_relative_error() <= params.delta;
     }
 
     template<class R, class AO, class PC>
@@ -784,7 +793,7 @@ namespace ws {
     AuctionRunnerJac<R, AO, PC>::get_wasserstein_distance()
     {
         assert(is_distance_computed);
-        return std::pow(wasserstein_cost, 1.0 / wasserstein_power);
+        return std::pow(wasserstein_cost, 1.0 / params.wasserstein_power);
     }
 
     template<class R, class AO, class PC>

@@ -56,6 +56,7 @@ public:
     using DgmPoint      = typename AuctionOracle::DiagramPointR;
     using IdxValPairR   = IdxValPair<Real>;
     using PointContainer = PointContainer_;
+    using AuctionParamsR = AuctionParams<Real>;
 
     const Real k_lowest_bid_value = -1; // all bid values must be positive
 
@@ -66,8 +67,9 @@ public:
                      const std::string& _log_filename_prefix = "");
 
     void set_epsilon(Real new_val);
-    Real get_epsilon() const { return epsilon; }
+    Real get_epsilon() const { return oracle.epsilon; }
     void run_auction();
+    void run_auction(const std::vector<Real>& prices_in, std::vector<Real>& prices_out, AuctionParamsR par);
     template<class Range>
     void run_bidding_step(const Range& r);
     bool is_done() const;
@@ -83,13 +85,7 @@ public:
     const size_t num_items;
     std::vector<IdxType> items_to_bidders;
     std::vector<IdxType> bidders_to_items;
-    Real wasserstein_power;
-    Real epsilon;
-    Real delta;
-    Real internal_p;
-    Real initial_epsilon;
-    const Real epsilon_common_ratio; // next epsilon = current epsilon / epsilon_common_ratio
-    const int max_num_phases; // maximal number of phases of epsilon-scaling
+    AuctionParamsR params;
     Real weight_adj_const;
     Real wasserstein_cost;
     std::vector<IdxValPairR> bid_table;
@@ -98,12 +94,10 @@ public:
     std::unordered_set<size_t> unassigned_bidders;
     std::unordered_set<size_t> items_with_bids;
     // to imitate Gauss-Seidel
-    const size_t max_bids_per_round;
     Real partial_cost { 0.0 };
     bool is_distance_computed { false };
     int num_rounds { 0 };
     int num_phase { 0 };
-    int dimension;
 
     size_t unassigned_threshold; // for experiments
 
@@ -140,7 +134,7 @@ public:
     void assign_item_to_bidder(const IdxType bidder_idx, const IdxType items_idx);
     void assign_to_best_bidder(const IdxType items_idx);
     void clear_bid_table();
-    void run_auction_phases(const int max_num_phases, const Real _initial_epsilon);
+    void run_auction_phases();
     void run_auction_phase();
     void submit_bid(IdxType bidder_idx, const IdxValPairR& items_bid_value_pair);
     void flush_assignment();
