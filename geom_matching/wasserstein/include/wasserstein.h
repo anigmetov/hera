@@ -277,6 +277,21 @@ namespace ws
         return result;
     }
 
+    template<class RealType>
+    inline RealType wasserstein_dist_vec_bf(const std::vector<DiagramPoint<RealType>>& A,
+                                            const std::vector<DiagramPoint<RealType>>& B,
+                                            AuctionParams<RealType>& params,
+                                            const std::vector<RealType>& prices_in,
+                                            std::vector<RealType>& prices_out,
+                                            const std::string& _log_filename_prefix)
+    {
+        double cost = wasserstein_cost_vec_bf(A, B, params, prices_in, prices_out, _log_filename_prefix);
+        if ( params.wasserstein_power == RealType(1.0))
+            return cost;
+        else
+            return std::pow(cost, RealType(1.0) / params.wasserstein_power);
+    }
+
     // assuming there are no points with infinite coords in A and B,
     // fill in dgm_A, dgm_B with off-diagonal points and their diagonal projections
     template<class Real, class PairContainer>

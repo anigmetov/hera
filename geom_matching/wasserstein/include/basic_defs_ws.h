@@ -40,6 +40,7 @@ derivative works thereof, in binary and source code form.
 #include <limits>
 #include <ostream>
 #include <typeinfo>
+#include <exception>
 
 #ifdef _WIN32
 #include <ciso646>
@@ -325,6 +326,14 @@ namespace ws
 
     template<class T>
     inline std::string format_int(T i);
+
+    struct RoundsExceededException : public std::runtime_error
+    {
+        RoundsExceededException(const std::string& message) :
+                std::runtime_error(message + ": max_num_rounds exceeded")
+        { }
+    };
+
 
 } // ws
 } // hera

@@ -32,7 +32,7 @@ derivative works thereof, in binary and source code form.
 #include <map>
 #include <memory>
 #include <set>
-#include <list>
+#include <limits>
 
 #include "basic_defs_ws.h"
 
@@ -54,7 +54,14 @@ struct AuctionOracleBase {
     AuctionOracleBase(const PointContainer_& _bidders, const PointContainer_& _items, const AuctionParams<Real>& params);
     ~AuctionOracleBase() {}
     Real get_epsilon() const { return epsilon; };
-    void set_epsilon(Real new_epsilon) { assert(new_epsilon >= 0.0); epsilon = new_epsilon; };
+
+    void set_epsilon(Real new_epsilon)
+    {
+        assert(new_epsilon >= 0.0);
+        assert(new_epsilon < std::numeric_limits<Real>::max());
+        epsilon = new_epsilon;
+    };
+
     const std::vector<Real>& get_prices() const { return prices; }
     virtual Real get_price(const size_t item_idx) const { return prices[item_idx]; } // TODO make virtual?
 //protected:

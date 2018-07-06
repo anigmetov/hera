@@ -130,14 +130,17 @@ TEST_CASE("file cases", "wasserstein_dist")
 
 
     SECTION("from file:") {
-        const char* file_name = "../tests/data/test_list.txt";
+        const char* file_name = "test_list.txt";
         std::ifstream f;
         f.open(file_name);
+        REQUIRE(f.good());
         std::vector<TestFromFileCase> test_params;
         std::string s;
         while (std::getline(f, s)) {
+            std::cout << s << std::endl;
             test_params.emplace_back(s);
         }
+        f.close();
 
         for(const auto& ts : test_params) {
             params.wasserstein_power = ts.q;
@@ -153,7 +156,7 @@ TEST_CASE("file cases", "wasserstein_dist")
     }
 
     SECTION("from DIPHA file:") {
-        const char* file_name = "../tests/data/test_list.txt";
+        const char* file_name = "test_list.txt";
         std::ifstream f;
         f.open(file_name);
         std::vector<TestFromFileCase> test_params;
@@ -530,12 +533,13 @@ TEST_CASE("infinity points", "wasserstein_dist")
 
 }
 
-/*
+
 TEST_CASE("bruteforce_oracle", "bruteforce_oracle")
 {
     using DiagramPointR = hera::ws::DiagramPoint<double>;
-    std::vector<DiagramPointR> diagram_A, diagram_B;
-    hera::AuctionParams<double> params;
+    using AuctionParamsR = hera::AuctionParams<double>;
+    PairVector diagram_A, diagram_B;
+    AuctionParamsR params;
     params.wasserstein_power = 1.0;
     params.delta = 0.01;
     params.internal_p = hera::get_infinity<double>();
@@ -543,22 +547,42 @@ TEST_CASE("bruteforce_oracle", "bruteforce_oracle")
     params.epsilon_common_ratio = 0.0;
     params.max_num_phases = 30;
     params.gamma_threshold = 0.0;
-    params.max_bids_per_round = 1;  // use Jacobi
+    params.max_bids_per_round = 1;  // use Gauss-Seidel
 
     // do not use Hera's infinity! it is -1
     double inf = std::numeric_limits<double>::infinity();
+    SECTION("from file:")
+    {
+        const char* file_name = "test_list.txt";
+        std::ifstream f;
+        f.open(file_name);
+        std::vector<TestFromFileCase> test_params;
+        std::string s;
+        while (std::getline(f, s)) {
+            test_params.emplace_back(s);
+        }
 
-    SECTION("simple test") {
+        std::cout << "testing bruteforce started" << std::endl;
+        for(auto ts : test_params) {
+            std::cout << "testing bruteforce on " << ts << std::endl;
+            params.wasserstein_power = ts.q;
+            params.internal_p = ts.internal_p;
+            AuctionParamsR local_par_copy = params;
+            bool read_file_A = hera::read_diagram_point_set<double, PairVector>(ts.file_1, diagram_A);
+            bool read_file_B = hera::read_diagram_point_set<double, PairVector>(ts.file_2, diagram_B);
+            REQUIRE( read_file_A );
+            REQUIRE( read_file_B );
+            // do not run bruteforce on large files, it's too slow
+            // if (diagram_A.size() > 40 or diagram_B.size() > 40)
+            //    continue;
+            std::vector<DiagramPointR> dgm_A, dgm_B;
+            std::vector<double> prices_in, prices_out;
 
-        // edge cost 1.0
-        diagram_A.emplace_back(1.0, 2.0, DiagramPointR::NORMAL);
-        diagram_B.emplace_back(2.0, 3.0, DiagramPointR::NORMAL);
-        std::vector<double> prices_in, prices_out;
-
-        double d = hera::ws::wasserstein_cost_vec_bf<>(diagram_A, diagram_B, params, prices_in, prices_out, "");
-
-        double corr_answer = 1.0;
-        REQUIRE(  fabs(d - corr_answer) <= 0.00000000001 );
+            hera::ws::add_projections_no_inf(diagram_A, diagram_B, dgm_A, dgm_B);
+            double bf_answer = hera::ws::wasserstein_dist_vec_bf(dgm_A, dgm_B, local_par_copy, prices_in, prices_out, "");
+            REQUIRE( fabs(bf_answer - ts.answer) <= 0.01 * bf_answer );
+            std::cout << ts << " PASSED " << std::endl;
+        }
     }
+
 }
-*/

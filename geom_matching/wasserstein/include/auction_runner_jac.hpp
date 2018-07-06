@@ -460,8 +460,10 @@ namespace ws {
 
 
     template<class R, class AO, class PC>
-    void AuctionRunnerJac<R, AO, PC>::set_epsilon(Real new_val) {
+    void AuctionRunnerJac<R, AO, PC>::set_epsilon(Real new_val)
+    {
         assert(new_val > 0.0);
+        assert(new_val < std::numeric_limits<R>::max());
         oracle.set_epsilon(new_val);
     }
 
@@ -553,7 +555,7 @@ namespace ws {
     }
 
     template<class R, class AO, class PC>
-    void AuctionRunnerJac<R, AO, PC>::run_auction(const std::vector<Real>& prices_in, std::vector<Real>& prices_out, AuctionParamsR par)
+    void AuctionRunnerJac<R, AO, PC>::run_auction(const std::vector<Real>& prices_in, std::vector<Real>& prices_out, AuctionParamsR& par)
     {
         if (num_bidders == 1) {
             assign_item_to_bidder(0, 0);
@@ -572,7 +574,17 @@ namespace ws {
 
         params = par;
 
+        if (not prices_in.empty()) {
+            for (size_t i = 0; i < num_items; ++i) {
+                oracle.set_price(i, prices_in[i]);
+            }
+        }
+
         run_auction_phases();
+
+        par.num_rounds_ran = num_rounds;
+        prices_out = oracle.get_prices();
+
         is_distance_computed = true;
         wasserstein_cost = partial_cost;
         if (not is_done()) {
@@ -727,8 +739,13 @@ namespace ws {
         num_phase++;
         //console_logger->debug("Entered run_auction_phase");
 
+        int num_rounds_in_phase = 0;
         do {
             num_rounds++;
+            num_rounds_in_phase++;
+            if (num_rounds_in_phase > params.max_rounds) {
+                throw RoundsExceededException(std::to_string(num_rounds_in_phase));
+            }
 #ifdef LOG_AUCTION
             num_diag_stole_from_diag = 0;
             num_normal_assignments_non_cumulative = 0;

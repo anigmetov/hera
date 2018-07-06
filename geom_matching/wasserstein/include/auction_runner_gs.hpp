@@ -340,7 +340,7 @@ void AuctionRunnerGS<R, AO, PC>::run_auction_phase()
         oracle.set_price(optimal_item_idx, bid_value);
         num_rounds_in_phase++;
         if (num_rounds_in_phase > params.max_rounds) {
-            throw RoundsExceededException("Max rounds exceeded. ");
+            throw RoundsExceededException(std::to_string(num_rounds_in_phase));
         }
         //print_debug();
 #ifdef FOR_R_TDA

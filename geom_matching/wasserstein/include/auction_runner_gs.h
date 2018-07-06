@@ -31,21 +31,14 @@ derivative works thereof, in binary and source code form.
 
 #include <memory>
 #include <unordered_set>
-#include <exception>
 
 #include "spdlog/spdlog.h"
+#include "basic_defs_ws.h"
 #include "auction_oracle.h"
 
 namespace hera {
 namespace ws {
 
-struct RoundsExceededException : public std::runtime_error
-{
-    RoundsExceededException(const std::string& message) :
-            std::runtime_error(message + ": max_num_rounds exceeded")
-    {
-    }
-};
 
 template<class RealType_ = double, class AuctionOracle_ = AuctionOracleKDTreeRestricted<RealType_>, class PointContainer_ = std::vector<DiagramPoint<RealType_>> >      // alternatively: AuctionOracleLazyHeap --- TODO
 class AuctionRunnerGS {

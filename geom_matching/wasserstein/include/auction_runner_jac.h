@@ -69,7 +69,7 @@ public:
     void set_epsilon(Real new_val);
     Real get_epsilon() const { return oracle.epsilon; }
     void run_auction();
-    void run_auction(const std::vector<Real>& prices_in, std::vector<Real>& prices_out, AuctionParamsR par);
+    void run_auction(const std::vector<Real>& prices_in, std::vector<Real>& prices_out, AuctionParamsR& par);
     template<class Range>
     void run_bidding_step(const Range& r);
     bool is_done() const;
