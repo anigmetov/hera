@@ -212,7 +212,7 @@ namespace ws
     template<class RealType>
     inline RealType wasserstein_cost_vec(const std::vector<DiagramPoint<RealType>>& A,
                                   const std::vector<DiagramPoint<RealType>>& B,
-                                  const AuctionParams<RealType>& params,
+                                  AuctionParams<RealType>& params,
                                   const std::string& _log_filename_prefix)
     {
         if (params.wasserstein_power < 1.0) {
@@ -237,6 +237,7 @@ namespace ws
         AuctionRunnerGS<RealType> auction(A, B, params, _log_filename_prefix);
         auction.run_auction();
         result = auction.get_wasserstein_cost();
+        params.final_relative_error = auction.get_relative_error();
         return result;
     }
 
@@ -248,7 +249,7 @@ template<class PairContainer>
 inline typename DiagramTraits<PairContainer>::RealType
 wasserstein_cost(const PairContainer& A,
                 const PairContainer& B,
-                const AuctionParams< typename DiagramTraits<PairContainer>::RealType >& params,
+                AuctionParams< typename DiagramTraits<PairContainer>::RealType >& params,
                 const std::string& _log_filename_prefix = "")
 {
     using Traits = DiagramTraits<PairContainer>;
@@ -335,7 +336,7 @@ template<class PairContainer>
 inline typename DiagramTraits<PairContainer>::RealType
 wasserstein_dist(const PairContainer& A,
                  const PairContainer& B,
-                 const AuctionParams<typename DiagramTraits<PairContainer>::RealType> params,
+                 AuctionParams<typename DiagramTraits<PairContainer>::RealType>& params,
                  const std::string& _log_filename_prefix = "")
 {
     using Real = typename DiagramTraits<PairContainer>::RealType;

@@ -73,6 +73,7 @@ public:
     Real initial_epsilon;
     Real epsilon_common_ratio; // next epsilon = current epsilon / epsilon_common_ratio
     const int max_num_phases; // maximal number of iterations of epsilon-scaling
+    bool tolerate_max_iter_exceeded;
     Real weight_adj_const;
     Real wasserstein_cost;
     Real relative_error;

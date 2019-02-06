@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
 
     params.max_bids_per_round = ( 9 <= argc ) ? atoi(argv[8]) : 0;
     if (params.max_bids_per_round == 0)
-        params.max_bids_per_round = std::numeric_limits<size_t>::max();
+        params.max_bids_per_round = std::numeric_limits<decltype(params.max_bids_per_round)>::max();
 
 
     params.gamma_threshold = (10 <= argc) ? atof(argv[9]) : 0.0;

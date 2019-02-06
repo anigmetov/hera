@@ -68,6 +68,7 @@ AuctionRunnerGS<R, AO, PC>::AuctionRunnerGS(const PC& A,
     initial_epsilon(params.initial_epsilon),
     epsilon_common_ratio(params.epsilon_common_ratio == 0.0 ? 5.0 : params.epsilon_common_ratio),
     max_num_phases(params.max_num_phases),
+    tolerate_max_iter_exceeded(params.tolerate_max_iter_exceeded),
     dimension(params.dim),
     oracle(bidders, items, params)
 #ifdef LOG_AUCTION
@@ -294,7 +295,7 @@ void AuctionRunnerGS<R, AO, PC>::run_auction()
     double init_eps = ( initial_epsilon > 0.0 ) ? initial_epsilon : oracle.max_val_ / 4.0 ;
     run_auction_phases(max_num_phases, init_eps);
     is_distance_computed = true;
-    if (relative_error > delta) {
+    if (relative_error > delta and not tolerate_max_iter_exceeded) {
 #ifndef FOR_R_TDA
             std::cerr << "Maximum iteration number exceeded, exiting. Current result is: ";
             std::cerr << pow(wasserstein_cost, 1.0/wasserstein_power) << std::endl;

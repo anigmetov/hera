@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
 
     params.max_bids_per_round = ( 10 <= argc ) ? atoi(argv[9]) : 0;
     if (params.max_bids_per_round == 0)
-        params.max_bids_per_round = std::numeric_limits<size_t>::max();
+        params.max_bids_per_round = std::numeric_limits<decltype(params.max_bids_per_round)>::max();
 
 
     params.gamma_threshold = (11 <= argc) ? atof(argv[10]) : 0.0;
