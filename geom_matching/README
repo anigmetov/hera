@@ -81,7 +81,7 @@ See also code in wasserstein/example/wasserstein_dist.cpp.
 
 # License
 
-See wasserstein/license.txt
+See ../license.txt
 
 # Building
 
