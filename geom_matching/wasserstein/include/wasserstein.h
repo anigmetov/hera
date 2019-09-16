@@ -67,6 +67,17 @@ struct DiagramTraits<PairContainer_, std::pair<double, double>>
     static RealType get_y(const PointType& p)       { return p.second; }
 };
 
+template<class PairContainer_>
+struct DiagramTraits<PairContainer_, std::pair<float, float>>
+{
+    using PointType = std::pair<float, float>;
+    using RealType  = float;
+    using Container = std::vector<PointType>;
+
+    static RealType get_x(const PointType& p)       { return p.first; }
+    static RealType get_y(const PointType& p)       { return p.second; }
+};
+
 
 namespace ws
 {
