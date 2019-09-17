@@ -57,6 +57,17 @@ struct DiagramTraits
 };
 
 template<class PairContainer_>
+struct DiagramTraits<PairContainer_, std::pair<long double, long double>>
+{
+    using PointType = std::pair<long double, long double>;
+    using RealType  = long double;
+    using Container = std::vector<PointType>;
+
+    static RealType get_x(const PointType& p)       { return p.first; }
+    static RealType get_y(const PointType& p)       { return p.second; }
+};
+
+template<class PairContainer_>
 struct DiagramTraits<PairContainer_, std::pair<double, double>>
 {
     using PointType = std::pair<double, double>;
