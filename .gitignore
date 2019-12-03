@@ -1,5 +1,6 @@
 /*.cfg
 /build
+build/
 *.gitattributes
 *.opensdf
 *.sdf
