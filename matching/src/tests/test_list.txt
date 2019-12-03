@@ -1,0 +1,1 @@
+prism_lesnick_1.bif prism_lesnick_2.bif 1.0
