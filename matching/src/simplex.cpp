@@ -57,8 +57,7 @@ namespace md {
 
     void Simplex::translate(Real a)
     {
-        pos_.x += a;
-        pos_.y += a;
+        pos_.translate(a);
     }
 
     void Simplex::init_rivet(std::string s)

@@ -37,7 +37,10 @@ TEST_CASE("Different bounds", "[bounds]")
     CalculationParams params;
     params.initialization_depth = 2;
 
-    DistanceCalculator calc(bif_a, bif_b, params);
+    BifiltrationProxy bifp_a(bif_a, params.dim);
+    BifiltrationProxy bifp_b(bif_b, params.dim);
+
+    DistanceCalculator<BifiltrationProxy> calc(bifp_a, bifp_b, params);
 
 //    REQUIRE(calc.max_x_ == Approx(max_x));
 //    REQUIRE(calc.max_y_ == Approx(max_y));

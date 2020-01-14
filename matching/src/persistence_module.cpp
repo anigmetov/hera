@@ -1,104 +1,179 @@
-#include<phat/boundary_matrix.h>
-#include<phat/compute_persistence_pairs.h>
+#include <numeric>
+#include <algorithm>
+
+#include <phat/boundary_matrix.h>
+#include <phat/compute_persistence_pairs.h>
 
 #include "persistence_module.h"
 
 namespace md {
-    PersistenceModule::PersistenceModule(const std::string& /*fname*/) // read from file
+
+    /**
+     *
+     * @param values vector of length n
+     * @return [a_1,...,a_n] such that
+     *           1) values[a_1] <= values[a_2] <= ... <= values[a_n]
+     *           2) a_1,...,a_n is a permutation of 1,..,n
+     */
+
+    template<typename T>
+    IndexVec get_sorted_indices(const std::vector<T>& values)
+    {
+        IndexVec result(values.size());
+        std::iota(result.begin(), result.end(), 0);
+        std::sort(result.begin(), result.end(),
+                [&values](size_t a, size_t b) { return values[a] < values[b]; });
+        return result;
+    }
+
+    // helper function to initialize const member positions_ in ModulePresentation
+    PointVec
+    concat_gen_and_rel_positions(const PointVec& generators, const std::vector<ModulePresentation::Relation>& relations)
+    {
+        PointVec result(generators);
+        result.reserve(result.size() + relations.size());
+        for(const auto& rel : relations) {
+            result.push_back(rel.position_);
+        }
+        return result;
+    }
+
+
+    void ModulePresentation::init_boundaries()
+    {
+        max_x_ = std::numeric_limits<Real>::max();
+        max_y_ = std::numeric_limits<Real>::max();
+        min_x_ = -std::numeric_limits<Real>::max();
+        min_y_ = -std::numeric_limits<Real>::max();
+
+        for(const auto& gen : positions_) {
+            min_x_ = std::min(gen.x, min_x_);
+            min_y_ = std::min(gen.y, min_y_);
+            max_x_ = std::max(gen.x, max_x_);
+            max_y_ = std::max(gen.y, max_y_);
+        }
+
+        bounding_box_ = Box(Point(min_x_, min_y_), Point(max_x_, max_y_));
+    }
+
+    void ModulePresentation::translate(md::Real a)
+    {
+        for(auto& g : generators_) {
+            g.translate(a);
+        }
+
+        for(auto& r : relations_) {
+            r.position_.translate(a);
+        }
+
+        positions_ = concat_gen_and_rel_positions(generators_, relations_);
+        init_boundaries();
+    }
+
+
+    ModulePresentation::ModulePresentation(const std::string& fname) // read from file
             :
             generators_(),
-            relations_()
+            relations_(),
+            positions_(concat_gen_and_rel_positions(generators_, relations_))
     {
+        init_boundaries();
     }
 
-    Diagram PersistenceModule::slice_diagram(const DualPoint& /*line*/)
+    /**
+     *
+     * @param slice line on which generators are projected
+     * @param sorted_indices [a_1,...,a_n] s.t. wpush(generator[a_1]) <= wpush(generator[a_2]) <= ..
+     * @param projections sorted weighted pushes of generators
+     */
+
+    void
+    ModulePresentation::project_generators(const DualPoint& slice, IndexVec& sorted_indices, RealVec& projections) const
     {
-        //Vector2D b_of_line(L.b, -L.b);
-        //for (int i = 0; i<(int) F.size(); i++) {
-        //    Simplex_in_2D_filtration& curr_simplex = F[i];
-        //    Vector2D proj = push(curr_simplex.pos, L);
+        size_t num_gens = generators_.size();
 
-        //    curr_simplex.v = L_2(proj - b_of_line);
-        //    //std::cout << proj << std::endl;
-        //    //std::cout << "v=" << curr_simplex.v << std::endl;
-        //}
-        //std::sort(F.begin(), F.end(), sort_functor);
-        //std::map<Index, Index> index_map;
-        //for (Index i = 0; i<(int) F.size(); i++) {
-        //    index_map[F[i].index] = i;
-        //    //std::cout << F[i].index << " -> " << i << std::endl;
-        //}
-        //phat::boundary_matrix<> phat_matrix;
-        //phat_matrix.set_num_cols(F.size());
-        //std::vector<Index> bd_in_slice_filtration;
-        //for (Index i = 0; i<(int) F.size(); i++) {
-        //    phat_matrix.set_dim(i, F[i].dim);
-        //    bd_in_slice_filtration.clear();
-        //    //std::cout << "new col" << i << std::endl;
-        //    for (int j = 0; j<(int) F[i].bd.size(); j++) {
-        //        // F[i] contains the indices of its facet wrt to the
-        //        // original filtration. We have to express it, however,
-        //        // wrt to the filtration along the slice. That is why
-        //        // we need the index_map
-        //        //std::cout << "Found " << F[i].bd[j] << ", returning " << index_map[F[i].bd[j]] << std::endl;
-        //        bd_in_slice_filtration.push_back(index_map[F[i].bd[j]]);
-        //    }
-        //    std::sort(bd_in_slice_filtration.begin(), bd_in_slice_filtration.end());
-        //    [>
-        //    for(int j=0;j<bd_in_slice_filtration.size();j++) {
-        //      std::cout << bd_in_slice_filtration[j] << " ";
-        //    }
-        //    std::cout << std::endl;
-        //    */
-        //    phat_matrix.set_col(i, bd_in_slice_filtration);
-
-        //}
-        //phat::persistence_pairs phat_persistence_pairs;
-        //phat::compute_persistence_pairs<phat::twist_reduction>(phat_persistence_pairs, phat_matrix);
-
-        //dgm.clear();
-        //for (long i = 0; i<(long) phat_persistence_pairs.get_num_pairs(); i++) {
-        //    std::pair<phat::index, phat::index> new_pair = phat_persistence_pairs.get_pair(i);
-        //    double birth = F[new_pair.first].v;
-        //    double death = F[new_pair.second].v;
-        //    if (birth!=death) {
-        //        dgm.push_back(std::make_pair(birth, death));
-        //    }
-        //}
-
-        //[>
-        //std::cout << "Done, created diagram: " << std::endl;
-        //for(int i=0;i<(int)dgm.size();i++) {
-        //  std::cout << dgm[i].first << " " << dgm[i].second << std::endl;
-        //}
-        //*/
-        return Diagram();
-
-    }
-
-    PersistenceModule::Box PersistenceModule::bounding_box() const
-    {
-        Real ll_x = std::numeric_limits<Real>::max();
-        Real ll_y = std::numeric_limits<Real>::max();
-        Real ur_x = -std::numeric_limits<Real>::max();
-        Real ur_y = -std::numeric_limits<Real>::max();
-
-        for(const auto& gen : generators_) {
-            ll_x = std::min(gen.x, ll_x);
-            ll_y = std::min(gen.y, ll_y);
-            ur_x = std::max(gen.x, ur_x);
-            ur_y = std::max(gen.y, ur_y);
+        RealVec gen_values;
+        gen_values.reserve(num_gens);
+        for(const auto& pos : generators_) {
+            gen_values.push_back(slice.weighted_push(pos));
         }
+        sorted_indices = get_sorted_indices(gen_values);
+        projections.clear();
+        projections.reserve(num_gens);
+        for(auto i : sorted_indices) {
+            projections.push_back(gen_values[i]);
+        }
+    }
 
+    void ModulePresentation::project_relations(const DualPoint& slice, IndexVec& sorted_rel_indices,
+            RealVec& projections) const
+    {
+        size_t num_rels = relations_.size();
+
+        RealVec rel_values;
+        rel_values.reserve(num_rels);
         for(const auto& rel : relations_) {
+            rel_values.push_back(slice.weighted_push(rel.position_));
+        }
+        sorted_rel_indices = get_sorted_indices(rel_values);
+        projections.clear();
+        projections.reserve(num_rels);
+        for(auto i : sorted_rel_indices) {
+            projections.push_back(rel_values[i]);
+        }
+    }
 
-            ll_x = std::min(rel.get_x(), ll_x);
-            ll_y = std::min(rel.get_y(), ll_y);
+    Diagram ModulePresentation::weighted_slice_diagram(const DualPoint& slice) const
+    {
+        IndexVec sorted_gen_indices, sorted_rel_indices;
+        RealVec gen_projections, rel_projections;
 
-            ur_x = std::max(rel.get_x(), ur_x);
-            ur_y = std::max(rel.get_y(), ur_y);
+        project_generators(slice, sorted_gen_indices, gen_projections);
+        project_relations(slice, sorted_rel_indices, rel_projections);
+
+        phat::boundary_matrix<> phat_matrix;
+
+        phat_matrix.set_num_cols(relations_.size());
+
+        for(Index i = 0; i < (Index) relations_.size(); i++) {
+            IndexVec current_relation = relations_[sorted_rel_indices[i]].components_;
+            for(auto& j : current_relation) {
+                j = sorted_gen_indices[j];
+            }
+            std::sort(current_relation.begin(), current_relation.end());
+            phat_matrix.set_dim(i, current_relation.size());
+            phat_matrix.set_col(i, current_relation);
         }
 
-        return Box(Point(ll_x, ll_y), Point(ur_x, ur_y));
+        phat::persistence_pairs phat_persistence_pairs;
+        phat::compute_persistence_pairs<phat::twist_reduction>(phat_persistence_pairs, phat_matrix);
+
+        Diagram dgm;
+
+        constexpr Real real_inf = std::numeric_limits<Real>::infinity();
+
+        for(Index i = 0; i < (Index) phat_persistence_pairs.get_num_pairs(); i++) {
+            std::pair<phat::index, phat::index> new_pair = phat_persistence_pairs.get_pair(i);
+            bool is_finite_pair = new_pair.second != phat::k_infinity_index;
+            Real birth = gen_projections.at(new_pair.first);
+            Real death = is_finite_pair ? rel_projections.at(new_pair.second) : real_inf;
+            if (birth != death) {
+                dgm.emplace_back(birth, death);
+            }
+        }
+
+        return dgm;
     }
+
+    PointVec ModulePresentation::positions() const
+    {
+        return positions_;
+    }
+
+
+    Box ModulePresentation::bounding_box() const
+    {
+        return bounding_box_;
+    }
+
 }

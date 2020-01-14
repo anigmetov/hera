@@ -11,17 +11,50 @@
 #include <map>
 
 #include "common_defs.h"
+#include "phat/helpers/misc.h"
 
 
 namespace md {
 
 
     using Real = double;
-    using Index = long;
+    using RealVec = std::vector<Real>;
+    using Index = phat::index;
+    using IndexVec = std::vector<Index>;
 
     static constexpr Real pi = M_PI;
 
     using Column = std::vector<Index>;
+
+    struct IntPoint {
+        Index x;
+        Index y;
+
+        IntPoint(Index x, Index y) :x(x), y(y) { }
+
+        IntPoint() :x(0), y(0) { }
+
+        inline bool operator==(const IntPoint& v) const
+        {
+            return this->x == v.x && this->y == v.y;
+        }
+
+        // compare both coordinates, as needed in persistence
+        // do not overload operator<, requirements are not satisfied
+        inline bool is_less(const IntPoint& other, bool strict = false) const
+        {
+            if (x <= other.x and y <= other.y) {
+                if (strict) {
+                    return x != other.x or y != other.y;
+                }
+                else {
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
+
 
     struct Point {
         Real x;
@@ -37,6 +70,12 @@ namespace md {
             Real nor = norm();
             x /= nor;
             y /= nor;
+        }
+
+        inline void translate(Real a)
+        {
+            x += a;
+            y += a;
         }
 
         inline bool operator==(const Point& v) const
@@ -59,6 +98,8 @@ namespace md {
             return false;
         }
     };
+
+    using PointVec = std::vector<Point>;
 
     Point operator+(const Point& u, const Point& v);
 

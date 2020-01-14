@@ -31,7 +31,7 @@ namespace md {
 
     Bifiltration::Bifiltration(const std::string& fname, BifiltrationFormat input_format)
     {
-        std::ifstream ifstr{fname.c_str()};
+        std::ifstream ifstr {fname.c_str()};
         if (!ifstr.good()) {
             std::string error_message = fmt::format("Cannot open file {0}", fname);
             std::cerr << error_message << std::endl;
@@ -107,7 +107,7 @@ namespace md {
 #endif
     }
 
-    DiagramKeeper Bifiltration::weighted_slice_diagram(const DualPoint& line, int /*dim*/) const
+    Diagram Bifiltration::weighted_slice_diagram(const DualPoint& line, int dim) const
     {
         DiagramKeeper dgm;
 
@@ -158,10 +158,12 @@ namespace md {
         phat::compute_persistence_pairs<phat::twist_reduction>(phat_persistence_pairs, phat_matrix);
 
         dgm.clear();
+        constexpr Real real_inf = std::numeric_limits<Real>::infinity();
         for(long i = 0; i < (long) phat_persistence_pairs.get_num_pairs(); i++) {
             std::pair<phat::index, phat::index> new_pair = phat_persistence_pairs.get_pair(i);
+            bool is_finite_pair = new_pair.second != phat::k_infinity_index;
             Real birth = simplices.at(new_pair.first).value();
-            Real death = simplices.at(new_pair.second).value();
+            Real death = is_finite_pair ? simplices.at(new_pair.second).value() : real_inf;
             int dim = simplices[new_pair.first].dim();
             assert(dim + 1 == simplices[new_pair.second].dim());
             if (birth != death) {
@@ -171,7 +173,7 @@ namespace md {
 
         spdlog::debug("Exiting slice_diagram, #dgm[0]  = {}", dgm.get_diagram(0).size());
 
-        return dgm;
+        return dgm.get_diagram(dim);
     }
 
     Box Bifiltration::bounding_box() const
@@ -264,13 +266,12 @@ namespace md {
         }
     }
 
-
     void Bifiltration::postprocess_rivet_format()
     {
         std::map<Column, Index> facets_to_ids;
 
         // fill the map
-        for(Index i = 0; i < (Index)simplices_.size(); ++i) {
+        for(Index i = 0; i < (Index) simplices_.size(); ++i) {
             assert(simplices_[i].id() == i);
             facets_to_ids[simplices_[i].vertices_] = i;
         }
@@ -305,5 +306,76 @@ namespace md {
         }
         return os;
     }
+
+    BifiltrationProxy::BifiltrationProxy(const md::Bifiltration& bif, int dim)
+            :
+            dim_(dim),
+            bif_(bif)
+    {
+        cache_positions();
+    }
+
+    void BifiltrationProxy::cache_positions() const
+    {
+        cached_positions_.clear();
+        for(const auto& simplex : bif_.simplices()) {
+            if (simplex.dim() == dim_ or simplex.dim() == dim_ + 1)
+                cached_positions_.push_back(simplex.position());
+        }
+    }
+
+    PointVec BifiltrationProxy::positions() const
+    {
+        if (cached_positions_.empty()) {
+            cache_positions();
+        }
+        return cached_positions_;
+    }
+
+    // translate all points by vector (a,a)
+    void BifiltrationProxy::translate(Real a)
+    {
+        bif_.translate(a);
+    }
+
+    // return minimal value of x- and y-coordinates
+    // among all simplices
+    Real BifiltrationProxy::minimal_coordinate() const
+    {
+        return bif_.minimal_coordinate();
+    }
+
+    // return box that contains positions of all simplices
+    Box BifiltrationProxy::bounding_box() const
+    {
+        return bif_.bounding_box();
+    }
+
+    Real BifiltrationProxy::max_x() const
+    {
+        return bif_.max_x();
+    }
+
+    Real BifiltrationProxy::max_y() const
+    {
+        return bif_.max_y();
+    }
+
+    Real BifiltrationProxy::min_x() const
+    {
+        return bif_.min_x();
+    }
+
+    Real BifiltrationProxy::min_y() const
+    {
+        return bif_.min_y();
+    }
+
+
+    Diagram BifiltrationProxy::weighted_slice_diagram(const DualPoint& slice) const
+    {
+        return bif_.weighted_slice_diagram(slice, dim_);
+    }
+
 }
 

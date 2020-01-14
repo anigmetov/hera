@@ -6,6 +6,7 @@
 #include <ostream>
 
 #include "spdlog/spdlog.h"
+#include "spdlog/fmt/ostr.h"
 
 #include "common_defs.h"
 #include "cell_with_value.h"
@@ -53,7 +54,7 @@ namespace md {
     struct CalculationParams {
         static constexpr int ALL_DIMENSIONS = -1;
 
-        Real hera_epsilon {0.01}; // relative error in hera call
+        Real hera_epsilon {0.001}; // relative error in hera call
         Real delta {0.1}; // relative error for matching distance
         int max_depth {6}; // maximal number of refinenemnts
         int initialization_depth {3};
@@ -76,9 +77,11 @@ namespace md {
 #endif
     };
 
+    template<class DiagramProvider>
     class DistanceCalculator {
 
-        using DiagramProvider = md::Bifiltration;
+//        using DiagramProvider = md::Bifiltration;
+//        using DiagramProvider = md::ModulePresentation;
         using DualBox = md::DualBox;
 
         using CellValueVector = std::vector<CellWithValue>;
@@ -90,29 +93,17 @@ namespace md {
 
         Real distance();
 
-        int get_hera_calls_number() const
-        {
-            int result;
-            for(auto c : n_hera_calls_) result += c.second;
-            return result;
-        }
-
-        int get_hera_calls_number(int dim) const;
-
-        void clear_cache();
-
-//    for tests - make everything p
+        int get_hera_calls_number() const;
+//    for tests - make everything public
 //    private:
         DiagramProvider module_a_;
         DiagramProvider module_b_;
 
         CalculationParams& params_;
 
-        int maximal_dim_ {0};
-
-        std::map<int, int> n_hera_calls_;
+        int n_hera_calls_;
         std::map<int, int> n_hera_calls_per_level_;
-        std::vector<Real> distances_; // indexed by dim
+        Real distance_;
 
         // if calculate_on_intermediate, then weighted distance
         // will be calculated on centers of each grid in between
@@ -126,18 +117,18 @@ namespace md {
 
         Real get_max_y(int module) const;
 
-        void set_cell_central_value(CellWithValue& dual_cell, int dim);
+        void set_cell_central_value(CellWithValue& dual_cell);
 
-        Real distance_in_dimension(int dim);
+        Real get_distance();
 
-        Real distance_in_dimension_pq(int dim);
+        Real get_distance_pq();
 
         // temporary, to try priority queue
         Real get_max_possible_value(const CellWithValue* first_cell_ptr, int n_cells);
 
-        Real get_upper_bound(const CellWithValue& dual_cell, int dim, Real good_enough_upper_bound) const;
+        Real get_upper_bound(const CellWithValue& dual_cell, Real good_enough_upper_bound) const;
 
-        Real get_single_dgm_bound(const CellWithValue& dual_cell, ValuePoint vp, int module, int dim,
+        Real get_single_dgm_bound(const CellWithValue& dual_cell, ValuePoint vp, int module,
                 Real good_enough_value) const;
 
         // this bound depends only on dual box
@@ -155,14 +146,30 @@ namespace md {
         Real
         get_max_displacement_single_point(const CellWithValue& dual_cell, ValuePoint value_point, const Point& p) const;
 
-        void check_upper_bound(const CellWithValue& dual_cell, int dim) const;
+        void check_upper_bound(const CellWithValue& dual_cell) const;
 
-        Real distance_on_line(int dim, DualPoint line);
-        Real distance_on_line_const(int dim, DualPoint line) const;
+        Real distance_on_line(DualPoint line);
+        Real distance_on_line_const(DualPoint line) const;
 
         Real current_error(Real lower_bound, Real upper_bound);
     };
 
     Real matching_distance(const Bifiltration& bif_a, const Bifiltration& bif_b, CalculationParams& params);
 
+    Real matching_distance(const ModulePresentation& mod_a, const ModulePresentation& mod_b, CalculationParams& params);
+
+    // for upper bound experiment
+    struct UbExperimentRecord {
+        Real error;
+        Real lower_bound;
+        Real upper_bound;
+        CellWithValue cell;
+        long long int time;
+        long long int n_hera_calls;
+    };
+
+    std::ostream& operator<<(std::ostream& os, const UbExperimentRecord& r);
+
 }
+
+#include "matching_distance.hpp"

@@ -35,6 +35,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iterator>
+#include <limits>
 
 // VS2008 and below unfortunately do not support stdint.h
 #if defined(_MSC_VER)&& _MSC_VER < 1600
@@ -55,6 +56,8 @@ namespace phat {
     typedef int64_t index;
     typedef int8_t dimension;
     typedef std::vector< index > column;
+
+    constexpr index k_infinity_index = std::numeric_limits<index>::max();
 }
 
 // OpenMP (proxy) functions

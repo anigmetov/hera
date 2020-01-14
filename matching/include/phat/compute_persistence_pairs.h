@@ -97,14 +97,23 @@ namespace phat {
         ReductionAlgorithm reduce;
         reduce( boundary_matrix );
         pairs.clear();
+        std::set<index> max_indices;
+        // finite pairs
         for( index idx = 0; idx < boundary_matrix.get_num_cols(); idx++ ) {
             if( !boundary_matrix.is_empty( idx ) ) {
                 index birth = boundary_matrix.get_max_index( idx );
+                max_indices.insert(birth);
                 index death = idx;
                 pairs.append_pair( birth, death );
             }
         }
-    }
+        // infinite pairs: column idx is 0, and row idx does not contain a lowest one
+        for( index idx = 0; idx < boundary_matrix.get_num_cols(); idx++ ) {
+            if(boundary_matrix.is_empty(idx) && max_indices.count(idx) == 0 ) {
+                pairs.append_pair( idx, k_infinity_index);
+            }
+        }
+     }
     
     template< typename ReductionAlgorithm, typename Representation >
     void compute_persistence_pairs_dualized( persistence_pairs& pairs, boundary_matrix< Representation >& boundary_matrix ) {
