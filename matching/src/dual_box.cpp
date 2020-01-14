@@ -99,7 +99,7 @@ namespace md {
         return result;
     }
 
-    std::vector<DualPoint> DualBox::critical_points(const Point& p) const
+    std::vector<DualPoint> DualBox::critical_points(const Point& /*p*/) const
     {
         // maximal difference is attained at corners
         return corners();

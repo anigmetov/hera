@@ -38,7 +38,7 @@ namespace md {
             init();
         }
 
-        DiagramKeeper weighted_slice_diagram(const DualPoint& line, int dim) const;
+        Diagram weighted_slice_diagram(const DualPoint& line, int dim) const;
 
         SimplexVector simplices() const { return simplices_; }
 
@@ -100,7 +100,36 @@ namespace md {
     };
 
     std::ostream& operator<<(std::ostream& os, const Bifiltration& bif);
+
+    class BifiltrationProxy {
+    public:
+        BifiltrationProxy(const Bifiltration& bif, int dim = 0);
+        // return critical values of simplices that are important for current dimension (dim and dim+1)
+        PointVec positions() const;
+        // set current dimension
+        int set_dim(int new_dim);
+
+        // wrappers of Bifiltration
+        int maximal_dim() const;
+        void translate(Real a);
+        Real minimal_coordinate() const;
+        Box bounding_box() const;
+        Real max_x() const;
+        Real max_y() const;
+        Real min_x() const;
+        Real min_y() const;
+        Diagram weighted_slice_diagram(const DualPoint& slice) const;
+
+    private:
+        int dim_ { 0 };
+        mutable PointVec cached_positions_;
+        Bifiltration bif_;
+
+        void cache_positions() const;
+    };
 }
+
+
 
 #endif //MATCHING_DISTANCE_BIFILTRATION_H
 
