@@ -56,33 +56,11 @@ struct DiagramTraits
     static RealType get_y(const PointType& p)       { return p[1]; }
 };
 
-template<class PairContainer_>
-struct DiagramTraits<PairContainer_, std::pair<long double, long double>>
+template<class PairContainer_, class RealType_>
+struct DiagramTraits<PairContainer_, std::pair<RealType_, RealType_>>
 {
-    using PointType = std::pair<long double, long double>;
-    using RealType  = long double;
-    using Container = std::vector<PointType>;
-
-    static RealType get_x(const PointType& p)       { return p.first; }
-    static RealType get_y(const PointType& p)       { return p.second; }
-};
-
-template<class PairContainer_>
-struct DiagramTraits<PairContainer_, std::pair<double, double>>
-{
-    using PointType = std::pair<double, double>;
-    using RealType  = double;
-    using Container = std::vector<PointType>;
-
-    static RealType get_x(const PointType& p)       { return p.first; }
-    static RealType get_y(const PointType& p)       { return p.second; }
-};
-
-template<class PairContainer_>
-struct DiagramTraits<PairContainer_, std::pair<float, float>>
-{
-    using PointType = std::pair<float, float>;
-    using RealType  = float;
+    using RealType  = RealType_;
+    using PointType = std::pair<RealType, RealType>;
     using Container = std::vector<PointType>;
 
     static RealType get_x(const PointType& p)       { return p.first; }
