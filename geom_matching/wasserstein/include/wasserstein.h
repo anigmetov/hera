@@ -48,7 +48,6 @@ namespace hera
 template<class PairContainer_, class PointType_ = typename std::remove_reference< decltype(*std::declval<PairContainer_>().begin())>::type >
 struct DiagramTraits
 {
-    using Container = PairContainer_;
     using PointType = PointType_;
     using RealType  = typename std::remove_reference< decltype(std::declval<PointType>()[0]) >::type;
 
@@ -61,7 +60,6 @@ struct DiagramTraits<PairContainer_, std::pair<RealType_, RealType_>>
 {
     using RealType  = RealType_;
     using PointType = std::pair<RealType, RealType>;
-    using Container = std::vector<PointType>;
 
     static RealType get_x(const PointType& p)       { return p.first; }
     static RealType get_y(const PointType& p)       { return p.second; }
