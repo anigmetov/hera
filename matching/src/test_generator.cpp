@@ -201,7 +201,7 @@ int main(int argc, char** argv)
 
     auto bif1 = get_random_bifiltration(n_vertices, max_dim, n_top_simplices);
     std::cout << "Generated bifiltration." << std::endl;
-    bif1.save(fname, md::BifiltrationFormat::rene);
+    bif1.save(fname, md::BifiltrationFormat::phat_like);
     std::cout << "Saved to file " << fname << std::endl;
     return 0;
 }

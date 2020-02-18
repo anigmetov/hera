@@ -77,13 +77,11 @@ namespace md {
 #endif
     };
 
+
     template<class DiagramProvider>
     class DistanceCalculator {
 
-//        using DiagramProvider = md::Bifiltration;
-//        using DiagramProvider = md::ModulePresentation;
         using DualBox = md::DualBox;
-
         using CellValueVector = std::vector<CellWithValue>;
 
     public:

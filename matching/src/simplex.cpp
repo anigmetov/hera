@@ -76,16 +76,16 @@ namespace md {
             dim++;
             vertices_.push_back(vertex);
         }
-        // 
+        //
         std::sort(vertices_.begin(), vertices_.end());
         assert(dim > 0);
-        
+
         std::stringstream pos_ss(pos_str);
         // TODO: get rid of 1-criticaltiy assumption
         pos_ss >> pos_.x >> pos_.y;
     }
 
-    void Simplex::init_rene(std::string s)
+    void Simplex::init_phat_like(std::string s)
     {
         facet_indices_.clear();
         std::stringstream ss(s);
@@ -104,8 +104,8 @@ namespace md {
             :id_(_id)
     {
         switch (input_format) {
-            case BifiltrationFormat::rene :
-                init_rene(s);
+            case BifiltrationFormat::phat_like :
+                init_phat_like(s);
                 break;
             case BifiltrationFormat::rivet :
                 init_rivet(s);

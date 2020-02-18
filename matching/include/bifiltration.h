@@ -85,12 +85,12 @@ namespace md {
 
         void rivet_format_reader(std::ifstream&);
 
-        void rene_format_reader(std::ifstream&);
+        void phat_like_format_reader(std::ifstream&);
 
         // in Rene format each simplex knows IDs of its boundary facets
-        // postprocess_rene_format fills vector of IDs of boundary facets
+        // postprocess_phat_like_format fills vector of IDs of boundary facets
         // in each simplex
-        void postprocess_rene_format();
+        void postprocess_phat_like_format();
 
         // in Rivet format each simplex knows its vertices,
         // postprocess_rivet_format fills vector of IDs of boundary facets

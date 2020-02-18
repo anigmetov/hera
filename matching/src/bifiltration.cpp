@@ -42,8 +42,8 @@ namespace md {
             case BifiltrationFormat::rivet :
                 rivet_format_reader(ifstr);
                 break;
-            case BifiltrationFormat::rene :
-                rene_format_reader(ifstr);
+            case BifiltrationFormat::phat_like :
+                phat_like_format_reader(ifstr);
                 break;
         }
         init();
@@ -64,9 +64,9 @@ namespace md {
         }
     }
 
-    void Bifiltration::rene_format_reader(std::ifstream& ifstr)
+    void Bifiltration::phat_like_format_reader(std::ifstream& ifstr)
     {
-        spd::debug("Enter rene_format_reader");
+        spd::debug("Enter phat_like_format_reader");
         // read stream line by line; do not use >> operator
         std::string s;
         std::getline(ifstr, s);
@@ -74,7 +74,7 @@ namespace md {
 
         for(Index index = 0; index < n_simplices; index++) {
             std::getline(ifstr, s);
-            simplices_.emplace_back(index, s, BifiltrationFormat::rene);
+            simplices_.emplace_back(index, s, BifiltrationFormat::phat_like);
         }
         spd::debug("Read {} simplices from file", n_simplices);
     }
@@ -245,7 +245,7 @@ namespace md {
             case BifiltrationFormat::rivet:
                 throw std::runtime_error("Not implemented");
                 break;
-            case BifiltrationFormat::rene: {
+            case BifiltrationFormat::phat_like: {
                 std::ofstream f(filename);
                 if (not f.good()) {
                     std::cerr << "Bifiltration::save: cannot open file " << filename << std::endl;

@@ -12,7 +12,7 @@ namespace md {
     class Bifiltration;
 
     enum class BifiltrationFormat {
-        rene, rivet
+        phat_like, rivet
     };
 
     class AbstractSimplex {
@@ -85,7 +85,7 @@ namespace md {
 
         void init_rivet(std::string s);
 
-        void init_rene(std::string s);
+        void init_phat_like(std::string s);
 
         Index id() const { return id_; }
 

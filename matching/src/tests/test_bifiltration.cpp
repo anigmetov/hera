@@ -11,7 +11,7 @@ using namespace md;
 
 //TEST_CASE("Small check", "[bifiltration][dim2]")
 //{
-//    Bifiltration bif("/home/narn/code/matching_distance/code/src/tests/test_bifiltration_full_triangle_rene.txt", BifiltrationFormat::rene);
+//    Bifiltration bif("/home/narn/code/matching_distance/code/src/tests/test_bifiltration_full_triangle_phat_like.txt", BifiltrationFormat::phat_like);
 //    auto simplices = bif.simplices();
 //    bif.sanity_check();
 //

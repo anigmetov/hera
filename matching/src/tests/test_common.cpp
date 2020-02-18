@@ -167,8 +167,6 @@ TEST_CASE("Flat Line with positive slope", "[flat_line]")
     Point p_4(6, 4.5);
     Point p_5(2, 2);
 
-    std::cout << "AHOY " << l_flat.y_from_x(p_2.x) << std::endl;
-
     REQUIRE((not l_flat.contains(p_1) and
             not l_flat.contains(p_2) and
             not l_flat.contains(p_3) and

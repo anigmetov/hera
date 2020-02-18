@@ -176,8 +176,8 @@ int main(int argc, char** argv)
     auto bounds_list = split_by_delim(bounds_list_str, ',');
     auto traverse_list = split_by_delim(traverse_list_str, ',');
 
-    Bifiltration bif_a(fname_a, BifiltrationFormat::rene);
-    Bifiltration bif_b(fname_b, BifiltrationFormat::rene);
+    Bifiltration bif_a(fname_a, BifiltrationFormat::phat_like);
+    Bifiltration bif_b(fname_b, BifiltrationFormat::phat_like);
 
     bif_a.sanity_check();
     bif_b.sanity_check();

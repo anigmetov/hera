@@ -115,8 +115,8 @@ TEST_CASE("Bifiltrations from file", "[matching_distance][small_example][lesnick
     fname_a = "/home/narn/code/matching_distance/code/python_scripts/prism_1_lesnick.bif";
     fname_b = "/home/narn/code/matching_distance/code/python_scripts/prism_2_lesnick.bif";
 
-    Bifiltration bif_a(fname_a, BifiltrationFormat::rene);
-    Bifiltration bif_b(fname_b, BifiltrationFormat::rene);
+    Bifiltration bif_a(fname_a, BifiltrationFormat::phat_like);
+    Bifiltration bif_b(fname_b, BifiltrationFormat::phat_like);
 
     CalculationParams params;
 
