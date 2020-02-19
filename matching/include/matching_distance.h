@@ -72,6 +72,9 @@ namespace md {
         // (we just return something large enough to prune the cell)
         bool stop_asap { true };
 
+        // print statistics on each quad-tree level
+        bool print_stats { false };
+
 #ifdef PRINT_HEAT_MAP
         HeatMaps heat_maps;
 #endif

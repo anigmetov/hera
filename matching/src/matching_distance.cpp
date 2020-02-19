@@ -15,7 +15,7 @@ namespace md {
         // compute distance only in one dimension
         if (params.dim != CalculationParams::ALL_DIMENSIONS) {
             BifiltrationProxy bifp_a(bif_a, params.dim);
-            BifiltrationProxy bifp_b(bif_a, params.dim);
+            BifiltrationProxy bifp_b(bif_b, params.dim);
             DistanceCalculator<BifiltrationProxy> runner(bifp_a, bifp_b, params);
             result = runner.distance();
             params.n_hera_calls = runner.get_hera_calls_number();

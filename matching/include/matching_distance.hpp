@@ -209,7 +209,7 @@ namespace md {
         assert(std::min({module_a_.min_x(), module_b_.min_x(), module_a_.min_y(),
                          module_b_.min_y()}) >= 0);
 
-        spd::info("DistanceCalculator constructed, module_a: max_x = {}, max_y = {}, module_b: max_x = {}, max_y = {}",
+        spd::debug("DistanceCalculator constructed, module_a: max_x = {}, max_y = {}, module_b: max_x = {}, max_y = {}",
                 module_a_.max_x(), module_a_.max_y(), module_b_.max_x(), module_b_.max_y());
     }
 
@@ -514,7 +514,7 @@ namespace md {
         std::map<int, long> n_cells_discarded;
         std::map<int, long> n_cells_pruned;
 
-        spd::info("Enter get_distance_pq, bound strategy = {}, traverse strategy = {}, stop_asap = {} ",
+        spd::debug("Enter get_distance_pq, bound strategy = {}, traverse strategy = {}, stop_asap = {} ",
                 params_.bound_strategy, params_.traverse_strategy, params_.stop_asap);
 
         std::chrono::high_resolution_clock timer;
@@ -748,16 +748,15 @@ namespace md {
         // otherwise actual_error in params can be larger than delta,
         // but this is OK
 
-        spd::info("#############################################################");
-        spd::info(
+        spd::debug("#############################################################");
+        spd::debug(
                 "Exiting get_distance_pq, bound_strategy = {}, traverse_strategy = {}, lower_bound = {}, upper_bound = {}, current_error = {}, actual_max_level = {}",
                 params_.bound_strategy, params_.traverse_strategy, lower_bound,
                 upper_bound, params_.actual_error, params_.actual_max_depth);
 
-        spd::info("#############################################################");
+        spd::debug("#############################################################");
 
-        bool print_stats = true;
-        if (print_stats) {
+        if (params_.print_stats) {
             fmt::print("EXIT STATS, cells considered:\n");
             print_map(n_cells_considered);
             fmt::print("EXIT STATS, cells discarded:\n");

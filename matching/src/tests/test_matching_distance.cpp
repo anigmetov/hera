@@ -112,8 +112,8 @@ TEST_CASE("Bifiltrations from file", "[matching_distance][small_example][lesnick
 {
     std::string fname_a, fname_b;
 
-    fname_a = "/home/narn/code/matching_distance/code/python_scripts/prism_1_lesnick.bif";
-    fname_b = "/home/narn/code/matching_distance/code/python_scripts/prism_2_lesnick.bif";
+    fname_a = "../src/tests/prism_1.bif";
+    fname_b = "../src/tests/prism_2.bif";
 
     Bifiltration bif_a(fname_a, BifiltrationFormat::phat_like);
     Bifiltration bif_b(fname_b, BifiltrationFormat::phat_like);
@@ -137,11 +137,11 @@ TEST_CASE("Bifiltrations from file", "[matching_distance][small_example][lesnick
                 params.bound_strategy = bs;
                 params.traverse_strategy = ts;
                 params.max_depth = 7;
-                params.delta = 0.01;
+                params.delta = 0.1;
                 params.dim = 1;
                 Real answer = matching_distance(bif_a_copy, bif_b_copy, params);
                 Real correct_answer = lambda * 1.0;
-                REQUIRE(fabs(answer - correct_answer) < lambda * 0.05);
+                REQUIRE(fabs(answer - correct_answer) / correct_answer < params.delta);
             }
         }
     }
