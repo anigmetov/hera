@@ -115,8 +115,8 @@ TEST_CASE("Bifiltrations from file", "[matching_distance][small_example][lesnick
     fname_a = "../src/tests/prism_1.bif";
     fname_b = "../src/tests/prism_2.bif";
 
-    Bifiltration bif_a(fname_a, BifiltrationFormat::phat_like);
-    Bifiltration bif_b(fname_b, BifiltrationFormat::phat_like);
+    Bifiltration bif_a(fname_a);
+    Bifiltration bif_b(fname_b);
 
     CalculationParams params;
 

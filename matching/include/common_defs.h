@@ -7,5 +7,4 @@
 //#define MD_DO_CHECKS
 //#define MD_DO_FULL_CHECK
 
-
 #endif //MATCHING_DISTANCE_DEF_DEBUG_H

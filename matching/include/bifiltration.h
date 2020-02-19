@@ -27,9 +27,7 @@ namespace md {
 
         Bifiltration& operator=(Bifiltration&& other) = default;
 
-        Bifiltration(const std::string& fname,
-                BifiltrationFormat input_format = BifiltrationFormat::rivet); // read from file
-
+        Bifiltration(const std::string& fname); // read from file
 
         template<class Iter>
         Bifiltration(Iter begin, Iter end)

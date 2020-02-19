@@ -22,9 +22,9 @@ using namespace md;
 
 namespace fs = std::experimental::filesystem;
 
+#ifdef PRINT_HEAT_MAP
 void print_heat_map(const md::HeatMaps& hms, std::string fname, const CalculationParams& params)
 {
-#ifdef PRINT_HEAT_MAP
     spd::debug("Entered print_heat_map");
     std::set<Real> mu_vals, lambda_vals;
     auto hm_iter = hms.end();
@@ -130,22 +130,24 @@ void print_heat_map(const md::HeatMaps& hms, std::string fname, const Calculatio
 
     ofs.close();
     spd::debug("Exit print_heat_map");
-#endif
 }
+#endif
 
 int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::info);
-    //spdlog::set_pattern("[%L] %v");
 
     using opts::Option;
     using opts::PosOption;
     opts::Options ops;
 
     bool help = false;
-    bool heatmap_only = false;
     bool no_stop_asap = false;
     CalculationParams params;
+
+#ifdef PRINT_HEAT_MAP
+    bool heatmap_only = false;
+#endif
 
     std::string bounds_list_str = "local_combined";
     std::string traverse_list_str = "BFS";
@@ -176,13 +178,13 @@ int main(int argc, char** argv)
     auto bounds_list = split_by_delim(bounds_list_str, ',');
     auto traverse_list = split_by_delim(traverse_list_str, ',');
 
-    Bifiltration bif_a(fname_a, BifiltrationFormat::phat_like);
-    Bifiltration bif_b(fname_b, BifiltrationFormat::phat_like);
+    Bifiltration bif_a(fname_a);
+    Bifiltration bif_b(fname_b);
 
     bif_a.sanity_check();
     bif_b.sanity_check();
 
-    spd::info("Read bifiltrations {} {}", fname_a, fname_b);
+    spd::debug("Read bifiltrations {} {}", fname_a, fname_b);
 
     std::vector<BoundStrategy> bound_strategies;
     std::vector<TraverseStrategy> traverse_strategies;
@@ -195,13 +197,15 @@ int main(int argc, char** argv)
         traverse_strategies.push_back(ts_from_string(s));
     }
 
+
+#ifdef EXPERIMENTAL_TIMING
+
     for(auto bs : bound_strategies) {
         for(auto ts : traverse_strategies) {
             spd::info("Will test combination {} {}", bs, ts);
         }
     }
 
-#ifdef EXPERIMENTAL_TIMING
     struct ExperimentResult {
         CalculationParams params {CalculationParams()};
         int n_hera_calls {0};
@@ -359,6 +363,8 @@ int main(int argc, char** argv)
 #else
     params.bound_strategy = bound_strategies.back();
     params.traverse_strategy = traverse_strategies.back();
+
+    spd::debug("Will use {} bound, {} traverse strategy", params.bound_strategy, params.traverse_strategy);
 
     Real dist = matching_distance(bif_a, bif_b, params);
     std::cout << dist << std::endl;

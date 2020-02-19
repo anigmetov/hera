@@ -29,13 +29,30 @@ namespace md {
         bounding_box_ = Box(lower_left, upper_right);
     }
 
-    Bifiltration::Bifiltration(const std::string& fname, BifiltrationFormat input_format)
+    Bifiltration::Bifiltration(const std::string& fname )
     {
         std::ifstream ifstr {fname.c_str()};
         if (!ifstr.good()) {
             std::string error_message = fmt::format("Cannot open file {0}", fname);
             std::cerr << error_message << std::endl;
             throw std::runtime_error(error_message);
+        }
+
+        BifiltrationFormat input_format;
+
+        std::string s;
+
+        while(ignore_line(s)) {
+            std::getline(ifstr, s);
+        }
+
+        if (s == "bifiltration") {
+            input_format = BifiltrationFormat::rivet;
+        } else if (s == "bifiltration_phat_like") {
+            input_format = BifiltrationFormat::phat_like;
+        } else {
+            std::cerr << "Unknown format: '" << s << "' in file " << fname << std::endl;
+            throw std::runtime_error("unknown bifiltration format");
         }
 
         switch(input_format) {
@@ -46,22 +63,27 @@ namespace md {
                 phat_like_format_reader(ifstr);
                 break;
         }
+
+        ifstr.close();
+
         init();
     }
 
     void Bifiltration::rivet_format_reader(std::ifstream& ifstr)
     {
         std::string s;
-        std::getline(ifstr, s);
-        assert(s == std::string("bifiltration"));
+        // read axes names
         std::getline(ifstr, parameter_1_name_);
         std::getline(ifstr, parameter_2_name_);
 
         Index index = 0;
         while(std::getline(ifstr, s)) {
-            if (not ignore_line(s))
+            if (!ignore_line(s)) {
                 simplices_.emplace_back(index++, s, BifiltrationFormat::rivet);
+            }
         }
+
+        
     }
 
     void Bifiltration::phat_like_format_reader(std::ifstream& ifstr)
@@ -70,11 +92,17 @@ namespace md {
         // read stream line by line; do not use >> operator
         std::string s;
         std::getline(ifstr, s);
+
+        // first line contains number of simplices
         long n_simplices = std::stol(s);
 
-        for(Index index = 0; index < n_simplices; index++) {
+        // all other lines represent a simplex
+        Index index = 0;
+        while(index < n_simplices) {
             std::getline(ifstr, s);
-            simplices_.emplace_back(index, s, BifiltrationFormat::phat_like);
+            if (!ignore_line(s)) {
+                simplices_.emplace_back(index++, s, BifiltrationFormat::phat_like);
+            }
         }
         spd::debug("Read {} simplices from file", n_simplices);
     }

@@ -62,7 +62,6 @@ namespace md {
 
     void Simplex::init_rivet(std::string s)
     {
-//        throw std::runtime_error("Not implemented");
         auto delim_pos = s.find_first_of(";");
         assert(delim_pos > 0);
         std::string vertices_str = s.substr(0, delim_pos);
