@@ -12,28 +12,43 @@
 
 namespace md {
 
+    /* ModulePresentation contains only information needed for matching
+     * distance computation over Z/2.
+     * Generators are represented as points (critical values),
+     * id i of generator g_i = its index in * vector generators_.
+     *
+     * Relations are represented by struct Relation, which has two members:
+     *   position_ is a point at which relation appears,
+     *   components_ contains indices of generators that sum to zero:
+     *     if components_ = [i, ..., j], then the relation is g_i +...+ g_j = 0.
+     *
+     *  ModulePresentation has member positions_ that contains all
+     *  distinct positions of generators and relations;
+     *  this member simplifies computing local linear bound.
+     */
+
 
     class ModulePresentation {
     public:
 
-        struct Relation {
+        enum Format { rivet_firep };
 
+        struct Relation {
             Point position_;
-            IntPoint bigrade_;
+            IndexVec components_;
 
             Relation() {}
-            Relation(const Point& _pos) : position_(_pos) { }
+            Relation(const Point& _pos, const IndexVec& _components);
 
             Real get_x() const { return position_.x; }
             Real get_y() const { return position_.y; }
-
-            IndexVec components_;
-
         };
 
-        ModulePresentation() { }
+        using RelVec = std::vector<Relation>;
 
-        ModulePresentation(const std::string& fname); // read from file
+        ModulePresentation() {}
+
+        ModulePresentation(const PointVec& _generators, const RelVec& _relations);
 
         Diagram weighted_slice_diagram(const DualPoint& line) const;
 
@@ -41,7 +56,7 @@ namespace md {
         void translate(Real a);
 
         // return minimal value of x- and y-coordinates
-        Real minimal_coordinate() const { return std::min(min_x(), min_x()); }
+        Real minimal_coordinate() const { return std::min(min_x(), min_y()); }
 
         // return box that contains all positions of all simplices
         Box bounding_box() const;
@@ -60,30 +75,22 @@ namespace md {
 
     private:
 
+        PointVec generators_;
+        std::vector<Relation> relations_;
+        PointVec positions_;
+
+
         Real max_x_ { std::numeric_limits<Real>::max() };
         Real max_y_ { std::numeric_limits<Real>::max() };
         Real min_x_ { -std::numeric_limits<Real>::max() };
         Real min_y_ { -std::numeric_limits<Real>::max() };
         Box bounding_box_;
 
-        PointVec generators_;
-        std::vector<Relation> relations_;
-
-        PointVec positions_;
-
         void init_boundaries();
         void project_generators(const DualPoint& slice, IndexVec& sorted_indices, RealVec& projections) const;
         void project_relations(const DualPoint& slice, IndexVec& sorted_indices, RealVec& projections) const;
     };
-
-//    template<typename R = double>
-//    R matching_distance(const PersistenceModule&, const PersistenceModule&, R)
-//    {
-//        return 0.0;
-//    };
-
 } // namespace md
-
 
 
 #endif //MATCHING_DISTANCE_PERSISTENCE_MODULE_H

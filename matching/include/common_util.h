@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <functional>
 
 #include "common_defs.h"
 #include "phat/helpers/misc.h"
@@ -25,36 +26,6 @@ namespace md {
     static constexpr Real pi = M_PI;
 
     using Column = std::vector<Index>;
-
-    struct IntPoint {
-        Index x;
-        Index y;
-
-        IntPoint(Index x, Index y) :x(x), y(y) { }
-
-        IntPoint() :x(0), y(0) { }
-
-        inline bool operator==(const IntPoint& v) const
-        {
-            return this->x == v.x && this->y == v.y;
-        }
-
-        // compare both coordinates, as needed in persistence
-        // do not overload operator<, requirements are not satisfied
-        inline bool is_less(const IntPoint& other, bool strict = false) const
-        {
-            if (x <= other.x and y <= other.y) {
-                if (strict) {
-                    return x != other.x or y != other.y;
-                }
-                else {
-                    return true;
-                }
-            }
-            return false;
-        }
-    };
-
 
     struct Point {
         Real x;
@@ -98,6 +69,7 @@ namespace md {
             return false;
         }
     };
+
 
     using PointVec = std::vector<Point>;
 
@@ -201,11 +173,9 @@ namespace md {
 
     Rational midpoint(Rational a, Rational b);
 
+    // return true, if s is empty or starts with # (commented out line)
+    // whitespaces in the beginning of s are ignored
     bool ignore_line(const std::string& s);
-//    bool is_less(Rational a, Rational b);
-//    bool is_leq(Rational a, Rational b);
-//    bool is_greater(Rational a, Rational b);
-//    bool is_geq(Rational a, Rational b);
 
     // split string by delimeter
     template<typename Out>
@@ -222,8 +192,20 @@ namespace md {
         split_by_delim(s, delim, std::back_inserter(elems));
         return elems;
     }
-
-
 }
+
+namespace std {
+    template<>
+    struct hash<md::Point>
+    {
+        std::size_t operator()(const md::Point& p) const
+        {
+            auto hx = std::hash<decltype(p.x)>()(p.x);
+            auto hy = std::hash<decltype(p.y)>()(p.y);
+            return hx ^ (hy << 1);
+        }
+    };
+};
+
 
 #endif //MATCHING_DISTANCE_COMMON_UTIL_H

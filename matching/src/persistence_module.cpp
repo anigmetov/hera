@@ -1,5 +1,6 @@
 #include <numeric>
 #include <algorithm>
+#include <unordered_set>
 
 #include <phat/boundary_matrix.h>
 #include <phat/compute_persistence_pairs.h>
@@ -28,14 +29,13 @@ namespace md {
 
     // helper function to initialize const member positions_ in ModulePresentation
     PointVec
-    concat_gen_and_rel_positions(const PointVec& generators, const std::vector<ModulePresentation::Relation>& relations)
+    concat_gen_and_rel_positions(const PointVec& generators, const ModulePresentation::RelVec& relations)
     {
-        PointVec result(generators);
-        result.reserve(result.size() + relations.size());
+        std::unordered_set<Point> ps(generators.begin(), generators.end());
         for(const auto& rel : relations) {
-            result.push_back(rel.position_);
+            ps.insert(rel.position_);
         }
-        return result;
+        return PointVec(ps.begin(), ps.end());
     }
 
 
@@ -56,6 +56,14 @@ namespace md {
         bounding_box_ = Box(Point(min_x_, min_y_), Point(max_x_, max_y_));
     }
 
+
+    ModulePresentation::ModulePresentation(const PointVec& _generators, const RelVec& _relations) :
+        generators_(_generators),
+        relations_(_relations)
+    {
+        init_boundaries();
+    }
+
     void ModulePresentation::translate(md::Real a)
     {
         for(auto& g : generators_) {
@@ -70,15 +78,6 @@ namespace md {
         init_boundaries();
     }
 
-
-    ModulePresentation::ModulePresentation(const std::string& fname) // read from file
-            :
-            generators_(),
-            relations_(),
-            positions_(concat_gen_and_rel_positions(generators_, relations_))
-    {
-        init_boundaries();
-    }
 
     /**
      *
@@ -169,7 +168,6 @@ namespace md {
     {
         return positions_;
     }
-
 
     Box ModulePresentation::bounding_box() const
     {

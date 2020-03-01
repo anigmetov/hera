@@ -82,8 +82,6 @@ namespace md {
                 simplices_.emplace_back(index++, s, BifiltrationFormat::rivet);
             }
         }
-
-        
     }
 
     void Bifiltration::phat_like_format_reader(std::ifstream& ifstr)
