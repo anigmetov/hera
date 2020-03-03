@@ -11,7 +11,25 @@
 #include "simplex.h"
 #include "matching_distance.h"
 
-using namespace md;
+using Real = double;
+using Point = md::Point<Real>;
+using Bifiltration = md::Bifiltration<Real>;
+using BifiltrationProxy = md::BifiltrationProxy<Real>;
+using CalculationParams = md::CalculationParams<Real>;
+using CellWithValue = md::CellWithValue<Real>;
+using DualPoint = md::DualPoint<Real>;
+using DualBox = md::DualBox<Real>;
+using Simplex = md::Simplex<Real>;
+using AbstractSimplex = md::AbstractSimplex;
+using BoundStrategy = md::BoundStrategy;
+using TraverseStrategy = md::TraverseStrategy;
+using AxisType = md::AxisType;
+using AngleType = md::AngleType;
+using ValuePoint = md::ValuePoint;
+using Column = md::Column;
+
+using md::k_corner_vps;
+
 namespace spd = spdlog;
 
 TEST_CASE("Different bounds", "[bounds]")
@@ -40,7 +58,7 @@ TEST_CASE("Different bounds", "[bounds]")
     BifiltrationProxy bifp_a(bif_a, params.dim);
     BifiltrationProxy bifp_b(bif_b, params.dim);
 
-    DistanceCalculator<BifiltrationProxy> calc(bifp_a, bifp_b, params);
+    md::DistanceCalculator<Real, BifiltrationProxy> calc(bifp_a, bifp_b, params);
 
 //    REQUIRE(calc.max_x_ == Approx(max_x));
 //    REQUIRE(calc.max_y_ == Approx(max_y));

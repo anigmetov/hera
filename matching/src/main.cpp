@@ -18,12 +18,20 @@
 #include "box.h"
 #include "matching_distance.h"
 
+using Real = double;
+
 using namespace md;
 
 namespace fs = std::experimental::filesystem;
 
+void force_instantiation()
+{
+    DualBox<Real> db;
+    std::cout << db;
+}
+
 #ifdef PRINT_HEAT_MAP
-void print_heat_map(const md::HeatMaps& hms, std::string fname, const CalculationParams& params)
+void print_heat_map(const md::HeatMaps<Real>& hms, std::string fname, const CalculationParams<Real>& params)
 {
     spd::debug("Entered print_heat_map");
     std::set<Real> mu_vals, lambda_vals;
@@ -143,7 +151,7 @@ int main(int argc, char** argv)
 
     bool help = false;
     bool no_stop_asap = false;
-    CalculationParams params;
+    CalculationParams<Real> params;
 
 #ifdef PRINT_HEAT_MAP
     bool heatmap_only = false;
@@ -178,8 +186,8 @@ int main(int argc, char** argv)
     auto bounds_list = split_by_delim(bounds_list_str, ',');
     auto traverse_list = split_by_delim(traverse_list_str, ',');
 
-    Bifiltration bif_a(fname_a);
-    Bifiltration bif_b(fname_b);
+    Bifiltration<Real> bif_a(fname_a);
+    Bifiltration<Real> bif_b(fname_b);
 
     bif_a.sanity_check();
     bif_b.sanity_check();
@@ -207,11 +215,11 @@ int main(int argc, char** argv)
     }
 
     struct ExperimentResult {
-        CalculationParams params {CalculationParams()};
+        CalculationParams<Real> params {CalculationParams()};
         int n_hera_calls {0};
         double total_milliseconds_elapsed {0};
-        double distance {0};
-        double actual_error {std::numeric_limits<double>::max()};
+        Real distance {0};
+        Real actual_error {std::numeric_limits<double>::max()};
         int actual_max_depth {0};
 
         int x_wins {0};
@@ -250,7 +258,7 @@ int main(int argc, char** argv)
 
         ExperimentResult() { }
 
-        ExperimentResult(CalculationParams p, int nhc, double tme, double d)
+        ExperimentResult(CalculationParams<Real> p, int nhc, double tme, double d)
                 :
                 params(p), n_hera_calls(nhc), total_milliseconds_elapsed(tme), distance(d) { }
     };
@@ -267,7 +275,7 @@ int main(int argc, char** argv)
     std::map<std::tuple<BoundStrategy, TraverseStrategy>, ExperimentResult> results;
     for(BoundStrategy bound_strategy : bound_strategies) {
         for(TraverseStrategy traverse_strategy : traverse_strategies) {
-            CalculationParams params_experiment;
+            CalculationParams<Real> params_experiment;
             params_experiment.bound_strategy = bound_strategy;
             params_experiment.traverse_strategy = traverse_strategy;
             params_experiment.max_depth = params.max_depth;
@@ -366,8 +374,9 @@ int main(int argc, char** argv)
 
     spd::debug("Will use {} bound, {} traverse strategy", params.bound_strategy, params.traverse_strategy);
 
-    Real dist = matching_distance(bif_a, bif_b, params);
+    Real dist = matching_distance<Real>(bif_a, bif_b, params);
     std::cout << dist << std::endl;
 #endif
+    force_instantiation();
     return 0;
 }

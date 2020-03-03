@@ -1,10 +1,6 @@
-#include <tuple>
-
-#include "dual_point.h"
-
 namespace md {
 
-    std::ostream& operator<<(std::ostream& os, const AxisType& at)
+    inline std::ostream& operator<<(std::ostream& os, const AxisType& at)
     {
         if (at == AxisType::x_type)
             os << "x-type";
@@ -13,7 +9,7 @@ namespace md {
         return os;
     }
 
-    std::ostream& operator<<(std::ostream& os, const AngleType& at)
+    inline std::ostream& operator<<(std::ostream& os, const AngleType& at)
     {
         if (at == AngleType::flat)
             os << "flat";
@@ -22,7 +18,8 @@ namespace md {
         return os;
     }
 
-    std::ostream& operator<<(std::ostream& os, const DualPoint& dp)
+    template<class Real>
+    std::ostream& operator<<(std::ostream& os, const DualPoint<Real>& dp)
     {
         os << "Line(" << dp.axis_type() << ", ";
         os << dp.angle_type() << ", ";
@@ -37,13 +34,15 @@ namespace md {
         return os;
     }
 
-    bool DualPoint::operator<(const DualPoint& rhs) const
+    template<class Real>
+    bool DualPoint<Real>::operator<(const DualPoint<Real>& rhs) const
     {
         return std::tie(axis_type_, angle_type_, lambda_, mu_)
                 < std::tie(rhs.axis_type_, rhs.angle_type_, rhs.lambda_, rhs.mu_);
     }
 
-    DualPoint::DualPoint(AxisType axis_type, AngleType angle_type, Real lambda, Real mu)
+    template<class Real>
+    DualPoint<Real>::DualPoint(AxisType axis_type, AngleType angle_type, Real lambda, Real mu)
             :
             axis_type_(axis_type),
             angle_type_(angle_type),
@@ -53,7 +52,8 @@ namespace md {
         assert(sanity_check());
     }
 
-    bool DualPoint::sanity_check() const
+    template<class Real>
+    bool DualPoint<Real>::sanity_check() const
     {
         if (lambda_ < 0.0)
             throw std::runtime_error("Invalid line, negative lambda");
@@ -64,7 +64,8 @@ namespace md {
         return true;
     }
 
-    Real DualPoint::gamma() const
+    template<class Real>
+    Real DualPoint<Real>::gamma() const
     {
         if (is_steep())
             return atan(Real(1.0) / lambda_);
@@ -72,17 +73,19 @@ namespace md {
             return atan(lambda_);
     }
 
-    DualPoint midpoint(DualPoint x, DualPoint y)
+    template<class Real>
+    DualPoint<Real> midpoint(DualPoint<Real> x, DualPoint<Real> y)
     {
         assert(x.angle_type() == y.angle_type() and x.axis_type() == y.axis_type());
         Real lambda_mid = (x.lambda() + y.lambda()) / 2;
         Real mu_mid = (x.mu() + y.mu()) / 2;
-        return DualPoint(x.axis_type(), x.angle_type(), lambda_mid, mu_mid);
+        return DualPoint<Real>(x.axis_type(), x.angle_type(), lambda_mid, mu_mid);
 
     }
 
     // return k in the line equation y = kx + b
-    Real DualPoint::y_slope() const
+    template<class Real>
+    Real DualPoint<Real>::y_slope() const
     {
         if (is_flat())
             return lambda();
@@ -91,7 +94,8 @@ namespace md {
     }
 
     // return k in the line equation x = ky + b
-    Real DualPoint::x_slope() const
+    template<class Real>
+    Real DualPoint<Real>::x_slope() const
     {
         if (is_flat())
             return Real(1.0) / lambda();
@@ -100,7 +104,8 @@ namespace md {
     }
 
     // return b in the line equation y = kx + b
-    Real DualPoint::y_intercept() const
+    template<class Real>
+    Real DualPoint<Real>::y_intercept() const
     {
         if (is_y_type()) {
             return mu();
@@ -112,7 +117,8 @@ namespace md {
     }
 
     // return k in the line equation x = ky + b
-    Real DualPoint::x_intercept() const
+    template<class Real>
+    Real DualPoint<Real>::x_intercept() const
     {
         if (is_x_type()) {
             return mu();
@@ -123,7 +129,8 @@ namespace md {
         }
     }
 
-    Real DualPoint::x_from_y(Real y) const
+    template<class Real>
+    Real DualPoint<Real>::x_from_y(Real y) const
     {
         if (is_horizontal())
             throw std::runtime_error("x_from_y called on horizontal line");
@@ -131,7 +138,8 @@ namespace md {
             return x_slope() * y + x_intercept();
     }
 
-    Real DualPoint::y_from_x(Real x) const
+    template<class Real>
+    Real DualPoint<Real>::y_from_x(Real x) const
     {
         if (is_vertical())
             throw std::runtime_error("x_from_y called on horizontal line");
@@ -139,17 +147,20 @@ namespace md {
             return y_slope() * x + y_intercept();
     }
 
-    bool DualPoint::is_horizontal() const
+    template<class Real>
+    bool DualPoint<Real>::is_horizontal() const
     {
         return is_flat() and lambda() == 0;
     }
 
-    bool DualPoint::is_vertical() const
+    template<class Real>
+    bool DualPoint<Real>::is_vertical() const
     {
         return is_steep() and lambda() == 0;
     }
-    
-    bool DualPoint::contains(Point p) const
+
+    template<class Real>
+    bool DualPoint<Real>::contains(Point<Real> p) const
     {
         if (is_vertical())
             return p.x == x_from_y(p.y);
@@ -157,7 +168,8 @@ namespace md {
             return p.y == y_from_x(p.x);
     }
 
-    bool DualPoint::goes_below(Point p) const
+    template<class Real>
+    bool DualPoint<Real>::goes_below(Point<Real> p) const
     {
         if (is_vertical())
             return p.x <= x_from_y(p.y);
@@ -165,7 +177,8 @@ namespace md {
             return p.y >= y_from_x(p.x);
     }
 
-    bool DualPoint::goes_above(Point p) const
+    template<class Real>
+    bool DualPoint<Real>::goes_above(Point<Real> p) const
     {
         if (is_vertical())
             return p.x >= x_from_y(p.y);
@@ -173,9 +186,10 @@ namespace md {
             return p.y <= y_from_x(p.x);
     }
 
-    Point DualPoint::push(Point p) const
+    template<class Real>
+    Point<Real> DualPoint<Real>::push(Point<Real> p) const
     {
-        Point result;
+        Point<Real> result;
         // if line is below p, we push horizontally
         bool horizontal_push = goes_below(p);
         if (is_x_type()) {
@@ -225,7 +239,8 @@ namespace md {
         return result;
     }
 
-    Real DualPoint::weighted_push(Point p) const
+    template<class Real>
+    Real DualPoint<Real>::weighted_push(Point<Real> p) const
     {
         // if line is below p, we push horizontally
         bool horizontal_push = goes_below(p);
@@ -267,7 +282,8 @@ namespace md {
         }
     }
 
-    bool DualPoint::operator==(const DualPoint& other) const
+    template<class Real>
+    bool DualPoint<Real>::operator==(const DualPoint<Real>& other) const
     {
         return axis_type() == other.axis_type() and
                angle_type() == other.angle_type() and
@@ -275,7 +291,8 @@ namespace md {
                lambda() == other.lambda();
     }
 
-    Real DualPoint::weight() const
+    template<class Real>
+    Real DualPoint<Real>::weight() const
     {
         return lambda_ / sqrt(1 + lambda_ * lambda_);
     }

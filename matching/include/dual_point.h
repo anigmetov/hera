@@ -1,12 +1,9 @@
-//
-// Created by narn on 12.02.19.
-//
-
 #ifndef MATCHING_DISTANCE_DUAL_POINT_H
 #define MATCHING_DISTANCE_DUAL_POINT_H
 
 #include <vector>
 #include <ostream>
+#include <tuple>
 
 #include "common_util.h"
 #include "box.h"
@@ -25,9 +22,10 @@ namespace md {
     // so, e.g., line y = x has 4 different non-equal representation.
     // we are unlikely to ever need this, because 4 cases are
     // always treated separately.
+    template<class Real_>
     class DualPoint {
     public:
-        using Real = md::Real;
+        using Real = Real_;
 
         DualPoint() = default;
 
@@ -56,7 +54,6 @@ namespace md {
 
         bool is_y_type() const { return axis_type_ == AxisType::y_type; }
 
-        friend std::ostream& operator<<(std::ostream& os, const DualPoint& dp);
         bool operator<(const DualPoint& rhs) const;
 
         AxisType axis_type() const { return axis_type_; }
@@ -66,16 +63,16 @@ namespace md {
         // return true otherwise
         bool sanity_check() const;
 
-        Real weighted_push(Point p) const;
-        Point push(Point p) const;
+        Real weighted_push(Point<Real> p) const;
+        Point<Real> push(Point<Real> p) const;
 
         bool is_horizontal() const;
         bool is_vertical() const;
 
-        bool goes_below(Point p) const;
-        bool goes_above(Point p) const;
+        bool goes_below(Point<Real> p) const;
+        bool goes_above(Point<Real> p) const;
 
-        bool contains(Point p) const;
+        bool contains(Point<Real> p) const;
 
         Real x_slope() const;
         Real y_slope() const;
@@ -98,9 +95,13 @@ namespace md {
         Real mu_ {-1.0};
     };
 
-    std::ostream& operator<<(std::ostream& os, const DualPoint& dp);
+    template<class Real>
+    std::ostream& operator<<(std::ostream& os, const DualPoint<Real>& dp);
 
-    DualPoint midpoint(DualPoint x, DualPoint y);
+    template<class Real>
+    DualPoint<Real> midpoint(DualPoint<Real> x, DualPoint<Real> y);
 };
+
+#include "dual_point.hpp"
 
 #endif //MATCHING_DISTANCE_DUAL_POINT_H

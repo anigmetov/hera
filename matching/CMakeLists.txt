@@ -29,84 +29,34 @@ if (NOT WIN32)
 endif (NOT WIN32)
 
 file(GLOB BT_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../bottleneck/include/*.h ${CMAKE_CURRENT_SOURCE_DIR}/../bottleneck/include/*.hpp)
-file(GLOB MD_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
+file(GLOB MD_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
 
 file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
 file(GLOB SRC_TEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/*.cpp)
 
 find_package(Threads)
-set(libraries ${libraries} "stdc++fs" ${CMAKE_THREAD_LIBS_INIT} ${OpenMP_CXX_LIBRARIES})
+set(libraries ${libraries} "stdc++fs" ${CMAKE_THREAD_LIBS_INIT})
 
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
+set(libraries ${libraries} ${OpenMP_CXX_LIBRARIES})
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
 
-#add_executable(matching_distance ${SRC_FILES} ${BT_HEADERS} ${MD_HEADERS})
-add_executable(matching_distance "src/main.cpp"
-        "src/box.cpp"
-        "src/common_util.cpp"
-        "src/persistence_module.cpp"
-        "src/simplex.cpp"
-        "src/bifiltration.cpp"
-        "src/matching_distance.cpp"
-        "src/dual_box.cpp"
-        "src/dual_point.cpp"
-        "include/box.h"
-        "include/common_util.h"
-        "include/persistence_module.h"
-        "include/simplex.h"
-        "include/bifiltration.h"
-        "include/matching_distance.h"
-        "include/dual_box.h"
-        "include/dual_point.h"
-        ${BT_HEADERS} include/cell_with_value.h src/cell_with_value.cpp)
+add_executable(matching_distance "src/main.cpp" ${MD_HEADERS} ${BT_HEADERS} )
 target_link_libraries(matching_distance PUBLIC ${libraries})
 
-#add_executable(matching_distance_test ${SRC_TEST_FILES} ${BT_HEADERS} ${MD_HEADERS})
-add_executable(matching_distance_test ${SRC_TEST_FILES}
-        "src/box.cpp"
-        "src/common_util.cpp"
-        "src/persistence_module.cpp"
-        "src/simplex.cpp"
-        "src/bifiltration.cpp"
-        "src/matching_distance.cpp"
-        "src/dual_box.cpp"
-        "src/dual_point.cpp"
-        "include/box.h"
-        "include/common_util.h"
-        "include/persistence_module.h"
-        "include/simplex.h"
-        "include/bifiltration.h"
-        "include/matching_distance.h"
-        "include/dual_box.h"
-        "include/dual_point.h"
-        ${BT_HEADERS} src/tests/test_common.cpp  src/common_util.cpp src/tests/test_matching_distance.cpp src/cell_with_value.cpp)
+add_executable(matching_distance_test ${SRC_TEST_FILES} ${BT_HEADERS} ${MD_HEADERS})
 target_link_libraries(matching_distance_test PUBLIC ${libraries})
 
 add_executable(test_generator "src/test_generator.cpp"
-        "src/box.cpp"
-        "src/common_util.cpp"
-        "src/persistence_module.cpp"
-        "src/simplex.cpp"
-        "src/bifiltration.cpp"
-        "src/matching_distance.cpp"
-        "src/dual_box.cpp"
-        "src/dual_point.cpp"
-        "include/box.h"
-        "include/common_util.h"
-        "include/persistence_module.h"
-        "include/simplex.h"
-        "include/bifiltration.h"
-        "include/matching_distance.h"
-        "include/dual_box.h"
-        "include/dual_point.h"
-        ${BT_HEADERS} src/cell_with_value.cpp)
+        ${MD_HEADERS}
+        ${BT_HEADERS})
 target_link_libraries(test_generator PUBLIC ${libraries})
 
-#add_executable(matching_distance "src/main.cpp" "src/box.cpp" "src/common_util.cpp" "src/line.cpp" "src/persistence_module.cpp" ${BT_HEADERS} ${MD_HEADERS})
+#add_executable(matching_distance "include/main.cpp" "src/box.cpp" "src/common_util.cpp" "src/line.cpp" "src/persistence_module.hpp" ${BT_HEADERS} ${MD_HEADERS})

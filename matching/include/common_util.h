@@ -11,22 +11,24 @@
 #include <map>
 #include <functional>
 
+#include <spdlog/spdlog.h>
+#include <spdlog/fmt/ostr.h>
+
+namespace spd = spdlog;
+
 #include "common_defs.h"
 #include "phat/helpers/misc.h"
 
-
 namespace md {
 
-
-    using Real = double;
-    using RealVec = std::vector<Real>;
     using Index = phat::index;
     using IndexVec = std::vector<Index>;
 
-    static constexpr Real pi = M_PI;
+    //static constexpr Real pi = M_PI;
 
     using Column = std::vector<Index>;
 
+    template<class Real>
     struct Point {
         Real x;
         Real y;
@@ -71,58 +73,55 @@ namespace md {
     };
 
 
-    using PointVec = std::vector<Point>;
+    template<class Real>
+    using PointVec = std::vector<Point<Real>>;
 
-    Point operator+(const Point& u, const Point& v);
+    template<class Real>
+    Point<Real> operator+(const Point<Real>& u, const Point<Real>& v);
 
-    Point operator-(const Point& u, const Point& v);
+    template<class Real>
+    Point<Real> operator-(const Point<Real>& u, const Point<Real>& v);
 
-    Point least_upper_bound(const Point& u, const Point& v);
 
-    Point greatest_lower_bound(const Point& u, const Point& v);
+    template<class Real>
+    Point<Real> least_upper_bound(const Point<Real>& u, const Point<Real>& v);
 
-    Point max_point();
+    template<class Real>
+    Point<Real> greatest_lower_bound(const Point<Real>& u, const Point<Real>& v);
 
-    Point min_point();
+    template<class Real>
+    Point<Real> max_point();
 
-    std::ostream& operator<<(std::ostream& ostr, const Point& vec);
+    template<class Real>
+    Point<Real> min_point();
 
-    Real L_infty(const Point& v);
+    template<class Real>
+    std::ostream& operator<<(std::ostream& ostr, const Point<Real>& vec);
 
-    Real l_2_norm(const Point& v);
+    template<class Real>
+    using DiagramPoint = std::pair<Real, Real>;
 
-    Real l_2_dist(const Point& x, const Point& y);
+    template<class Real>
+    using Diagram = std::vector<DiagramPoint<Real>>;
 
-    Real l_infty_dist(const Point& x, const Point& y);
-
-    using Interval = std::pair<Real, Real>;
-
-    // return minimal interval that contains both a and b
-    inline Interval minimal_covering_interval(Interval a, Interval b)
-    {
-        return {std::min(a.first, b.first), std::max(a.second, b.second)};
-    }
 
     // to keep diagrams in all dimensions
     // TODO: store in Hera format?
+    template<class Real>
     class DiagramKeeper {
     public:
-        using DiagramPoint = std::pair<Real, Real>;
-        using Diagram = std::vector<DiagramPoint>;
 
         DiagramKeeper() { };
 
         void add_point(int dim, Real birth, Real death);
 
-        Diagram get_diagram(int dim) const;
+        Diagram<Real> get_diagram(int dim) const;
 
         void clear() { data_.clear(); }
 
     private:
-        std::map<int, Diagram> data_;
+        std::map<int, Diagram<Real>> data_;
     };
-
-    using Diagram = std::vector<std::pair<Real, Real>>;
 
     template<typename C>
     std::string container_to_string(const C& cont)
@@ -140,42 +139,18 @@ namespace md {
         return ss.str();
     }
 
-    int gcd(int a, int b);
-
-    struct Rational {
-        int numerator {0};
-        int denominator {1};
-        Rational() = default;
-        Rational(int n, int d) : numerator(n / gcd(n, d)), denominator(d / gcd(n, d)) {}
-        Rational(std::pair<int, int> p) : Rational(p.first, p.second) {}
-        Rational(int n) : numerator(n), denominator(1) {}
-        Real to_real() const { return (Real)numerator / (Real)denominator; }
-        void reduce();
-        Rational& operator+=(const Rational& rhs);
-        Rational& operator-=(const Rational& rhs);
-        Rational& operator*=(const Rational& rhs);
-        Rational& operator/=(const Rational& rhs);
-    };
-
-    using namespace std::rel_ops;
-
-    bool operator==(const Rational& a, const Rational& b);
-    bool operator<(const Rational& a, const Rational& b);
-    std::ostream& operator<<(std::ostream& os, const Rational& a);
-
-    // arithmetic
-    Rational operator+(Rational a, const Rational& b);
-    Rational operator-(Rational a, const Rational& b);
-    Rational operator*(Rational a, const Rational& b);
-    Rational operator/(Rational a, const Rational& b);
-
-    Rational reduce(Rational frac);
-
-    Rational midpoint(Rational a, Rational b);
-
     // return true, if s is empty or starts with # (commented out line)
     // whitespaces in the beginning of s are ignored
-    bool ignore_line(const std::string& s);
+    inline bool ignore_line(const std::string& s)
+    {
+        for(auto c : s) {
+            if (isspace(c))
+                continue;
+            return (c == '#');
+        }
+        return true;
+    }
+
 
     // split string by delimeter
     template<typename Out>
@@ -195,10 +170,10 @@ namespace md {
 }
 
 namespace std {
-    template<>
-    struct hash<md::Point>
+    template<class Real>
+    struct hash<md::Point<Real>>
     {
-        std::size_t operator()(const md::Point& p) const
+        std::size_t operator()(const md::Point<Real>& p) const
         {
             auto hx = std::hash<decltype(p.x)>()(p.x);
             auto hy = std::hash<decltype(p.y)>()(p.y);
@@ -206,6 +181,8 @@ namespace std {
         }
     };
 };
+
+#include "common_util.hpp"
 
 
 #endif //MATCHING_DISTANCE_COMMON_UTIL_H

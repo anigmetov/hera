@@ -11,9 +11,12 @@
 #include "common_util.h"
 #include "bifiltration.h"
 
+using Real = double;
 using Index = md::Index;
-using Point = md::Point;
+using Point = md::Point<Real>;
+using Bifiltration = md::Bifiltration<Real>;
 using Column = md::Column;
+using Simplex = md::Simplex<Real>;
 
 int g_max_coord = 100;
 
@@ -100,7 +103,7 @@ void generate_positions(const ASimplex& s, ASimplexToBirthMap& simplex_to_birth,
     }
 }
 
-md::Bifiltration get_random_bifiltration(int n_vertices, int max_dim, int n_top_simplices)
+Bifiltration get_random_bifiltration(int n_vertices, int max_dim, int n_top_simplices)
 {
     ASimplexToBirthMap simplex_to_birth;
 
@@ -122,13 +125,13 @@ md::Bifiltration get_random_bifiltration(int n_vertices, int max_dim, int n_top_
         add_if_top(candidate_simplex, top_simplices);
     }
 
-    Point upper_bound{static_cast<md::Real>(g_max_coord), static_cast<md::Real>(g_max_coord)};
+    Point upper_bound{static_cast<Real>(g_max_coord), static_cast<Real>(g_max_coord)};
     for(const auto& top_simplex : top_simplices) {
         generate_positions(top_simplex, simplex_to_birth, upper_bound);
     }
 
     std::vector<std::pair<ASimplex, Point>> simplex_birth_pairs{simplex_to_birth.begin(), simplex_to_birth.end()};
-    std::vector<md::Column> boundaries{simplex_to_birth.size(), md::Column()};
+    std::vector<Column> boundaries{simplex_to_birth.size(), Column()};
 
 // assign ids and save boundaries
     int id = 0;
@@ -138,7 +141,7 @@ md::Bifiltration get_random_bifiltration(int n_vertices, int max_dim, int n_top_
             ASimplex& simplex = simplex_birth_pairs[i].first;
             if (simplex.dim() == dim) {
                 simplex.id = id++;
-                md::Column bdry;
+                Column bdry;
                 for(auto& facet : simplex.facets()) {
                     auto facet_iter = std::find_if(simplex_birth_pairs.begin(), simplex_birth_pairs.end(),
                             [facet](const std::pair<ASimplex, Point>& sbp) { return facet == sbp.first; });
@@ -153,7 +156,7 @@ md::Bifiltration get_random_bifiltration(int n_vertices, int max_dim, int n_top_
     }
 
 // create vector of Simplex-es
-    std::vector<md::Simplex> simplices;
+    std::vector<Simplex> simplices;
     for(int i = 0; i < (int) simplex_birth_pairs.size(); ++i) {
         int id = simplex_birth_pairs[i].first.id;
         int dim = simplex_birth_pairs[i].first.dim();
@@ -164,13 +167,13 @@ md::Bifiltration get_random_bifiltration(int n_vertices, int max_dim, int n_top_
 
 // sort by id
     std::sort(simplices.begin(), simplices.end(),
-            [](const md::Simplex& s1, const md::Simplex& s2) { return s1.id() < s2.id(); });
+            [](const Simplex& s1, const Simplex& s2) { return s1.id() < s2.id(); });
     for(int i = 0; i < (int)simplices.size(); ++i) {
         assert(simplices[i].id() == i);
         assert(i == 0 || simplices[i].dim() >= simplices[i - 1].dim());
     }
 
-    return md::Bifiltration(simplices.begin(), simplices.end());
+    return Bifiltration(simplices.begin(), simplices.end());
 }
 
 int main(int argc, char** argv)

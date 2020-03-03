@@ -9,6 +9,7 @@
 
 namespace md {
 
+    template<class Real>
     class Bifiltration;
 
     enum class BifiltrationFormat {
@@ -38,11 +39,21 @@ namespace md {
 
         int dim() const { return vertices_.size() - 1; }
 
-        void push_back(int v);
+        void push_back(int v)
+        {
+            vertices_.push_back(v);
+            std::sort(vertices_.begin(), vertices_.end());
+        }
 
         AbstractSimplex() { }
 
-        AbstractSimplex(std::vector<int> vertices, bool sort = true);
+        AbstractSimplex(std::vector<int> vertices, bool sort = true)
+                :vertices_(vertices)
+        {
+            if (sort)
+                std::sort(vertices_.begin(), vertices_.end());
+        }
+
 
         template<class Iter>
         AbstractSimplex(Iter beg_iter, Iter end_iter, bool sort = true)
@@ -53,22 +64,51 @@ namespace md {
                 std::sort(vertices_.begin(), end());
         }
 
-        std::vector<AbstractSimplex> facets() const;
+        std::vector<AbstractSimplex> facets() const
+        {
+            std::vector<AbstractSimplex> result;
+            for (int i = 0; i < static_cast<int>(vertices_.size()); ++i) {
+                std::vector<int> facet_vertices;
+                facet_vertices.reserve(dim());
+                for (int j = 0; j < static_cast<int>(vertices_.size()); ++j) {
+                    if (j != i)
+                        facet_vertices.push_back(vertices_[j]);
+                }
+                if (!facet_vertices.empty()) {
+                    result.emplace_back(facet_vertices, false);
+                }
+            }
+            return result;
+        }
 
         friend std::ostream& operator<<(std::ostream& os, const AbstractSimplex& s);
-
         // compare by vertices_ only
         friend bool operator==(const AbstractSimplex& s1, const AbstractSimplex& s2);
 
         friend bool operator<(const AbstractSimplex&, const AbstractSimplex&);
     };
 
-    std::ostream& operator<<(std::ostream& os, const AbstractSimplex& s);
+    inline std::ostream& operator<<(std::ostream& os, const AbstractSimplex& s)
+    {
+        os << "AbstractSimplex(id = " << s.id << ", vertices_ = " << container_to_string(s.vertices_) << ")";
+        return os;
+    }
 
+    inline bool operator<(const AbstractSimplex& a, const AbstractSimplex& b)
+    {
+        return a.vertices_ < b.vertices_;
+    }
+
+    inline bool operator==(const AbstractSimplex& s1, const AbstractSimplex& s2)
+    {
+        return s1.vertices_ == s2.vertices_;
+    }
+
+    template<class Real>
     class Simplex {
     private:
         Index id_;
-        Point pos_;
+        Point<Real> pos_;
         int dim_;
         // in our format we use facet indices,
         // this is the fastest representation for homology
@@ -77,11 +117,11 @@ namespace md {
         // conversion routines are in Bifiltration
         Column facet_indices_;
         Column vertices_;
-        Real v {0.0}; // used when constructed a filtration for a slice
+        Real v {0}; // used when constructed a filtration for a slice
     public:
         Simplex(Index _id, std::string s, BifiltrationFormat input_format);
 
-        Simplex(Index _id, Point birth, int _dim, const Column& _bdry);
+        Simplex(Index _id, Point<Real> birth, int _dim, const Column& _bdry);
 
         void init_rivet(std::string s);
 
@@ -96,9 +136,9 @@ namespace md {
         Real value() const { return v; }
 
         // assumes 1-criticality
-        Point position() const { return pos_; }
+        Point<Real> position() const { return pos_; }
 
-        void set_position(const Point& new_pos) { pos_ = new_pos; }
+        void set_position(const Point<Real>& new_pos) { pos_ = new_pos; }
 
         void scale(Real lambda)
         {
@@ -110,12 +150,14 @@ namespace md {
 
         void set_value(Real new_val) { v = new_val; }
 
-        friend std::ostream& operator<<(std::ostream& os, const Simplex& s);
-
-        friend Bifiltration;
+        friend Bifiltration<Real>;
     };
 
-    std::ostream& operator<<(std::ostream& os, const Simplex& s);
+    template<class Real>
+    std::ostream& operator<<(std::ostream& os, const Simplex<Real>& s);
 
 }
+
+#include "simplex.hpp"
+
 #endif //MATCHING_DISTANCE_SIMPLEX_H

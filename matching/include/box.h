@@ -8,20 +8,23 @@
 
 namespace md {
 
+    template<class Real_>
     struct Box {
+    public:
+            using Real = Real_;
     private:
-        Point ll;
-        Point ur;
+        Point<Real> ll;
+        Point<Real> ur;
 
     public:
-        Box(Point ll = Point(), Point ur = Point())
+        Box(Point<Real> ll = Point<Real>(), Point<Real> ur = Point<Real>())
                 :ll(ll), ur(ur)
         {
         }
 
-        Box(Point center, Real width, Real height) :
-            ll(Point(center.x - 0.5 * width, center.y - 0.5 * height)),
-            ur(Point(center.x + 0.5 * width, center.y + 0.5 * height))
+        Box(Point<Real> center, Real width, Real height) :
+            ll(Point<Real>(center.x - 0.5 * width, center.y - 0.5 * height)),
+            ur(Point<Real>(center.x + 0.5 * width, center.y + 0.5 * height))
         {
         }
 
@@ -30,11 +33,9 @@ namespace md {
 
         inline double height() const { return ur.y - ll.y; }
 
-        inline Point lower_left() const { return ll; }
-        inline Point upper_right() const { return ur; }
-        inline Point center() const { return Point((ll.x + ur.x) / 2, (ll.y + ur.y) / 2); }
-
-//        bool inside(Point& p) const { return ll.x <= p.x && ll.y <= p.y && ur.x >= p.x && ur.y >= p.y; }
+        inline Point<Real> lower_left() const { return ll; }
+        inline Point<Real> upper_right() const { return ur; }
+        inline Point<Real> center() const { return Point<Real>((ll.x + ur.x) / 2, (ll.y + ur.y) / 2); }
 
         inline bool operator==(const Box& p)
         {
@@ -43,58 +44,16 @@ namespace md {
 
         std::vector<Box> refine() const;
 
-        std::vector<Point> corners() const;
+        std::vector<Point<Real>> corners() const;
 
         void translate(Real a);
-
-        // return minimal and maximal value of func
-        // on the corners of the box
-        template<typename F>
-        std::pair<Real, Real> min_max_on_corners(const F& func) const;
-
-        friend std::ostream& operator<<(std::ostream& os, const Box& box);
     };
 
-    std::ostream& operator<<(std::ostream& os, const Box& box);
-//    template<typename InputIterator>
-//    Box compute_bounding_box(InputIterator simplices_begin, InputIterator simplices_end)
-//    {
-//        if (simplices_begin == simplices_end) {
-//            return Box();
-//        }
-//        Box bb;
-//        bb.ll = bb.ur = simplices_begin->pos;
-//        for (InputIterator it = simplices_begin; it != simplices_end; it++) {
-//            Point& pos = it->pos;
-//            if (pos.x < bb.ll.x) {
-//                bb.ll.x = pos.x;
-//            }
-//            if (pos.y < bb.ll.y) {
-//                bb.ll.y = pos.y;
-//            }
-//            if (pos.x > bb.ur.x) {
-//                bb.ur.x = pos.x;
-//            }
-//            if (pos.y > bb.ur.y) {
-//                bb.ur.y = pos.y;
-//            }
-//        }
-//        return bb;
-//    }
+    template<class Real>
+    std::ostream& operator<<(std::ostream& os, const Box<Real>& box);
 
-    Box get_enclosing_box(const Box& box_a, const Box& box_b);
-
-    template<typename F>
-    std::pair<Real, Real> Box::min_max_on_corners(const F& func) const
-    {
-        std::pair<Real, Real> min_max { std::numeric_limits<Real>::max(), -std::numeric_limits<Real>::max() };
-        for(Point p : corners()) {
-            Real value = func(p);
-            min_max.first = std::min(min_max.first, value);
-            min_max.second = std::max(min_max.second, value);
-        }
-        return min_max;
-    };
 } // namespace md
+
+#include "box.hpp"
 
 #endif //MATCHING_DISTANCE_BOX_H

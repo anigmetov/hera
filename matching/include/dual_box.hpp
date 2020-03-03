@@ -1,36 +1,24 @@
-#include <random>
-
-#include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h"
-
-namespace spd = spdlog;
-
-#include "dual_box.h"
-
 namespace md {
 
-    std::ostream& operator<<(std::ostream& os, const DualBox& db)
-    {
-        os << "DualBox(" << db.lower_left_ << ", " << db.upper_right_ << ")";
-        return os;
-    }
-
-    DualBox::DualBox(DualPoint ll, DualPoint ur)
+    template<class Real>
+    DualBox<Real>::DualBox(DualPoint<Real> ll, DualPoint<Real> ur)
             :lower_left_(ll), upper_right_(ur)
     {
     }
 
-    std::vector<DualPoint> DualBox::corners() const
+    template<class Real>
+    std::vector<DualPoint<Real>> DualBox<Real>::corners() const
     {
         return {lower_left_,
-                DualPoint(axis_type(), angle_type(), lower_left_.lambda(), upper_right_.mu()),
+                DualPoint<Real>(axis_type(), angle_type(), lower_left_.lambda(), upper_right_.mu()),
                 upper_right_,
-                DualPoint(axis_type(), angle_type(), upper_right_.lambda(), lower_left_.mu())};
+                DualPoint<Real>(axis_type(), angle_type(), upper_right_.lambda(), lower_left_.mu())};
     }
 
-    std::vector<DualPoint> DualBox::push_change_points(const Point& p) const
+    template<class Real>
+    std::vector<DualPoint<Real>> DualBox<Real>::push_change_points(const Point<Real>& p) const
     {
-        std::vector<DualPoint> result;
+        std::vector<DualPoint<Real>> result;
         result.reserve(2);
 
         bool is_y_type = lower_left_.is_y_type();
@@ -38,13 +26,13 @@ namespace md {
 
         auto mu_from_lambda = [p, is_y_type, is_flat](Real lambda) {
             bool is_x_type = not is_y_type, is_steep = not is_flat;
-            if (is_y_type and is_flat) {
+            if (is_y_type && is_flat) {
                 return p.y - lambda * p.x;
-            } else if (is_y_type and is_steep) {
+            } else if (is_y_type && is_steep) {
                 return p.y - p.x / lambda;
-            } else if (is_x_type and is_flat) {
+            } else if (is_x_type && is_flat) {
                 return p.x - p.y / lambda;
-            } else if (is_x_type and is_steep) {
+            } else if (is_x_type && is_steep) {
                 return p.x - lambda * p.y;
             }
             // to shut up compiler warning
@@ -53,13 +41,13 @@ namespace md {
 
         auto lambda_from_mu = [p, is_y_type, is_flat](Real mu) {
             bool is_x_type = not is_y_type, is_steep = not is_flat;
-            if (is_y_type and is_flat) {
+            if (is_y_type && is_flat) {
                 return (p.y - mu) / p.x;
-            } else if (is_y_type and is_steep) {
+            } else if (is_y_type && is_steep) {
                 return p.x / (p.y - mu);
-            } else if (is_x_type and is_flat) {
+            } else if (is_x_type && is_flat) {
                 return p.y / (p.x - mu);
-            } else if (is_x_type and is_steep) {
+            } else if (is_x_type && is_steep) {
                 return (p.x - mu) / p.y;
             }
             // to shut up compiler warning
@@ -67,7 +55,7 @@ namespace md {
         };
 
         // all inequalities below are strict: equality means it is a corner
-        // and critical_points() returns corners anyway
+        // && critical_points() returns corners anyway
 
         Real mu_intersect_min = mu_from_lambda(lambda_min());
 
@@ -99,22 +87,24 @@ namespace md {
         return result;
     }
 
-    std::vector<DualPoint> DualBox::critical_points(const Point& /*p*/) const
+    template<class Real>
+    std::vector<DualPoint<Real>> DualBox<Real>::critical_points(const Point<Real>& /*p*/) const
     {
         // maximal difference is attained at corners
         return corners();
-//        std::vector<DualPoint> result;
+//        std::vector<DualPoint<Real>> result;
 //        result.reserve(6);
 //        for(auto dp : corners()) result.push_back(dp);
 //        for(auto dp : push_change_points(p)) result.push_back(dp);
 //        return result;
     }
 
-    std::vector<DualPoint> DualBox::random_points(int n) const
+    template<class Real>
+    std::vector<DualPoint<Real>> DualBox<Real>::random_points(int n) const
     {
         assert(n >= 0);
         std::mt19937_64 gen(1);
-        std::vector<DualPoint> result;
+        std::vector<DualPoint<Real>> result;
         result.reserve(n);
         std::uniform_real_distribution<Real> mu_distr(mu_min(), mu_max());
         std::uniform_real_distribution<Real> lambda_distr(lambda_min(), lambda_max());
@@ -124,7 +114,8 @@ namespace md {
         return result;
     }
 
-    bool DualBox::sanity_check() const
+    template<class Real>
+    bool DualBox<Real>::sanity_check() const
     {
         lower_left_.sanity_check();
         upper_right_.sanity_check();
@@ -144,51 +135,56 @@ namespace md {
         return true;
     }
 
-    std::vector<DualBox> DualBox::refine() const
+    template<class Real>
+    std::vector<DualBox<Real>> DualBox<Real>::refine() const
     {
-        std::vector<DualBox> result;
+        std::vector<DualBox<Real>> result;
 
         result.reserve(4);
 
         Real lambda_middle = (lower_left().lambda() + upper_right().lambda()) / 2.0;
         Real mu_middle = (lower_left().mu() + upper_right().mu()) / 2.0;
 
-        DualPoint refinement_center(axis_type(), angle_type(), lambda_middle, mu_middle);
+        DualPoint<Real> refinement_center(axis_type(), angle_type(), lambda_middle, mu_middle);
 
         result.emplace_back(lower_left_, refinement_center);
 
-        result.emplace_back(DualPoint(axis_type(), angle_type(), lambda_middle, mu_min()),
-                DualPoint(axis_type(), angle_type(), lambda_max(), mu_middle));
+        result.emplace_back(DualPoint<Real>(axis_type(), angle_type(), lambda_middle, mu_min()),
+                DualPoint<Real>(axis_type(), angle_type(), lambda_max(), mu_middle));
 
         result.emplace_back(refinement_center, upper_right_);
 
-        result.emplace_back(DualPoint(axis_type(), angle_type(), lambda_min(), mu_middle),
-                DualPoint(axis_type(), angle_type(), lambda_middle, mu_max()));
+        result.emplace_back(DualPoint<Real>(axis_type(), angle_type(), lambda_min(), mu_middle),
+                DualPoint<Real>(axis_type(), angle_type(), lambda_middle, mu_max()));
        return result;
     }
 
-    bool DualBox::operator==(const DualBox& other) const
+    template<class Real>
+    bool DualBox<Real>::operator==(const DualBox& other) const
     {
-        return lower_left() == other.lower_left() and
+        return lower_left() == other.lower_left() &&
                upper_right() == other.upper_right();
     }
 
-    bool DualBox::contains(const DualPoint& dp) const
+    template<class Real>
+    bool DualBox<Real>::contains(const DualPoint<Real>& dp) const
     {
-        return dp.angle_type() == angle_type() and dp.axis_type() == axis_type() and
-               mu_max() >= dp.mu() and
-               mu_min() <= dp.mu() and
-               lambda_min() <= dp.lambda() and
+        return dp.angle_type() == angle_type() && dp.axis_type() == axis_type() &&
+               mu_max() >= dp.mu() &&
+               mu_min() <= dp.mu() &&
+               lambda_min() <= dp.lambda() &&
                lambda_max() >= dp.lambda();
     }
 
-    DualPoint DualBox::lower_right() const
+    template<class Real>
+    DualPoint<Real> DualBox<Real>::lower_right() const
     {
-        return DualPoint(lower_left_.axis_type(), lower_left_.angle_type(), lambda_max(), mu_min());
+        return DualPoint<Real>(lower_left_.axis_type(), lower_left_.angle_type(), lambda_max(), mu_min());
     }
 
-    DualPoint DualBox::upper_left() const
+    template<class Real>
+    DualPoint<Real> DualBox<Real>::upper_left() const
     {
-        return DualPoint(lower_left_.axis_type(), lower_left_.angle_type(), lambda_min(), mu_max());
+        return DualPoint<Real>(lower_left_.axis_type(), lower_left_.angle_type(), lambda_min(), mu_max());
     }
 }

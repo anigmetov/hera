@@ -1,7 +1,3 @@
-//
-// Created by narn on 16.07.19.
-//
-
 #ifndef MATCHING_DISTANCE_CELL_WITH_VALUE_H
 #define MATCHING_DISTANCE_CELL_WITH_VALUE_H
 
@@ -21,7 +17,29 @@ namespace md {
         upper_right
     };
 
-    std::ostream& operator<<(std::ostream& os, const ValuePoint& vp);
+    inline std::ostream& operator<<(std::ostream& os, const ValuePoint& vp)
+    {
+        switch(vp) {
+            case ValuePoint::upper_left :
+                os << "upper_left";
+                break;
+            case ValuePoint::upper_right :
+                os << "upper_right";
+                break;
+            case ValuePoint::lower_left :
+                os << "lower_left";
+                break;
+            case ValuePoint::lower_right :
+                os << "lower_right";
+                break;
+            case ValuePoint::center:
+                os << "center";
+                break;
+            default:
+                os << "FORGOTTEN ValuePoint";
+        }
+        return os;
+    }
 
     const std::vector<ValuePoint> k_all_vps = {ValuePoint::center, ValuePoint::lower_left, ValuePoint::upper_left,
                        ValuePoint::upper_right, ValuePoint::lower_right};
@@ -31,8 +49,10 @@ namespace md {
 
     // represents a cell in the dual space with the value
     // of the weighted bottleneck distance
+    template<class Real_>
     class CellWithValue {
     public:
+        using Real = Real_;
 
         CellWithValue() = default;
 
@@ -44,18 +64,18 @@ namespace md {
 
         CellWithValue& operator=(CellWithValue&& other) = default;
 
-        CellWithValue(const DualBox& b, int level)
+        CellWithValue(const DualBox<Real>& b, int level)
                 :dual_box_(b), level_(level) { }
 
-        DualBox dual_box() const { return dual_box_; }
+        DualBox<Real> dual_box() const { return dual_box_; }
 
-        DualPoint center() const { return dual_box_.center(); }
+        DualPoint<Real> center() const { return dual_box_.center(); }
 
         Real value_at(ValuePoint vp) const;
 
         bool has_value_at(ValuePoint vp) const;
 
-        DualPoint value_point(ValuePoint vp) const;
+        DualPoint<Real> value_point(ValuePoint vp) const;
 
         int level() const { return level_; }
 
@@ -72,8 +92,6 @@ namespace md {
         bool has_max_possible_value() const { return has_max_possible_value_; }
 
         std::vector<CellWithValue> get_refined_cells() const;
-
-        friend std::ostream& operator<<(std::ostream&, const CellWithValue&);
 
         void set_max_possible_value(Real new_upper_bound);
 
@@ -100,7 +118,7 @@ namespace md {
         bool has_upper_right_value() const { return upper_right_value_ >= 0; }
 
 
-        DualBox dual_box_;
+        DualBox<Real> dual_box_;
         Real central_value_ {-1.0};
         Real lower_left_value_ {-1.0};
         Real lower_right_value_ {-1.0};
@@ -114,7 +132,10 @@ namespace md {
         bool has_max_possible_value_ {false};
     };
 
-    std::ostream& operator<<(std::ostream& os, const CellWithValue& cell);
+    template<class Real>
+    std::ostream& operator<<(std::ostream& os, const CellWithValue<Real>& cell);
 } // namespace md
+
+#include "cell_with_value.hpp"
 
 #endif //MATCHING_DISTANCE_CELL_WITH_VALUE_H

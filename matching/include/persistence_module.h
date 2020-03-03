@@ -5,6 +5,12 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include <numeric>
+#include <algorithm>
+#include <unordered_set>
+
+#include "phat/boundary_matrix.h"
+#include "phat/compute_persistence_pairs.h"
 
 #include "common_util.h"
 #include "dual_point.h"
@@ -28,17 +34,20 @@ namespace md {
      */
 
 
+    template<class Real>
     class ModulePresentation {
     public:
+
+        using RealVec = std::vector<Real>;
 
         enum Format { rivet_firep };
 
         struct Relation {
-            Point position_;
+            Point<Real> position_;
             IndexVec components_;
 
             Relation() {}
-            Relation(const Point& _pos, const IndexVec& _components);
+            Relation(const Point<Real>& _pos, const IndexVec& _components);
 
             Real get_x() const { return position_.x; }
             Real get_y() const { return position_.y; }
@@ -48,9 +57,9 @@ namespace md {
 
         ModulePresentation() {}
 
-        ModulePresentation(const PointVec& _generators, const RelVec& _relations);
+        ModulePresentation(const PointVec<Real>& _generators, const RelVec& _relations);
 
-        Diagram weighted_slice_diagram(const DualPoint& line) const;
+        Diagram<Real> weighted_slice_diagram(const DualPoint<Real>& line) const;
 
         // translate all points by vector (a,a)
         void translate(Real a);
@@ -59,9 +68,7 @@ namespace md {
         Real minimal_coordinate() const { return std::min(min_x(), min_y()); }
 
         // return box that contains all positions of all simplices
-        Box bounding_box() const;
-
-        friend std::ostream& operator<<(std::ostream& os, const ModulePresentation& mp);
+        Box<Real> bounding_box() const;
 
         Real max_x() const { return max_x_; }
 
@@ -71,26 +78,27 @@ namespace md {
 
         Real min_y() const { return min_y_; }
 
-        PointVec positions() const;
+        PointVec<Real> positions() const;
 
     private:
 
-        PointVec generators_;
+        PointVec<Real> generators_;
         std::vector<Relation> relations_;
-        PointVec positions_;
+        PointVec<Real> positions_;
 
 
         Real max_x_ { std::numeric_limits<Real>::max() };
         Real max_y_ { std::numeric_limits<Real>::max() };
         Real min_x_ { -std::numeric_limits<Real>::max() };
         Real min_y_ { -std::numeric_limits<Real>::max() };
-        Box bounding_box_;
+        Box<Real> bounding_box_;
 
         void init_boundaries();
-        void project_generators(const DualPoint& slice, IndexVec& sorted_indices, RealVec& projections) const;
-        void project_relations(const DualPoint& slice, IndexVec& sorted_indices, RealVec& projections) const;
+        void project_generators(const DualPoint<Real>& slice, IndexVec& sorted_indices, RealVec& projections) const;
+        void project_relations(const DualPoint<Real>& slice, IndexVec& sorted_indices, RealVec& projections) const;
     };
 } // namespace md
 
+#include "persistence_module.hpp"
 
 #endif //MATCHING_DISTANCE_PERSISTENCE_MODULE_H

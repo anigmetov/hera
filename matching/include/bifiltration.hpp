@@ -1,35 +1,20 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cassert>
-
-#include<phat/boundary_matrix.h>
-#include<phat/compute_persistence_pairs.h>
-
-#include "spdlog/spdlog.h"
-#include "spdlog/fmt/fmt.h"
-#include "spdlog/fmt/ostr.h"
-
-#include "common_util.h"
-#include "bifiltration.h"
-
-namespace spd = spdlog;
-
 namespace md {
 
-    void Bifiltration::init()
+    template<class Real>
+    void Bifiltration<Real>::init()
     {
-        Point lower_left = max_point();
-        Point upper_right = min_point();
+        auto lower_left = max_point<Real>();
+        auto upper_right = min_point<Real>();
         for(const auto& simplex : simplices_) {
-            lower_left = greatest_lower_bound(lower_left, simplex.position());
-            upper_right = least_upper_bound(upper_right, simplex.position());
+            lower_left = greatest_lower_bound<>(lower_left, simplex.position());
+            upper_right = least_upper_bound<>(upper_right, simplex.position());
             maximal_dim_ = std::max(maximal_dim_, simplex.dim());
         }
-        bounding_box_ = Box(lower_left, upper_right);
+        bounding_box_ = Box<Real>(lower_left, upper_right);
     }
 
-    Bifiltration::Bifiltration(const std::string& fname )
+    template<class Real>
+    Bifiltration<Real>::Bifiltration(const std::string& fname)
     {
         std::ifstream ifstr {fname.c_str()};
         if (!ifstr.good()) {
@@ -69,12 +54,13 @@ namespace md {
         init();
     }
 
-    void Bifiltration::rivet_format_reader(std::ifstream& ifstr)
+    template<class Real>
+    void Bifiltration<Real>::rivet_format_reader(std::ifstream& ifstr)
     {
         std::string s;
-        // read axes names
-        std::getline(ifstr, parameter_1_name_);
-        std::getline(ifstr, parameter_2_name_);
+        // read axes names, ignore them
+        std::getline(ifstr, s);
+        std::getline(ifstr, s);
 
         Index index = 0;
         while(std::getline(ifstr, s)) {
@@ -84,7 +70,8 @@ namespace md {
         }
     }
 
-    void Bifiltration::phat_like_format_reader(std::ifstream& ifstr)
+    template<class Real>
+    void Bifiltration<Real>::phat_like_format_reader(std::ifstream& ifstr)
     {
         spd::debug("Enter phat_like_format_reader");
         // read stream line by line; do not use >> operator
@@ -105,7 +92,8 @@ namespace md {
         spd::debug("Read {} simplices from file", n_simplices);
     }
 
-    void Bifiltration::scale(Real lambda)
+    template<class Real>
+    void Bifiltration<Real>::scale(Real lambda)
     {
         for(auto& s : simplices_) {
             s.scale(lambda);
@@ -113,10 +101,11 @@ namespace md {
         init();
     }
 
-    void Bifiltration::sanity_check() const
+    template<class Real>
+    void Bifiltration<Real>::sanity_check() const
     {
 #ifdef DEBUG
-        spd::debug("Enter Bifiltration::sanity_check");
+        spd::debug("Enter Bifiltration<Real>::sanity_check");
         // check that boundary has correct number of simplices,
         // each bounding simplex has correct dim
         // and appears in the filtration before the simplex it bounds
@@ -129,16 +118,17 @@ namespace md {
                 assert(bdry_simplex.position().is_less(s.position(), false));
             }
         }
-        spd::debug("Exit Bifiltration::sanity_check");
+        spd::debug("Exit Bifiltration<Real>::sanity_check");
 #endif
     }
 
-    Diagram Bifiltration::weighted_slice_diagram(const DualPoint& line, int dim) const
+    template<class Real>
+    Diagram<Real> Bifiltration<Real>::weighted_slice_diagram(const DualPoint<Real>& line, int dim) const
     {
-        DiagramKeeper dgm;
+        DiagramKeeper<Real> dgm;
 
         // make a copy for now; I want slice_diagram to be const
-        std::vector<Simplex> simplices(simplices_);
+        std::vector<Simplex<Real>> simplices(simplices_);
 
 //        std::vector<Simplex> simplices;
 //        simplices.reserve(simplices_.size() / 2);
@@ -156,7 +146,7 @@ namespace md {
         }
 
         std::sort(simplices.begin(), simplices.end(),
-                [](const Simplex& a, const Simplex& b) { return a.value() < b.value(); });
+                [](const Simplex<Real>& a, const Simplex<Real>& b) { return a.value() < b.value(); });
         std::map<Index, Index> index_map;
         for(Index i = 0; i < (int) simplices.size(); i++) {
             index_map[simplices[i].id()] = i;
@@ -202,17 +192,20 @@ namespace md {
         return dgm.get_diagram(dim);
     }
 
-    Box Bifiltration::bounding_box() const
+    template<class Real>
+    Box<Real> Bifiltration<Real>::bounding_box() const
     {
         return bounding_box_;
     }
 
-    Real Bifiltration::minimal_coordinate() const
+    template<class Real>
+    Real Bifiltration<Real>::minimal_coordinate() const
     {
         return std::min(bounding_box_.lower_left().x, bounding_box_.lower_left().y);
     }
 
-    void Bifiltration::translate(Real a)
+    template<class Real>
+    void Bifiltration<Real>::translate(Real a)
     {
         bounding_box_.translate(a);
         for(auto& simplex : simplices_) {
@@ -220,7 +213,8 @@ namespace md {
         }
     }
 
-    Real Bifiltration::max_x() const
+    template<class Real>
+    Real Bifiltration<Real>::max_x() const
     {
         if (simplices_.empty())
             return 1;
@@ -230,7 +224,8 @@ namespace md {
         return me->position().x;
     }
 
-    Real Bifiltration::max_y() const
+    template<class Real>
+    Real Bifiltration<Real>::max_y() const
     {
         if (simplices_.empty())
             return 1;
@@ -240,7 +235,8 @@ namespace md {
         return me->position().y;
     }
 
-    Real Bifiltration::min_x() const
+    template<class Real>
+    Real Bifiltration<Real>::min_x() const
     {
         if (simplices_.empty())
             return 0;
@@ -250,7 +246,8 @@ namespace md {
         return me->position().x;
     }
 
-    Real Bifiltration::min_y() const
+    template<class Real>
+    Real Bifiltration<Real>::min_y() const
     {
         if (simplices_.empty())
             return 0;
@@ -260,12 +257,14 @@ namespace md {
         return me->position().y;
     }
 
-    void Bifiltration::add_simplex(md::Index _id, md::Point birth, int _dim, const md::Column& _bdry)
+    template<class Real>
+    void Bifiltration<Real>::add_simplex(Index _id, Point<Real> birth, int _dim, const Column& _bdry)
     {
         simplices_.emplace_back(_id, birth, _dim, _bdry);
     }
 
-    void Bifiltration::save(const std::string& filename, md::BifiltrationFormat format)
+    template<class Real>
+    void Bifiltration<Real>::save(const std::string& filename, md::BifiltrationFormat format)
     {
         switch(format) {
             case BifiltrationFormat::rivet:
@@ -292,7 +291,8 @@ namespace md {
         }
     }
 
-    void Bifiltration::postprocess_rivet_format()
+    template<class Real>
+    void Bifiltration<Real>::postprocess_rivet_format()
     {
         std::map<Column, Index> facets_to_ids;
 
@@ -324,16 +324,19 @@ namespace md {
         } // loop over simplices
     }
 
-    std::ostream& operator<<(std::ostream& os, const Bifiltration& bif)
+    template<class Real>
+    std::ostream& operator<<(std::ostream& os, const Bifiltration<Real>& bif)
     {
-        os << "Bifiltration, axes = " << bif.parameter_1_name_ << ", " << bif.parameter_2_name_ << std::endl;
+        os << "Bifiltration [" << std::endl;
         for(const auto& s : bif.simplices()) {
             os << s << std::endl;
         }
+        os << "]" << std::endl;
         return os;
     }
 
-    BifiltrationProxy::BifiltrationProxy(const md::Bifiltration& bif, int dim)
+    template<class Real>
+    BifiltrationProxy<Real>::BifiltrationProxy(const Bifiltration<Real>& bif, int dim)
             :
             dim_(dim),
             bif_(bif)
@@ -341,7 +344,8 @@ namespace md {
         cache_positions();
     }
 
-    void BifiltrationProxy::cache_positions() const
+    template<class Real>
+    void BifiltrationProxy<Real>::cache_positions() const
     {
         cached_positions_.clear();
         for(const auto& simplex : bif_.simplices()) {
@@ -350,7 +354,9 @@ namespace md {
         }
     }
 
-    PointVec BifiltrationProxy::positions() const
+    template<class Real>
+    PointVec<Real>
+    BifiltrationProxy<Real>::positions() const
     {
         if (cached_positions_.empty()) {
             cache_positions();
@@ -359,46 +365,54 @@ namespace md {
     }
 
     // translate all points by vector (a,a)
-    void BifiltrationProxy::translate(Real a)
+    template<class Real>
+    void BifiltrationProxy<Real>::translate(Real a)
     {
         bif_.translate(a);
     }
 
     // return minimal value of x- and y-coordinates
     // among all simplices
-    Real BifiltrationProxy::minimal_coordinate() const
+    template<class Real>
+    Real BifiltrationProxy<Real>::minimal_coordinate() const
     {
         return bif_.minimal_coordinate();
     }
 
     // return box that contains positions of all simplices
-    Box BifiltrationProxy::bounding_box() const
+    template<class Real>
+    Box<Real> BifiltrationProxy<Real>::bounding_box() const
     {
         return bif_.bounding_box();
     }
 
-    Real BifiltrationProxy::max_x() const
+    template<class Real>
+    Real BifiltrationProxy<Real>::max_x() const
     {
         return bif_.max_x();
     }
 
-    Real BifiltrationProxy::max_y() const
+    template<class Real>
+    Real BifiltrationProxy<Real>::max_y() const
     {
         return bif_.max_y();
     }
 
-    Real BifiltrationProxy::min_x() const
+    template<class Real>
+    Real BifiltrationProxy<Real>::min_x() const
     {
         return bif_.min_x();
     }
 
-    Real BifiltrationProxy::min_y() const
+    template<class Real>
+    Real BifiltrationProxy<Real>::min_y() const
     {
         return bif_.min_y();
     }
 
 
-    Diagram BifiltrationProxy::weighted_slice_diagram(const DualPoint& slice) const
+    template<class Real>
+    Diagram<Real> BifiltrationProxy<Real>::weighted_slice_diagram(const DualPoint<Real>& slice) const
     {
         return bif_.weighted_slice_diagram(slice, dim_);
     }

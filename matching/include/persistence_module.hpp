@@ -1,12 +1,3 @@
-#include <numeric>
-#include <algorithm>
-#include <unordered_set>
-
-#include <phat/boundary_matrix.h>
-#include <phat/compute_persistence_pairs.h>
-
-#include "persistence_module.h"
-
 namespace md {
 
     /**
@@ -17,7 +8,7 @@ namespace md {
      *           2) a_1,...,a_n is a permutation of 1,..,n
      */
 
-    template<typename T>
+    template<class T>
     IndexVec get_sorted_indices(const std::vector<T>& values)
     {
         IndexVec result(values.size());
@@ -28,18 +19,20 @@ namespace md {
     }
 
     // helper function to initialize const member positions_ in ModulePresentation
-    PointVec
-    concat_gen_and_rel_positions(const PointVec& generators, const ModulePresentation::RelVec& relations)
+    template<class Real>
+    PointVec<Real> concat_gen_and_rel_positions(const PointVec<Real>& generators,
+            const typename ModulePresentation<Real>::RelVec& relations)
     {
-        std::unordered_set<Point> ps(generators.begin(), generators.end());
+        std::unordered_set<Point<Real>> ps(generators.begin(), generators.end());
         for(const auto& rel : relations) {
             ps.insert(rel.position_);
         }
-        return PointVec(ps.begin(), ps.end());
+        return PointVec<Real>(ps.begin(), ps.end());
     }
 
 
-    void ModulePresentation::init_boundaries()
+    template<class Real>
+    void ModulePresentation<Real>::init_boundaries()
     {
         max_x_ = std::numeric_limits<Real>::max();
         max_y_ = std::numeric_limits<Real>::max();
@@ -53,18 +46,20 @@ namespace md {
             max_y_ = std::max(gen.y, max_y_);
         }
 
-        bounding_box_ = Box(Point(min_x_, min_y_), Point(max_x_, max_y_));
+        bounding_box_ = Box<Real>(Point<Real>(min_x_, min_y_), Point<Real>(max_x_, max_y_));
     }
 
 
-    ModulePresentation::ModulePresentation(const PointVec& _generators, const RelVec& _relations) :
+    template<class Real>
+    ModulePresentation<Real>::ModulePresentation(const PointVec<Real>& _generators, const RelVec& _relations) :
         generators_(_generators),
         relations_(_relations)
     {
         init_boundaries();
     }
 
-    void ModulePresentation::translate(md::Real a)
+    template<class Real>
+    void ModulePresentation<Real>::translate(Real a)
     {
         for(auto& g : generators_) {
             g.translate(a);
@@ -86,8 +81,9 @@ namespace md {
      * @param projections sorted weighted pushes of generators
      */
 
-    void
-    ModulePresentation::project_generators(const DualPoint& slice, IndexVec& sorted_indices, RealVec& projections) const
+    template<class Real>
+    void ModulePresentation<Real>::project_generators(const DualPoint<Real>& slice,
+            IndexVec& sorted_indices, RealVec& projections) const
     {
         size_t num_gens = generators_.size();
 
@@ -104,7 +100,8 @@ namespace md {
         }
     }
 
-    void ModulePresentation::project_relations(const DualPoint& slice, IndexVec& sorted_rel_indices,
+    template<class Real>
+    void ModulePresentation<Real>::project_relations(const DualPoint<Real>& slice, IndexVec& sorted_rel_indices,
             RealVec& projections) const
     {
         size_t num_rels = relations_.size();
@@ -122,7 +119,8 @@ namespace md {
         }
     }
 
-    Diagram ModulePresentation::weighted_slice_diagram(const DualPoint& slice) const
+    template<class Real>
+    Diagram<Real> ModulePresentation<Real>::weighted_slice_diagram(const DualPoint<Real>& slice) const
     {
         IndexVec sorted_gen_indices, sorted_rel_indices;
         RealVec gen_projections, rel_projections;
@@ -147,7 +145,7 @@ namespace md {
         phat::persistence_pairs phat_persistence_pairs;
         phat::compute_persistence_pairs<phat::twist_reduction>(phat_persistence_pairs, phat_matrix);
 
-        Diagram dgm;
+        Diagram<Real> dgm;
 
         constexpr Real real_inf = std::numeric_limits<Real>::infinity();
 
@@ -164,14 +162,16 @@ namespace md {
         return dgm;
     }
 
-    PointVec ModulePresentation::positions() const
+    template<class Real>
+    PointVec<Real> ModulePresentation<Real>::positions() const
     {
         return positions_;
     }
 
-    Box ModulePresentation::bounding_box() const
+    template<class Real>
+    Box<Real> ModulePresentation<Real>::bounding_box() const
     {
         return bounding_box_;
     }
 
-}
+} // namespace md
