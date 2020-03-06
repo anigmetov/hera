@@ -169,7 +169,7 @@ namespace md {
         bool print_stats { false };
 
 #ifdef MD_PRINT_HEAT_MAP
-        HeatMaps heat_maps;
+        HeatMaps<Real> heat_maps;
 #endif
     };
 

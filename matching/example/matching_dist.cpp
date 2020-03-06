@@ -5,7 +5,7 @@
 #include <cassert>
 #include <experimental/filesystem>
 
-#ifdef EXPERIMENTAL_TIMING
+#ifdef MD_EXPERIMENTAL_TIMING
 #include <chrono>
 #endif
 
@@ -23,12 +23,6 @@ using Real = double;
 using namespace md;
 
 namespace fs = std::experimental::filesystem;
-
-void force_instantiation()
-{
-    DualBox<Real> db;
-    std::cout << db;
-}
 
 #ifdef PRINT_HEAT_MAP
 void print_heat_map(const md::HeatMaps<Real>& hms, std::string fname, const CalculationParams<Real>& params)
@@ -149,14 +143,25 @@ int main(int argc, char** argv)
     using opts::PosOption;
     opts::Options ops;
 
-    bool help = false;
-    bool no_stop_asap = false;
     CalculationParams<Real> params;
+
+    bool help = false;
+
+#ifdef MD_EXPERIMENTAL_TIMING
+    bool no_stop_asap = false;
+#endif
+
 
 #ifdef PRINT_HEAT_MAP
     bool heatmap_only = false;
 #endif
 
+    // default values are the best for practical use
+    // if compiled with MD_EXPERIMENTAL_TIMING, user can supply
+    // different bounds and traverse strategies
+    // separated by commas, all combinations will be timed.
+    // See corresponding >> operators in matching_distance.h
+    // for possible values.
     std::string bounds_list_str = "local_combined";
     std::string traverse_list_str = "BFS";
 
@@ -164,10 +169,12 @@ int main(int argc, char** argv)
         >> Option('e', "max-error", params.delta, "error threshold")
         >> Option('d', "dim", params.dim, "dim")
         >> Option('i', "initial-depth", params.initialization_depth, "initialization depth")
+#ifdef MD_EXPERIMENTAL_TIMING
         >> Option("no-stop-asap", no_stop_asap,
                 "don't stop looping over points, if cell cannot be pruned (asap is on by default)")
         >> Option("bounds", bounds_list_str, "bounds to use, separated by ,")
-        >> Option("traverse", traverse_list_str, "traverse to use, separated by ,")
+        >> Option("traverse", traverse_list_str, "traverse strategy to use, separated by ,")
+#endif
 #ifdef PRINT_HEAT_MAP
         >> Option("heatmap-only", heatmap_only, "only save heatmap (bruteforce)")
 #endif
@@ -177,11 +184,15 @@ int main(int argc, char** argv)
     std::string fname_b;
 
     if (!ops.parse(argc, argv) || help || !(ops >> PosOption(fname_a) >> PosOption(fname_b))) {
-        std::cerr << "Usage: " << argv[0] << "bifiltration-file-1 bifiltration-file-2\n" << ops << std::endl;
+        std::cerr << "Usage: " << argv[0] << " bifiltration-file-1 bifiltration-file-2\n" << ops << std::endl;
         return 1;
     }
 
+#ifdef MD_EXPERIMENTAL_TIMING
     params.stop_asap = not no_stop_asap;
+#else
+    params.stop_asap = true;
+#endif
 
     auto bounds_list = split_by_delim(bounds_list_str, ',');
     auto traverse_list = split_by_delim(traverse_list_str, ',');
@@ -206,7 +217,7 @@ int main(int argc, char** argv)
     }
 
 
-#ifdef EXPERIMENTAL_TIMING
+#ifdef MD_EXPERIMENTAL_TIMING
 
     for(auto bs : bound_strategies) {
         for(auto ts : traverse_strategies) {
@@ -215,7 +226,7 @@ int main(int argc, char** argv)
     }
 
     struct ExperimentResult {
-        CalculationParams<Real> params {CalculationParams()};
+        CalculationParams<Real> params {CalculationParams<Real>()};
         int n_hera_calls {0};
         double total_milliseconds_elapsed {0};
         Real distance {0};
@@ -265,12 +276,14 @@ int main(int argc, char** argv)
 
     const int n_repetitions = 1;
 
+#ifdef PRINT_HEAT_MAP
     if (heatmap_only) {
         bound_strategies.clear();
         bound_strategies.push_back(BoundStrategy::bruteforce);
         traverse_strategies.clear();
         traverse_strategies.push_back(TraverseStrategy::breadth_first);
     }
+#endif
 
     std::map<std::tuple<BoundStrategy, TraverseStrategy>, ExperimentResult> results;
     for(BoundStrategy bound_strategy : bound_strategies) {
@@ -293,9 +306,11 @@ int main(int argc, char** argv)
             // remember: params is passed by reference to return real relative error and heat map
 
             int user_max_iters = params.max_depth;
+#ifdef PRINT_HEAT_MAP
             if (bound_strategy == BoundStrategy::bruteforce and not heatmap_only) {
                 params_experiment.max_depth = std::min(7, params.max_depth);
             }
+#endif
             double total_milliseconds_elapsed = 0;
             int total_n_hera_calls = 0;
             Real dist;
@@ -377,6 +392,5 @@ int main(int argc, char** argv)
     Real dist = matching_distance<Real>(bif_a, bif_b, params);
     std::cout << dist << std::endl;
 #endif
-    force_instantiation();
     return 0;
 }

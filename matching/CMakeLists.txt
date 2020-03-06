@@ -22,7 +22,6 @@ set(CMAKE_CXX_STANDARD 14)
 
 if (NOT WIN32)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  ${OpenMP_CXX_FLAGS} -Wall pedantic -Wextra ")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  ${OpenMP_CXX_FLAGS} -Wall -Wextra ")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -D_GLIBCXX_DEBUG")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} -O2 -g -ggdb")
@@ -31,32 +30,23 @@ endif (NOT WIN32)
 file(GLOB BT_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../bottleneck/include/*.h ${CMAKE_CURRENT_SOURCE_DIR}/../bottleneck/include/*.hpp)
 file(GLOB MD_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
 
-file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-
-file(GLOB SRC_TEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/*.cpp)
-
+file(GLOB SRC_TEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp)
+ 
 find_package(Threads)
 set(libraries ${libraries} "stdc++fs" ${CMAKE_THREAD_LIBS_INIT})
 
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
-set(libraries ${libraries} ${OpenMP_CXX_LIBRARIES})
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    set(libraries ${libraries} ${OpenMP_CXX_LIBRARIES})
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
 
-add_executable(matching_distance "src/main.cpp" ${MD_HEADERS} ${BT_HEADERS} )
-target_link_libraries(matching_distance PUBLIC ${libraries})
+add_executable(matching_dist "example/matching_dist.cpp" ${MD_HEADERS} ${BT_HEADERS} )
+target_link_libraries(matching_dist PUBLIC ${libraries})
 
 add_executable(matching_distance_test ${SRC_TEST_FILES} ${BT_HEADERS} ${MD_HEADERS})
 target_link_libraries(matching_distance_test PUBLIC ${libraries})
-
-add_executable(test_generator "src/test_generator.cpp"
-        ${MD_HEADERS}
-        ${BT_HEADERS})
-target_link_libraries(test_generator PUBLIC ${libraries})
-
-#add_executable(matching_distance "include/main.cpp" "src/box.cpp" "src/common_util.cpp" "src/line.cpp" "src/persistence_module.hpp" ${BT_HEADERS} ${MD_HEADERS})
