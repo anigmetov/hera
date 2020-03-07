@@ -13,9 +13,6 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
-//#include "persistence_module.h"
-#include "bifiltration.h"
-#include "box.h"
 #include "matching_distance.h"
 
 using Real = double;

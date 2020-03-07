@@ -34,10 +34,10 @@ namespace md {
     template<class Real>
     void ModulePresentation<Real>::init_boundaries()
     {
-        max_x_ = std::numeric_limits<Real>::max();
-        max_y_ = std::numeric_limits<Real>::max();
-        min_x_ = -std::numeric_limits<Real>::max();
-        min_y_ = -std::numeric_limits<Real>::max();
+        max_x_ = -std::numeric_limits<Real>::max();
+        max_y_ = -std::numeric_limits<Real>::max();
+        min_x_ = std::numeric_limits<Real>::max();
+        min_y_ = std::numeric_limits<Real>::max();
 
         for(const auto& gen : positions_) {
             min_x_ = std::min(gen.x, min_x_);
@@ -55,6 +55,7 @@ namespace md {
         generators_(_generators),
         relations_(_relations)
     {
+        positions_ = concat_gen_and_rel_positions(generators_, relations_);
         init_boundaries();
     }
 
@@ -85,6 +86,7 @@ namespace md {
     void ModulePresentation<Real>::project_generators(const DualPoint<Real>& slice,
             IndexVec& sorted_indices, RealVec& projections) const
     {
+        spd::debug("Enter project_generators, slice = {}", slice);
         size_t num_gens = generators_.size();
 
         RealVec gen_values;
@@ -97,6 +99,7 @@ namespace md {
         projections.reserve(num_gens);
         for(auto i : sorted_indices) {
             projections.push_back(gen_values[i]);
+            spd::debug("added push = {}", gen_values[i]);
         }
     }
 
@@ -104,6 +107,8 @@ namespace md {
     void ModulePresentation<Real>::project_relations(const DualPoint<Real>& slice, IndexVec& sorted_rel_indices,
             RealVec& projections) const
     {
+
+        spd::debug("Enter project_relations, slice = {}", slice);
         size_t num_rels = relations_.size();
 
         RealVec rel_values;
@@ -116,12 +121,14 @@ namespace md {
         projections.reserve(num_rels);
         for(auto i : sorted_rel_indices) {
             projections.push_back(rel_values[i]);
+            spd::debug("added push = {}", rel_values[i]);
         }
     }
 
     template<class Real>
     Diagram<Real> ModulePresentation<Real>::weighted_slice_diagram(const DualPoint<Real>& slice) const
     {
+        spd::debug("Enter weighted_slice_diagram, slice = {}", slice);
         IndexVec sorted_gen_indices, sorted_rel_indices;
         RealVec gen_projections, rel_projections;
 
@@ -138,7 +145,8 @@ namespace md {
                 j = sorted_gen_indices[j];
             }
             std::sort(current_relation.begin(), current_relation.end());
-            phat_matrix.set_dim(i, current_relation.size());
+            // modules do not have dimension, set all to 0
+            phat_matrix.set_dim(i, 0);
             phat_matrix.set_col(i, current_relation);
         }
 
@@ -154,6 +162,7 @@ namespace md {
             bool is_finite_pair = new_pair.second != phat::k_infinity_index;
             Real birth = gen_projections.at(new_pair.first);
             Real death = is_finite_pair ? rel_projections.at(new_pair.second) : real_inf;
+            spd::debug("i = {}, birth = {}, death = {}", i, new_pair.first, new_pair.second);
             if (birth != death) {
                 dgm.emplace_back(birth, death);
             }

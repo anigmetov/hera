@@ -193,6 +193,7 @@ namespace md {
         // make all coordinates non-negative
         auto min_coord = std::min(module_a_.minimal_coordinate(),
                 module_b_.minimal_coordinate());
+        spd::debug("in DistanceCalculator ctor, min_coord = {}", min_coord);
         if (min_coord < 0) {
             module_a_.translate(-min_coord);
             module_b_.translate(-min_coord);

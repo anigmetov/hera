@@ -48,5 +48,9 @@ endif()
 add_executable(matching_dist "example/matching_dist.cpp" ${MD_HEADERS} ${BT_HEADERS} )
 target_link_libraries(matching_dist PUBLIC ${libraries})
 
+add_executable(module_example "example/module_example.cpp" ${MD_HEADERS} ${BT_HEADERS} )
+target_link_libraries(module_example PUBLIC ${libraries})
+
+
 add_executable(matching_distance_test ${SRC_TEST_FILES} ${BT_HEADERS} ${MD_HEADERS})
 target_link_libraries(matching_distance_test PUBLIC ${libraries})

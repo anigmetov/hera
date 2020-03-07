@@ -152,7 +152,7 @@ namespace md {
         int max_depth {6}; // maximal number of refinenemnts
         int initialization_depth {3};
         int dim {0}; // in which dim to calculate the distance; use ALL_DIMENSIONS to get max over all dims
-        BoundStrategy bound_strategy {BoundStrategy::bruteforce};
+        BoundStrategy bound_strategy {BoundStrategy::local_combined};
         TraverseStrategy traverse_strategy {TraverseStrategy::breadth_first};
         bool tolerate_max_iter_exceeded {true};
         Real actual_error {std::numeric_limits<Real>::max()};

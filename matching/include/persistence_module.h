@@ -47,7 +47,7 @@ namespace md {
             IndexVec components_;
 
             Relation() {}
-            Relation(const Point<Real>& _pos, const IndexVec& _components);
+            Relation(const Point<Real>& _pos, const IndexVec& _components) : position_(_pos), components_(_components) {}
 
             Real get_x() const { return position_.x; }
             Real get_y() const { return position_.y; }
