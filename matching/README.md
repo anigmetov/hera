@@ -35,23 +35,15 @@ Files file1 and file2 must contain 1-critical bi-filtrations in a plain text for
 
 For example, the bi-filtration of a segment with vertices appearing at (0,0) and the 1-segment appearing at (3,4) shall be written as:
 
->    bifiltration_phat_like
->
->    3
->
->    \# lines starting with \# are ignored
->
->    \# vertex A has dimension 0, hence no boundary, its index is 0
->
->    0 0 0
->
->    \# vertex B has index 1
->
->    0 0 0
->
->    \# 1-dimensional simplex {A, B}
->
->    1 3 4 0 1
+> bifiltration_phat_like  
+> 3  
+> \# lines starting with \# are ignored  
+> \# vertex A has dimension 0, hence no boundary, its index is 0  
+> 0 0 0  
+> \# vertex B has index 1  
+> 0 0 0  
+> \# 1-dimensional simplex {A, B}  
+> 1 3 4 0 1  
 
 2. To use from your code.
 
