@@ -80,7 +80,9 @@ namespace md {
 
         PointVec<Real> positions() const;
 
+#ifndef MD_TEST_CODE
     private:
+#endif
 
         PointVec<Real> generators_;
         std::vector<Relation> relations_;
@@ -94,8 +96,13 @@ namespace md {
         Box<Real> bounding_box_;
 
         void init_boundaries();
+
         void project_generators(const DualPoint<Real>& slice, IndexVec& sorted_indices, RealVec& projections) const;
         void project_relations(const DualPoint<Real>& slice, IndexVec& sorted_indices, RealVec& projections) const;
+
+        void get_slice_projection_matrix(const DualPoint<Real>& slice, phat::boundary_matrix<>& phat_matrix,
+                RealVec& gen_projections, RealVec& rel_projections) const;
+
     };
 } // namespace md
 

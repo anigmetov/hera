@@ -149,20 +149,20 @@ namespace md {
 
         Real hera_epsilon {0.001}; // relative error in hera call
         Real delta {0.1}; // relative error for matching distance
-        int max_depth {6}; // maximal number of refinenemnts
-        int initialization_depth {3};
+        int max_depth {8}; // maximal number of refinenemnts
+        int initialization_depth {2};
         int dim {0}; // in which dim to calculate the distance; use ALL_DIMENSIONS to get max over all dims
         BoundStrategy bound_strategy {BoundStrategy::local_combined};
         TraverseStrategy traverse_strategy {TraverseStrategy::breadth_first};
-        bool tolerate_max_iter_exceeded {true};
+        bool tolerate_max_iter_exceeded {false};
         Real actual_error {std::numeric_limits<Real>::max()};
         int actual_max_depth {0};
         int n_hera_calls {0};  // for experiments only; is set in matching_distance function, input value is ignored
 
         // stop looping over points immediately, if current point's displacement is too large
         // to prune the cell
-        // if true, cells are pruned immediately, and bounds may be unreliable
-        // (we just return something large enough to prune the cell)
+        // if true, cells are pruned immediately, and bounds may increase
+        // (just return something large enough to not prune the cell)
         bool stop_asap { true };
 
         // print statistics on each quad-tree level
@@ -188,8 +188,11 @@ namespace md {
         Real distance();
 
         int get_hera_calls_number() const;
-//    for tests - make everything public
-//    private:
+
+#ifndef MD_TEST_CODE
+    private:
+#endif
+
         DiagramProvider module_a_;
         DiagramProvider module_b_;
 

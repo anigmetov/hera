@@ -116,7 +116,11 @@ namespace md {
         for(const auto& rel : relations_) {
             rel_values.push_back(slice.weighted_push(rel.position_));
         }
+
         sorted_rel_indices = get_sorted_indices(rel_values);
+
+        spd::debug("rel_values = {}, sorted_rel_indices = {}", container_to_string(rel_values), container_to_string(sorted_rel_indices));
+
         projections.clear();
         projections.reserve(num_rels);
         for(auto i : sorted_rel_indices) {
@@ -125,17 +129,17 @@ namespace md {
         }
     }
 
+
     template<class Real>
-    Diagram<Real> ModulePresentation<Real>::weighted_slice_diagram(const DualPoint<Real>& slice) const
+    void ModulePresentation<Real>::get_slice_projection_matrix(const DualPoint<Real>& slice,
+            phat::boundary_matrix<>& phat_matrix,
+            RealVec& gen_projections, RealVec& rel_projections) const
     {
         spd::debug("Enter weighted_slice_diagram, slice = {}", slice);
         IndexVec sorted_gen_indices, sorted_rel_indices;
-        RealVec gen_projections, rel_projections;
 
         project_generators(slice, sorted_gen_indices, gen_projections);
         project_relations(slice, sorted_rel_indices, rel_projections);
-
-        phat::boundary_matrix<> phat_matrix;
 
         phat_matrix.set_num_cols(relations_.size());
 
@@ -149,6 +153,18 @@ namespace md {
             phat_matrix.set_dim(i, 0);
             phat_matrix.set_col(i, current_relation);
         }
+    }
+
+
+    template<class Real>
+    Diagram<Real> ModulePresentation<Real>::weighted_slice_diagram(const DualPoint<Real>& slice) const
+    {
+        spd::debug("Enter weighted_slice_diagram, slice = {}", slice);
+
+        RealVec gen_projections, rel_projections;
+        phat::boundary_matrix<> phat_matrix;
+
+        get_slice_projection_matrix(slice, phat_matrix, gen_projections, rel_projections);
 
         phat::persistence_pairs phat_persistence_pairs;
         phat::compute_persistence_pairs<phat::twist_reduction>(phat_persistence_pairs, phat_matrix);

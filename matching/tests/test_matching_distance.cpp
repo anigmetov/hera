@@ -7,6 +7,8 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
+#define MD_TEST_CODE
+
 #include "common_util.h"
 #include "simplex.h"
 #include "matching_distance.h"
@@ -130,8 +132,8 @@ TEST_CASE("Bifiltrations from file", "[matching_distance][small_example][lesnick
 {
     std::string fname_a, fname_b;
 
-    fname_a = "../src/tests/prism_1.bif";
-    fname_b = "../src/tests/prism_2.bif";
+    fname_a = "../tests/prism_1.bif";
+    fname_b = "../tests/prism_2.bif";
 
     Bifiltration bif_a(fname_a);
     Bifiltration bif_b(fname_b);
@@ -164,4 +166,3 @@ TEST_CASE("Bifiltrations from file", "[matching_distance][small_example][lesnick
         }
     }
 }
-
