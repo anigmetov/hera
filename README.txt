@@ -33,3 +33,9 @@ Matching distance:
 
 Michael Kerber, Arnur Nigmetov, "Efficient Approximation of the Matching 
 Distance for 2-parameter persistence.", SoCG 2020
+
+Changes:
+
+09.03.2020. Add matching distance, change directory names.
+WARNING: geom_bottleneck -> bottleneck
+         geom_matching/wasserstein -> wasserstein
