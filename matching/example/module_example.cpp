@@ -3,7 +3,7 @@
 
 using namespace md;
 
-int main(int argc, char** argv)
+int main(int /*argc*/, char** /*argv*/)
 {
     // create generators.
     // A generator is a point in plane,
