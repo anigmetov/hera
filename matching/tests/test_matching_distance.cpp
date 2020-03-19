@@ -128,7 +128,7 @@ TEST_CASE("Different bounds", "[bounds]")
     }
 }
 
-TEST_CASE("Bifiltrations from file", "[matching_distance][small_example][lesnick]")
+TEST_CASE("Bifiltrations from file", "[matching_distance][small_example]")
 {
     std::string fname_a, fname_b;
 
