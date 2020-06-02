@@ -86,7 +86,6 @@ namespace md {
     void ModulePresentation<Real>::project_generators(const DualPoint<Real>& slice,
             IndexVec& sorted_indices, RealVec& projections) const
     {
-        spd::debug("Enter project_generators, slice = {}", slice);
         size_t num_gens = generators_.size();
 
         RealVec gen_values;
@@ -99,7 +98,6 @@ namespace md {
         projections.reserve(num_gens);
         for(auto i : sorted_indices) {
             projections.push_back(gen_values[i]);
-            spd::debug("added push = {}", gen_values[i]);
         }
     }
 
@@ -108,7 +106,6 @@ namespace md {
             RealVec& projections) const
     {
 
-        spd::debug("Enter project_relations, slice = {}", slice);
         size_t num_rels = relations_.size();
 
         RealVec rel_values;
@@ -119,13 +116,10 @@ namespace md {
 
         sorted_rel_indices = get_sorted_indices(rel_values);
 
-        spd::debug("rel_values = {}, sorted_rel_indices = {}", container_to_string(rel_values), container_to_string(sorted_rel_indices));
-
         projections.clear();
         projections.reserve(num_rels);
         for(auto i : sorted_rel_indices) {
             projections.push_back(rel_values[i]);
-            spd::debug("added push = {}", rel_values[i]);
         }
     }
 
@@ -135,7 +129,6 @@ namespace md {
             phat::boundary_matrix<>& phat_matrix,
             RealVec& gen_projections, RealVec& rel_projections) const
     {
-        spd::debug("Enter weighted_slice_diagram, slice = {}", slice);
         IndexVec sorted_gen_indices, sorted_rel_indices;
 
         project_generators(slice, sorted_gen_indices, gen_projections);
@@ -159,8 +152,6 @@ namespace md {
     template<class Real>
     Diagram<Real> ModulePresentation<Real>::weighted_slice_diagram(const DualPoint<Real>& slice) const
     {
-        spd::debug("Enter weighted_slice_diagram, slice = {}", slice);
-
         RealVec gen_projections, rel_projections;
         phat::boundary_matrix<> phat_matrix;
 
@@ -178,7 +169,6 @@ namespace md {
             bool is_finite_pair = new_pair.second != phat::k_infinity_index;
             Real birth = gen_projections.at(new_pair.first);
             Real death = is_finite_pair ? rel_projections.at(new_pair.second) : real_inf;
-            spd::debug("i = {}, birth = {}, death = {}", i, new_pair.first, new_pair.second);
             if (birth != death) {
                 dgm.emplace_back(birth, death);
             }

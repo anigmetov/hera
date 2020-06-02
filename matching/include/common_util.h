@@ -11,11 +11,6 @@
 #include <map>
 #include <functional>
 
-#include <spdlog/spdlog.h>
-#include <spdlog/fmt/ostr.h>
-
-namespace spd = spdlog;
-
 #include "common_defs.h"
 #include "phat/helpers/misc.h"
 

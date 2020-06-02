@@ -3,7 +3,6 @@ namespace md {
     template<class R, class T>
     void DistanceCalculator<R, T>::check_upper_bound(const CellWithValue<R>& dual_cell) const
     {
-        spd::debug("Enter check_get_max_delta_on_cell");
         const int n_samples_lambda = 100;
         const int n_samples_mu = 100;
         DualBox<R> db = dual_cell.dual_box();
@@ -22,14 +21,10 @@ namespace md {
                 R other_result = distance_on_line_const(l);
                 R diff = fabs(dual_cell.stored_upper_bound() - other_result);
                 if (other_result > dual_cell.stored_upper_bound()) {
-                    spd::error(
-                            "in check_upper_bound, upper_bound = {}, other_result = {}, diff = {}\ndual_cell = {}",
-                            dual_cell.stored_upper_bound(), other_result, diff, dual_cell);
                     throw std::runtime_error("Wrong delta estimate");
                 }
             }
         }
-        spd::debug("Exit check_get_max_delta_on_cell");
     }
 
     // for all lines l, l' inside dual box,
@@ -48,15 +43,9 @@ namespace md {
         DualPoint<R> line = dual_cell.value_point(vp);
         const R base_value = line.weighted_push(p);
 
-        spd::debug("Enter get_max_displacement_single_point, p = {},\ndual_cell = {},\nline = {}, base_value = {}\n", p,
-                dual_cell, line, base_value);
-
         R result = 0.0;
         for(DualPoint<R> dp : dual_cell.dual_box().critical_points(p)) {
             R dp_value = dp.weighted_push(p);
-            spd::debug(
-                    "In get_max_displacement_single_point, p = {}, critical dp = {},\ndp_value = {}, diff = {},\ndual_cell = {}\n",
-                    p, dp, dp_value, fabs(base_value - dp_value), dual_cell);
             result = std::max(result, fabs(base_value - dp_value));
         }
 
@@ -71,8 +60,6 @@ namespace md {
             DualPoint<R> dp_random { db.axis_type(), db.angle_type(), lambda, mu };
             R dp_value = dp_random.weighted_push(p);
             if (fabs(base_value - dp_value) > result) {
-                spd::error("in get_max_displacement_single_point, p = {}, vp = {}\ndb = {}\nresult = {}, base_value = {}, dp_value = {}, dp_random = {}",
-                        p, vp, db, result, base_value, dp_value, dp_random);
                 throw std::runtime_error("error in get_max_displacement_single_value");
             }
         }
@@ -101,8 +88,6 @@ namespace md {
 #ifdef MD_DO_FULL_CHECK
             check_upper_bound(dual_cell);
 #endif
-
-            spd::debug("DEBUG INIT: added cell {}", dual_cell);
         }
 
         return result;
@@ -193,7 +178,6 @@ namespace md {
         // make all coordinates non-negative
         auto min_coord = std::min(module_a_.minimal_coordinate(),
                 module_b_.minimal_coordinate());
-        spd::debug("in DistanceCalculator ctor, min_coord = {}", min_coord);
         if (min_coord < 0) {
             module_a_.translate(-min_coord);
             module_b_.translate(-min_coord);
@@ -202,8 +186,6 @@ namespace md {
         assert(std::min({module_a_.min_x(), module_b_.min_x(), module_a_.min_y(),
                          module_b_.min_y()}) >= 0);
 
-        spd::debug("DistanceCalculator constructed, module_a: max_x = {}, max_y = {}, module_b: max_x = {}, max_y = {}",
-                module_a_.max_x(), module_a_.max_y(), module_b_.max_x(), module_b_.max_y());
     }
 
     template<class R, class T>
@@ -229,7 +211,6 @@ namespace md {
     R
     DistanceCalculator<R, T>::get_local_refined_bound(int module, const DualBox<R>& dual_box) const
     {
-        spd::debug("Enter get_local_refined_bound, dual_box = {}", dual_box);
         R d_lambda = dual_box.lambda_max() - dual_box.lambda_min();
         R d_mu = dual_box.mu_max() - dual_box.mu_min();
         R result;
@@ -316,11 +297,6 @@ namespace md {
 
                     result = std::min(result, base_value + bound_dgm_a + bound_dgm_b);
 
-#ifdef MD_DEBUG
-                    spd::debug("In get_upper_bound, cell = {}", dual_cell);
-                    spd::debug("In get_upper_bound, vp = {}, base_value = {}, bound_dgm_a = {}, bound_dgm_b = {}, result = {}", vp, base_value, bound_dgm_a, bound_dgm_b, result);
-#endif
-
                     if (params_.stop_asap and result < good_enough_ub) {
                         break;
                     }
@@ -343,37 +319,23 @@ namespace md {
         R result = 0;
         Point<R> max_point;
 
-        spd::debug(
-                "Enter get_single_dgm_bound, module = {}, dual_cell = {}, vp = {}, good_enough_value = {}, stop_asap = {}\n",
-                module, dual_cell, vp, good_enough_value, params_.stop_asap);
-
         const T& m = (module == 0) ? module_a_ : module_b_;
         for(const auto& position : m.positions()) {
-            spd::debug("in get_single_dgm_bound, simplex = {}\n", position);
-
             R x = get_max_displacement_single_point(dual_cell, vp, position);
-
-            spd::debug("In get_single_dgm_bound, point = {}, displacement = {}", position, x);
 
             if (x > result) {
                 result = x;
                 max_point = position;
-                spd::debug("In get_single_dgm_bound, point = {}, result now = displacement = {}", position, x);
             }
 
             if (params_.stop_asap and result > good_enough_value) {
                 // we want to return a valid upper bound,
                 // now we just see it is worse than we need, but it may be even more
                 // just return a valid upper bound
-                spd::debug("result {} > good_enough_value {}, exit and return refined bound {}", result,
-                        good_enough_value, get_local_refined_bound(dual_cell.dual_box()));
                 result = get_local_refined_bound(dual_cell.dual_box());
                 break;
             }
         }
-
-        spd::debug("Exit get_single_dgm_bound,\ndual_cell = {}\nmodule = {}, result = {}, max_point = {}", dual_cell,
-                module, result, max_point);
 
         return result;
     }
@@ -406,13 +368,6 @@ namespace md {
         } else {
             result = hera::bottleneckDistExact(dgm_a, dgm_b);
         }
-        if (n_hera_calls_ % 100 == 1) {
-            spd::debug("Calling Hera, dgm_a.size = {}, dgm_b.size = {}, line = {}, result = {}", dgm_a.size(),
-                    dgm_b.size(), line, result);
-        } else {
-            spd::debug("Calling Hera, dgm_a.size = {}, dgm_b.size = {}, line = {}, result = {}", dgm_a.size(),
-                    dgm_b.size(), line, result);
-        }
         return result;
     }
 
@@ -438,8 +393,6 @@ namespace md {
     {
         DualPoint<R> central_line {dual_cell.center()};
 
-        spd::debug("In set_cell_central_value, processing dual cell = {}, line = {}", dual_cell.dual_box(),
-                central_line);
         R new_value = distance_on_line(central_line);
         n_hera_calls_per_level_[dual_cell.level() + 1]++;
         dual_cell.set_value_at(ValuePoint::center, new_value);
@@ -447,11 +400,9 @@ namespace md {
 
 #ifdef PRINT_HEAT_MAP
         if (params_.bound_strategy == BoundStrategy::bruteforce) {
-            spd::debug("In set_cell_central_value, adding to heat_map pair {} - {}", dual_cell.center(), new_value);
             if (dual_cell.level() > params_.initialization_depth + 1
                     and params_.heat_maps[dual_cell.level()].count(dual_cell.center()) > 0) {
                 auto existing = params_.heat_maps[dual_cell.level()].find(dual_cell.center());
-                spd::debug("EXISTING: {} -> {}", existing->first, existing->second);
             }
             assert(dual_cell.level() <= params_.initialization_depth + 1
                     or params_.heat_maps[dual_cell.level()].count(dual_cell.center()) == 0);
@@ -483,14 +434,8 @@ namespace md {
     {
         R current_error = (lower_bound > 0.0) ? (upper_bound - lower_bound) / lower_bound
                                                  : std::numeric_limits<R>::max();
-
         params_.actual_error = current_error;
 
-        if (current_error < params_.delta) {
-            spd::debug(
-                    "Threshold achieved! bound_strategy = {}, traverse_strategy = {}, upper_bound = {}, current_error = {}",
-                    params_.bound_strategy, params_.traverse_strategy, upper_bound, current_error);
-        }
         return current_error;
     }
 
@@ -507,9 +452,6 @@ namespace md {
         std::map<int, long> n_cells_discarded;
         std::map<int, long> n_cells_pruned;
 
-        spd::debug("Enter get_distance_pq, bound strategy = {}, traverse strategy = {}, stop_asap = {} ",
-                params_.bound_strategy, params_.traverse_strategy, params_.stop_asap);
-
         std::chrono::high_resolution_clock timer;
         auto start_time = timer.now();
 
@@ -522,8 +464,6 @@ namespace md {
         // the max over such cells is stored in max_result_on_too_fine_cells
         R upper_bound_on_deep_cells = -1;
 
-        spd::debug("Started iterations in dual space, delta = {}, bound_strategy = {}", params_.delta,
-                params_.bound_strategy);
         // user-defined less lambda function
         // to regulate priority queue depending on strategy
         auto dual_cell_less = [this](const CellWithValue<R>& a, const CellWithValue<R>& b) {
@@ -600,11 +540,6 @@ namespace md {
                 }
             }
 
-            spd::debug(
-                    "CURRENT CELL bound_strategy = {}, traverse_strategy = {}, dual cell: {}, upper_bound = {}, lower_bound = {}, current_error = {}, discard_cell = {}",
-                    params_.bound_strategy, params_.traverse_strategy, dual_cell, upper_bound, lower_bound,
-                    current_error(lower_bound, upper_bound), discard_cell);
-
             if (discard_cell) {
                 n_cells_discarded[dual_cell.level()]++;
                 continue;
@@ -615,8 +550,6 @@ namespace md {
             set_cell_central_value(dual_cell);
             R new_value = dual_cell.value_at(ValuePoint::center);
             lower_bound = std::max(new_value, lower_bound);
-
-            spd::debug("Processed cell = {}, weighted value = {}, lower_bound = {}", dual_cell, new_value, lower_bound);
 
             assert(upper_bound >= lower_bound);
 
@@ -636,10 +569,6 @@ namespace md {
                 // upper bound of the parent holds for refined_cell
                 // and can sometimes be smaller!
                 R upper_bound_on_refined_cell = std::min(dual_cell.stored_upper_bound(),
-                        get_upper_bound(refined_cell, good_enough_ub));
-
-                spd::debug("upper_bound_on_refined_cell = {},  dual_cell.stored_upper_bound = {}, get_upper_bound = {}",
-                        upper_bound_on_refined_cell, dual_cell.stored_upper_bound(),
                         get_upper_bound(refined_cell, good_enough_ub));
 
                 refined_cell.set_max_possible_value(upper_bound_on_refined_cell);
@@ -669,12 +598,6 @@ namespace md {
                     }
                     upper_bound_on_deep_cells = std::max(upper_bound_on_deep_cells, refined_cell.stored_upper_bound());
                 }
-
-                spd::debug(
-                        "In get_distance_pq, loop over refined cells, bound_strategy = {}, traverse_strategy = {}, refined cell: {}, max_value_on_cell = {}, upper_bound = {}, current_error = {}, prune_cell = {}",
-                        params_.bound_strategy, params_.traverse_strategy, refined_cell,
-                        refined_cell.stored_upper_bound(), upper_bound, current_error(lower_bound, upper_bound),
-                        prune_cell);
 
                 if (not prune_cell) {
                     n_cells_pushed_into_queue[refined_cell.level()]++;
@@ -706,13 +629,10 @@ namespace md {
                     if (ub_experiment_results.size() > 0) {
                         auto prev = ub_experiment_results.back();
                         if (upper_bound > prev.upper_bound) {
-                            spd::error("ALARM 1, upper_bound = {}, top = {}, prev.ub = {}, prev cell = {}, lower_bound = {}, prev.lower_bound = {}",
-                                    upper_bound, ub_exp_record.cell, prev.upper_bound, prev.cell, lower_bound, prev.lower_bound);
                             throw std::runtime_error("die");
                         }
 
                         if (lower_bound < prev.lower_bound) {
-                            spd::error("ALARM 2, lower_bound = {}, prev.lower_bound = {}, top = {}, prev.ub = {}, prev cell = {}", lower_bound, prev.lower_bound, ub_exp_record.cell, prev.upper_bound, prev.cell);
                             throw std::runtime_error("die");
                         }
                     }
@@ -720,7 +640,7 @@ namespace md {
 
                     ub_experiment_results.emplace_back(ub_exp_record);
 
-                    fmt::print(std::cerr, "[UB_EXPERIMENT]\t{}\n", ub_exp_record);
+                    std::cerr << "[UB_EXPERIMENT]\t" <<  ub_exp_record << "\n";
                 }
             }
 
@@ -734,34 +654,24 @@ namespace md {
         params_.actual_error = current_error(lower_bound, upper_bound);
 
         if (n_too_deep_cells > 0) {
-            spd::warn(
-                    "Error not guaranteed, there were {} too deep cells. Actual error = {}. Increase max_depth or delta",
-                    n_too_deep_cells, params_.actual_error);
+            std::cerr << "Warning: error not guaranteed, there were too deep cells.";
+            std::cerr << " Increase max_depth or delta, actual error = " << params_.actual_error << std::endl;
         }
         // otherwise actual_error in params can be larger than delta,
         // but this is OK
 
-        spd::debug("#############################################################");
-        spd::debug(
-                "Exiting get_distance_pq, bound_strategy = {}, traverse_strategy = {}, lower_bound = {}, upper_bound = {}, current_error = {}, actual_max_level = {}",
-                params_.bound_strategy, params_.traverse_strategy, lower_bound,
-                upper_bound, params_.actual_error, params_.actual_max_depth);
-
-        spd::debug("#############################################################");
-
         if (params_.print_stats) {
-            fmt::print("EXIT STATS, cells considered:\n");
+            std::cout << "EXIT STATS, cells considered:\n";
             print_map(n_cells_considered);
-            fmt::print("EXIT STATS, cells discarded:\n");
+            std::cout << "EXIT STATS, cells discarded:\n";
             print_map(n_cells_discarded);
-            fmt::print("EXIT STATS, cells pruned:\n");
+            std::cout << "EXIT STATS, cells pruned:\n";
             print_map(n_cells_pruned);
-            fmt::print("EXIT STATS, cells pushed:\n");
+            std::cout << "EXIT STATS, cells pushed:\n";
             print_map(n_cells_pushed_into_queue);
-            fmt::print("EXIT STATS, hera calls:\n");
+            std::cout << "EXIT STATS, hera calls:\n";
             print_map(n_hera_calls_per_level_);
-
-            fmt::print("EXIT STATS, too deep cells with high value: {}\n", n_too_deep_cells);
+            std::cout << "EXIT STATS, too deep cells with high value: " << n_too_deep_cells << "\n";
         }
 
         return lower_bound;

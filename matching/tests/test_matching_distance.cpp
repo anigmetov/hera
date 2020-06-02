@@ -4,9 +4,6 @@
 #include <iostream>
 #include <string>
 
-#include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h"
-
 #define MD_TEST_CODE
 
 #include "common_util.h"
@@ -31,8 +28,6 @@ using ValuePoint = md::ValuePoint;
 using Column = md::Column;
 
 using md::k_corner_vps;
-
-namespace spd = spdlog;
 
 TEST_CASE("Different bounds", "[bounds]")
 {
@@ -93,10 +88,8 @@ TEST_CASE("Different bounds", "[bounds]")
                     if (not(point_bound <= Approx(local_bound_refined))) {
                         std::cerr << "ERROR point: " << p << ", box = " << db << ", point bound = " << point_bound
                                   << ", refined local = " << local_bound_refined << std::endl;
-                        spd::set_level(spd::level::debug);
                         calc.get_max_displacement_single_point(dual_cell, vp_a, p);
                         calc.get_local_refined_bound(db);
-                        spd::set_level(spd::level::info);
                     }
 
                     REQUIRE(point_bound <= Approx(local_bound_refined));
@@ -113,9 +106,7 @@ TEST_CASE("Different bounds", "[bounds]")
                         } else {
                             std::cerr << "ERROR boring case" << std::endl;
                         }
-                        spd::set_level(spd::level::debug);
                         l_random.weighted_push(p);
-                        spd::set_level(spd::level::info);
                         std::cerr << "ERROR point: " << p << ", box = " << db << ", point bound = " << point_bound
                                   << ", refined local = " << local_bound_refined;
                         std::cerr << ", random_dual_point = " << l_random << ", wp_random = " << wp_random

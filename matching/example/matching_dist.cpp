@@ -10,8 +10,6 @@
 #endif
 
 #include "opts/opts.h"
-#include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h"
 
 #include "matching_distance.h"
 
@@ -24,7 +22,6 @@ namespace fs = std::experimental::filesystem;
 #ifdef PRINT_HEAT_MAP
 void print_heat_map(const md::HeatMaps<Real>& hms, std::string fname, const CalculationParams<Real>& params)
 {
-    spd::debug("Entered print_heat_map");
     std::set<Real> mu_vals, lambda_vals;
     auto hm_iter = hms.end();
     --hm_iter;
@@ -35,7 +32,6 @@ void print_heat_map(const md::HeatMaps<Real>& hms, std::string fname, const Calc
         level_cardinality *= 4;
     }
     for(int i = params.initialization_depth + 1; i <= max_level; ++i) {
-        spd::debug("hms.at({}).size = {}, must be {}", i, hms.at(i).size(), level_cardinality);
         assert(static_cast<decltype(level_cardinality)>(hms.at(i).size()) == level_cardinality);
         level_cardinality *= 4;
     }
@@ -44,7 +40,6 @@ void print_heat_map(const md::HeatMaps<Real>& hms, std::string fname, const Calc
 
     for(const auto& dual_point_value_pair : hms.at(max_level)) {
         const DualPoint& k = dual_point_value_pair.first;
-        spd::debug("HM DP: {}", k);
         mu_vals.insert(k.mu());
         lambda_vals.insert(k.lambda());
     }
@@ -128,14 +123,11 @@ void print_heat_map(const md::HeatMaps<Real>& hms, std::string fname, const Calc
     }
 
     ofs.close();
-    spd::debug("Exit print_heat_map");
 }
 #endif
 
 int main(int argc, char** argv)
 {
-    spdlog::set_level(spdlog::level::info);
-
     using opts::Option;
     using opts::PosOption;
     opts::Options ops;
@@ -200,8 +192,6 @@ int main(int argc, char** argv)
     bif_a.sanity_check();
     bif_b.sanity_check();
 
-    spd::debug("Read bifiltrations {} {}", fname_a, fname_b);
-
     std::vector<BoundStrategy> bound_strategies;
     std::vector<TraverseStrategy> traverse_strategies;
 
@@ -215,12 +205,6 @@ int main(int argc, char** argv)
 
 
 #ifdef MD_EXPERIMENTAL_TIMING
-
-    for(auto bs : bound_strategies) {
-        for(auto ts : traverse_strategies) {
-            spd::info("Will test combination {} {}", bs, ts);
-        }
-    }
 
     struct ExperimentResult {
         CalculationParams<Real> params {CalculationParams<Real>()};
@@ -312,8 +296,6 @@ int main(int argc, char** argv)
             int total_n_hera_calls = 0;
             Real dist;
             for(int i = 0; i < n_repetitions; ++i) {
-                spd::debug("Processing bound_strategy {}, traverse_strategy {}, iteration = {}", bound_strategy,
-                        traverse_strategy, i);
                 auto t1 = std::chrono::high_resolution_clock().now();
                 dist = matching_distance(bif_a, bif_b, params_experiment);
                 auto t2 = std::chrono::high_resolution_clock().now();
@@ -330,12 +312,6 @@ int main(int argc, char** argv)
             results[key].actual_error = params_experiment.actual_error;
             results[key].actual_max_depth = params_experiment.actual_max_depth;
 
-            spd::info(
-                    "Done (bound = {}, traverse = {}), n_hera_calls = {}, time = {} sec, d = {}, error = {}, savings = {}, max_depth = {}",
-                    bound_strategy, traverse_strategy, results[key].n_hera_calls, results[key].seconds_elapsed(),
-                    dist,
-                    params_experiment.actual_error, results[key].savings_ratio(), results[key].actual_max_depth);
-
             if (bound_strategy == BoundStrategy::bruteforce) { params_experiment.max_depth = user_max_iters; }
 
 #ifdef PRINT_HEAT_MAP
@@ -347,11 +323,10 @@ int main(int argc, char** argv)
                 std::string heat_map_fname = fmt::format("{0}_{1}_dim_{2}_weighted_values_xyp.txt", fname_a_wo.string(),
                         fname_b_wo.string(), params_experiment.dim);
                 fs::path path_hm = fname_a_path.replace_filename(fs::path(heat_map_fname.c_str()));
-                spd::debug("Saving heatmap to {}", heat_map_fname);
+                std::cout << "Saving heatmap to " <<  heat_map_fname;
                 print_heat_map(params_experiment.heat_maps, path_hm.string(), params);
             }
 #endif
-            spd::debug("Finished processing bound_strategy {}", bound_strategy);
         }
     }
 
@@ -383,8 +358,6 @@ int main(int argc, char** argv)
 #else
     params.bound_strategy = bound_strategies.back();
     params.traverse_strategy = traverse_strategies.back();
-
-    spd::debug("Will use {} bound, {} traverse strategy", params.bound_strategy, params.traverse_strategy);
 
     Real dist = matching_distance<Real>(bif_a, bif_b, params);
     std::cout << dist << std::endl;

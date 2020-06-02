@@ -15,10 +15,6 @@
 #include "phat/boundary_matrix.h"
 #include "phat/compute_persistence_pairs.h"
 
-#include "spdlog/spdlog.h"
-#include "spdlog/fmt/fmt.h"
-#include "spdlog/fmt/ostr.h"
-
 #include "common_util.h"
 
 namespace md {

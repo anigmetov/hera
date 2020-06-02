@@ -79,8 +79,6 @@ namespace md {
         assert(result.size() <= 2);
 
         if (result.size() > 2) {
-            fmt::print("Error in push_change_points, p = {}, dual_box = {}, result = {}\n", p, *this,
-                    container_to_string(result));
             throw std::runtime_error("push_change_points returned more than 2 points");
         }
 

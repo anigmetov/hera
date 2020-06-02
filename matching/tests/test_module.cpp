@@ -4,9 +4,6 @@
 #include <iostream>
 #include <string>
 
-#include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h"
-
 #define MD_TEST_CODE
 
 #include "common_util.h"
@@ -34,8 +31,6 @@ using RelationVec = Module::RelVec;
 using IndexVec = md::IndexVec;
 
 using md::k_corner_vps;
-
-namespace spd = spdlog;
 
 TEST_CASE("Module projection", "[module][projection]")
 {

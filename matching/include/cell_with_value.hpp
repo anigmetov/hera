@@ -146,8 +146,9 @@ namespace md {
     template<class Real>
     void CellWithValue<Real>::set_value_at(ValuePoint vp, Real new_value)
     {
-        if (has_value_at(vp))
-            spd::error("CellWithValue<Real>: trying to re-assign value!, this = {}, vp = {}", *this, vp);
+        if (has_value_at(vp)) {
+            std::cerr << "CellWithValue<Real>: trying to re-assign value, vp = " << vp;
+        }
 
         switch(vp) {
             case ValuePoint::upper_left :

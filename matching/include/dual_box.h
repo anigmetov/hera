@@ -6,10 +6,6 @@
 #include <vector>
 #include <random>
 
-#include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h"
-
-
 #include "common_util.h"
 #include "dual_point.h"
 

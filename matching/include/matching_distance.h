@@ -281,7 +281,7 @@ namespace md {
     void print_map(const std::map<K, V>& dic)
     {
         for(const auto kv : dic) {
-            fmt::print("{} -> {}\n", kv.first, kv.second);
+            std::cout << kv.first << " -> " << kv.second << "\n";
         }
     }
 

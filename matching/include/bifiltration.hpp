@@ -18,7 +18,7 @@ namespace md {
     {
         std::ifstream ifstr {fname.c_str()};
         if (!ifstr.good()) {
-            std::string error_message = fmt::format("Cannot open file {0}", fname);
+            std::string error_message = "Cannot open file " + fname;
             std::cerr << error_message << std::endl;
             throw std::runtime_error(error_message);
         }
@@ -73,7 +73,6 @@ namespace md {
     template<class Real>
     void Bifiltration<Real>::phat_like_format_reader(std::ifstream& ifstr)
     {
-        spd::debug("Enter phat_like_format_reader");
         // read stream line by line; do not use >> operator
         std::string s;
         std::getline(ifstr, s);
@@ -89,7 +88,6 @@ namespace md {
                 simplices_.emplace_back(index++, s, BifiltrationFormat::phat_like);
             }
         }
-        spd::debug("Read {} simplices from file", n_simplices);
     }
 
     template<class Real>
@@ -105,7 +103,6 @@ namespace md {
     void Bifiltration<Real>::sanity_check() const
     {
 #ifdef DEBUG
-        spd::debug("Enter Bifiltration<Real>::sanity_check");
         // check that boundary has correct number of simplices,
         // each bounding simplex has correct dim
         // and appears in the filtration before the simplex it bounds
@@ -118,7 +115,6 @@ namespace md {
                 assert(bdry_simplex.position().is_less(s.position(), false));
             }
         }
-        spd::debug("Exit Bifiltration<Real>::sanity_check");
 #endif
     }
 
@@ -137,11 +133,8 @@ namespace md {
 //                simplices.emplace_back(s);
 //        }
 
-        spd::debug("Enter slice diagram, line = {}, simplices.size = {}", line, simplices.size());
-
         for(auto& simplex : simplices) {
             Real value = line.weighted_push(simplex.position());
-//            spd::debug("in slice_diagram, simplex = {}, value = {}\n", simplex, value);
             simplex.set_value(value);
         }
 
@@ -186,8 +179,6 @@ namespace md {
                 dgm.add_point(dim, birth, death);
             }
         }
-
-        spdlog::debug("Exiting slice_diagram, #dgm[0]  = {}", dgm.get_diagram(0).size());
 
         return dgm.get_diagram(dim);
     }

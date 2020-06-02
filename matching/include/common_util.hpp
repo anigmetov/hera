@@ -7,9 +7,6 @@
 
 #include <common_util.h>
 
-#include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h"
-
 namespace md {
 
     template<class Real>
