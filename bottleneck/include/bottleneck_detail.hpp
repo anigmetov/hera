@@ -51,16 +51,12 @@ namespace hera {
         void binarySearch(const Real epsilon,
                           std::pair<Real, Real>& result,
                           BoundMatchOracle <Real>& oracle,
-                          const Real infinityCost,
                           bool isResultInitializedCorrectly,
                           const Real distProbeInit)
         {
             // aliases for result components
             Real& distMin = result.first;
             Real& distMax = result.second;
-
-            distMin = std::max(distMin, infinityCost);
-            distMax = std::max(distMax, infinityCost);
 
             Real distProbe;
 
@@ -87,13 +83,6 @@ namespace hera {
             // bounds are correct , perform binary search
             distProbe = (distMin + distMax) / 2.0;
             while ((distMax - distMin) / distMin >= epsilon) {
-
-                if (distMax < infinityCost) {
-                    distMin = infinityCost;
-                    distMax = infinityCost;
-                    break;
-                }
-
                 if (oracle.isMatchLess(distProbe)) {
                     distMax = distProbe;
                 } else {
@@ -102,9 +91,6 @@ namespace hera {
 
                 distProbe = (distMin + distMax) / 2.0;
             }
-
-            distMin = std::max(distMin, infinityCost);
-            distMax = std::max(distMax, infinityCost);
         }
 
         //        template<class Real>
@@ -291,7 +277,7 @@ namespace hera {
             // get a 3-approximation of maximal distance between A and B
             // as a starting value for probe distance
             Real distProbe { getFurthestDistance3Approx<Real, DiagramPointSet<Real>>(A, B) };
-            binarySearch(epsilon, result, oracle, infinity_cost, false, distProbe);
+            binarySearch(epsilon, result, oracle, false, distProbe);
             // to compute longest edge a perfect matching is needed
             if (compute_longest_edge and result.first > infinity_cost) {
                 oracle.isMatchLess(result.second);
@@ -448,8 +434,10 @@ namespace hera {
         Real bottleneckDistApprox(DiagramPointSet <Real>& A, DiagramPointSet <Real>& B, const Real epsilon,
                                   MatchingEdge <Real>& longest_edge, bool compute_longest_edge)
         {
+            // must compute here: infinity points will be erased in bottleneckDistApproxInterval
+            Real infCost = getInfinityCost(A, B).cost;
             auto interval = bottleneckDistApproxInterval<Real>(A, B, epsilon, longest_edge, compute_longest_edge);
-            return interval.second;
+            return std::max(infCost, interval.second);
         }
 
 
@@ -518,6 +506,9 @@ namespace hera {
             using DgmPoint = DiagramPoint<Real>;
 
             constexpr Real epsilon = 0.001;
+
+            Real infCost = getInfinityCost(A, B, true).cost;
+
             auto interval = bottleneckDistApproxInterval(A, B, epsilon, longest_edge, true);
             // if the longest edge is on infinity, the answer is already exact
             // this will be detected here and all the code after if
@@ -627,8 +618,9 @@ namespace hera {
                 pw_dists.push_back(d);
             }
 
-            return bottleneckDistExactFromSortedPwDist(A, B, pw_dists, decPrecision, longest_edge,
-                                                       compute_longest_edge);
+            Real exactFinite = bottleneckDistExactFromSortedPwDist(A, B, pw_dists, decPrecision, longest_edge, compute_longest_edge);
+
+            return std::max(infCost, exactFinite);
         }
 
     } // end namespace bt

@@ -159,6 +159,9 @@ TEST_CASE("infinity points", "bottleneckDistApprox")
         double d = hera::bottleneckDistApprox<>(diagram_A, diagram_B, delta);
         double corr_answer = 1.0;
         REQUIRE(  fabs(d - corr_answer) <= delta * corr_answer);
+
+        double exact_d = hera::bottleneckDistExact<>(diagram_A, diagram_B);
+        REQUIRE(exact_d == corr_answer);
     }
 
     SECTION("two points at infinity") {
@@ -565,7 +568,11 @@ TEST_CASE("file cases", "bottleneck_dist")
             REQUIRE(read_file_A);
             REQUIRE(read_file_B);
 
-            double hera_answer = hera::bottleneckDistApprox(diagram_A, diagram_B, ts.delta, longest_edge, true);
+            double hera_answer;
+            if (ts.delta > 0)
+                hera_answer = hera::bottleneckDistApprox(diagram_A, diagram_B, ts.delta, longest_edge, true);
+            else
+                hera_answer = hera::bottleneckDistExact(diagram_A, diagram_B);
             std::pair<int, int> hera_le { longest_edge.first.get_user_id(), longest_edge.second.get_user_id() };
 
             REQUIRE((hera_answer == ts.answer or fabs(hera_answer - ts.answer) <= ts.delta * hera_answer));
@@ -604,7 +611,6 @@ TEST_CASE("file cases", "bottleneck_dist")
 //                          << hera_answer_exact << std::endl;
 //            }
             REQUIRE( (not check_longest_edge_cost or fabs(hera_le_cost - hera_answer_exact) < 0.0001 * hera_answer_exact) );
-            std::cout << ts << " PASSED " << std::endl;
         }
     }
 
