@@ -562,7 +562,7 @@ TEST_CASE("file cases", "bottleneck_dist")
 
     SECTION("from file:") {
 
-        for (const auto& ts : test_params) {
+        for (auto& ts : test_params) {
             bool read_file_A = hera::readDiagramPointSet(dir_prefix + ts.file_1, diagram_A);
             bool read_file_B = hera::readDiagramPointSet(dir_prefix + ts.file_2, diagram_B);
             REQUIRE(read_file_A);
@@ -574,6 +574,10 @@ TEST_CASE("file cases", "bottleneck_dist")
             else
                 hera_answer = hera::bottleneckDistExact(diagram_A, diagram_B);
             std::pair<int, int> hera_le { longest_edge.first.get_user_id(), longest_edge.second.get_user_id() };
+
+            // cannot store exact answer in test_list.txt, but need to make sure that Exact is called
+            if (ts.delta == 0.0)
+                ts.delta = 0.00000001;
 
             REQUIRE((hera_answer == ts.answer or fabs(hera_answer - ts.answer) <= ts.delta * hera_answer));
             REQUIRE((ts.longest_edges.empty() or
