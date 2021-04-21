@@ -111,6 +111,18 @@ TEST_CASE("simple cases", "wasserstein_dist")
 
     }
 
+    SECTION("trivial: two diagrams differing by diagonal point") {
+
+        diagram_A.emplace_back(0.0, 1.0);
+        diagram_B.emplace_back(0.0, 0.0);
+        diagram_B.emplace_back(0.0, 1.0);
+
+        double d1 = hera::wasserstein_cost<>(diagram_A, diagram_B, params);
+        double d2 = hera::wasserstein_cost<>(diagram_B, diagram_A, params);
+        REQUIRE(  fabs(d2) <= 0.00000000001 );
+        REQUIRE(  fabs(d1) <= 0.00000000001 );
+    }
+
 }
 
 
