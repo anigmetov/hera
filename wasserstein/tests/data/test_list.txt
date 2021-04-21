@@ -19,3 +19,6 @@ test_100_A test_100_B 3.0 2.0 2.09695346034248
 test_diag1_A test_diag1_B 1.0 -1.0 0.0
 test_diag2_A test_diag2_B 1.0 -1.0 0.0
 test_diag3_A test_diag3_B 1.0 -1.0 0.0
+test_inf_1_A test_inf_1_B 1.0 -1.0 3.0
+test_inf_2_A test_inf_2_B 1.0 -1.0 inf
+test_inf_3_A test_inf_3_B 1.0 -1.0 3.0
