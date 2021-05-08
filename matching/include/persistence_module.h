@@ -11,6 +11,7 @@
 
 #include "phat/boundary_matrix.h"
 #include "phat/compute_persistence_pairs.h"
+#include "phat/algorithms/standard_reduction.h"
 
 #include "common_util.h"
 #include "dual_point.h"

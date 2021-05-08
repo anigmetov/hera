@@ -362,6 +362,7 @@ namespace md {
         // TODO: think about this - how to call Hera
         auto dgm_a = module_a_.weighted_slice_diagram(line);
         auto dgm_b = module_b_.weighted_slice_diagram(line);
+
         R result;
         if (params_.hera_epsilon > static_cast<R>(0)) {
             result = hera::bottleneckDistApprox(dgm_a, dgm_b, params_.hera_epsilon) / ( params_.hera_epsilon + 1);

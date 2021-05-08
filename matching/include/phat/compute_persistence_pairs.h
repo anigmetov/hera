@@ -93,7 +93,7 @@ namespace phat {
     }
 
     template< typename ReductionAlgorithm, typename Representation >
-    void compute_persistence_pairs( persistence_pairs& pairs, boundary_matrix< Representation >& boundary_matrix ) {
+    void compute_persistence_pairs( persistence_pairs& pairs, boundary_matrix< Representation >& boundary_matrix, bool for_persistence_module = false ) {
         ReductionAlgorithm reduce;
         reduce( boundary_matrix );
         pairs.clear();
@@ -107,10 +107,19 @@ namespace phat {
                 pairs.append_pair( birth, death );
             }
         }
-        // infinite pairs: column idx is 0, and row idx does not contain a lowest one
-        for( index idx = 0; idx < boundary_matrix.get_num_cols(); idx++ ) {
-            if(boundary_matrix.is_empty(idx) && max_indices.count(idx) == 0 ) {
-                pairs.append_pair( idx, k_infinity_index);
+        if (for_persistence_module) {
+             // infinite pairs for modules: if generator is not matched to relation, it lives forever
+            for( index idx = 0; idx < boundary_matrix.get_num_rows(0); idx++ ) {
+                if(max_indices.count(idx) == 0 ) {
+                    pairs.append_pair( idx, k_infinity_index);
+                }
+            }
+        } else {
+            // infinite pairs: column idx is 0, and row idx does not contain a lowest one
+            for( index idx = 0; idx < boundary_matrix.get_num_cols(); idx++ ) {
+                if(boundary_matrix.is_empty(idx) && max_indices.count(idx) == 0 ) {
+                    pairs.append_pair( idx, k_infinity_index);
+                }
             }
         }
      }

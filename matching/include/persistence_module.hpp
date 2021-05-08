@@ -158,7 +158,7 @@ namespace md {
         get_slice_projection_matrix(slice, phat_matrix, gen_projections, rel_projections);
 
         phat::persistence_pairs phat_persistence_pairs;
-        phat::compute_persistence_pairs<phat::twist_reduction>(phat_persistence_pairs, phat_matrix);
+        phat::compute_persistence_pairs<phat::standard_reduction>(phat_persistence_pairs, phat_matrix, true);
 
         Diagram<Real> dgm;
 
