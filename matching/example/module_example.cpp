@@ -5,61 +5,83 @@ using namespace md;
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    // create generators.
-    // A generator is a point in plane,
-    // generators are stored in a vector of points:
-    PointVec<double> gens_a;
-
-    // module A will have one generator that appears at point (0, 0)
-    gens_a.emplace_back(0, 0);
-
-    // relations are stored in a vector of relations
     using RelationVec = ModulePresentation<double>::RelVec;
-    RelationVec rels_a;
-
-    // A relation is a struct with position and column
     using Relation = ModulePresentation<double>::Relation;
 
-    // at this point the relation rel_a_1 will appear:
-    Point<double> rel_a_1_position { 1, 1 };
+    // Module A (three rectangles)
+    PointVec<double> gens_a;
+    RelationVec rels_a;
 
-    // vector IndexVec contains non-zero indices of the corresponding relation
-    // (we work over Z/2). Since we have one generator only, the relation
-    // contains only one entry, 0
+
+    // First rectangle
+    gens_a.emplace_back(-3, -1);
+
+    Point<double> rel_a_1_position { -3, 3 };
     IndexVec rel_a_1_components { 0 };
-
-    // construct a relation from position and column:
     Relation rel_a_1 { rel_a_1_position, rel_a_1_components };
-
-    // and add it to a vector of relations
     rels_a.push_back(rel_a_1);
 
-    // after populating vectors of generators and relations
-    // construct a module:
+    Point<double> rel_a_2_position { 1, -1 };
+    IndexVec rel_a_2_components { 0 };
+    Relation rel_a_2 { rel_a_2_position, rel_a_2_components };
+    rels_a.push_back(rel_a_2);
+
+    // Second rectangle
+    gens_a.emplace_back(-1, -1);
+
+    Point<double> rel_a_3_position { -1, 1 };
+    IndexVec rel_a_3_components { 1 };
+    Relation rel_a_3 { rel_a_3_position, rel_a_3_components };
+    rels_a.push_back(rel_a_3);
+
+    Point<double> rel_a_4_position { 1, -1 };
+    IndexVec rel_a_4_components { 1 };
+    Relation rel_a_4 { rel_a_4_position, rel_a_4_components };
+    rels_a.push_back(rel_a_4);
+
+    // Third rectangle
+    gens_a.emplace_back(-1, -3);
+
+    Point<double> rel_a_5_position { -1, 1 };
+    IndexVec rel_a_5_components { 2 };
+    Relation rel_a_5 { rel_a_5_position, rel_a_5_components };
+    rels_a.push_back(rel_a_5);
+
+    Point<double> rel_a_6_position { 3, -3 };
+    IndexVec rel_a_6_components { 2 };
+    Relation rel_a_6 { rel_a_6_position, rel_a_6_components };
+    rels_a.push_back(rel_a_6);
+
+
     ModulePresentation<double> module_a { gens_a, rels_a };
 
 
-    // same for module_b. It will also have just one
-    // generator and one relation, but at different positions.
-
+    // Module B (one rectangle)
     PointVec<double> gens_b;
-    gens_b.emplace_back(1, 1);
-
     RelationVec rels_b;
 
-    Point<double> rel_b_1_position { 2, 2 };
-    IndexVec rel_b_1_components { 0 };
+    // Rectangle
+    gens_b.emplace_back(-2, -2);
 
-    rels_b.emplace_back(rel_b_1_position, rel_b_1_components);
+    Point<double> rel_b_1_position { -2, 2 };
+    IndexVec rel_b_1_components { 0 };
+    Relation rel_b_1 { rel_b_1_position, rel_b_1_components };
+    rels_b.push_back(rel_b_1);
+
+    Point<double> rel_b_2_position { 2, -2 };
+    IndexVec rel_b_2_components { 0 };
+    Relation rel_b_2 { rel_b_2_position, rel_b_2_components };
+    rels_b.push_back(rel_b_2);
+
 
     ModulePresentation<double> module_b { gens_b, rels_b };
 
-    // create CalculationParams
+
+    // Computations
     CalculationParams<double> params;
-    // set relative error to 10 % :
     params.delta = 0.1;
-    // go at most 8 levels deep in quadtree:
-    params.max_depth = 8;
+    params.max_depth = 5;
+    params.initialization_depth = 0;
 
     double dist = matching_distance(module_a, module_b, params);
     std::cout << "dist = " << dist << std::endl;
