@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
     hera::AuctionParams<Real> params;
 
     if (argc < 3 ) {
-        std::cerr << "Usage: " << argv[0] << " file1 file2 [wasserstein_degree] [relative_error] [internal norm] [initial epsilon] [epsilon_factor] [max_bids_per_round] [gamma_threshold][log_filename_prefix]. By default power is 1.0, relative error is 0.01, internal norm is l_infinity, initall epsilon is chosen automatically, epsilon factor is 5.0, Jacobi variant is used (max bids per round is maximal), gamma_threshold = 0.0." << std::endl;
+        std::cerr << "Usage: " << argv[0] << " file1 file2 [wasserstein_degree] [relative_error] [internal norm] [initial epsilon] [epsilon_factor] [max_bids_per_round] [gamma_threshold]. By default power is 1.0, relative error is 0.01, internal norm is l_infinity, initall epsilon is chosen automatically, epsilon factor is 5.0, Jacobi variant is used (max bids per round is maximal), gamma_threshold = 0.0." << std::endl;
         return 1;
     }
 
@@ -159,13 +159,7 @@ int main(int argc, char* argv[])
 
     params.gamma_threshold = (10 <= argc) ? atof(argv[9]) : 0.0;
 
-    std::string log_filename_prefix = ( 11 <= argc ) ? argv[10] : "";
-
     params.max_num_phases = 800;
-
-#ifdef LOG_AUCTION
-    spdlog::set_level(spdlog::level::critical);
-#endif
 
     Real res = hera::ws::wasserstein_dist(set_A, set_B, params);
 

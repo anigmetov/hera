@@ -64,8 +64,7 @@ public:
                      const Real _eps_factor = 5.0,
                      const int _max_num_phases = std::numeric_limits<int>::max(),
                      const Real _gamma_threshold = 0.0,
-                     const size_t _max_bids_per_round = std::numeric_limits<size_t>::max(),
-                     const std::string& _log_filename_prefix = "");
+                     const size_t _max_bids_per_round = std::numeric_limits<size_t>::max());
 
     void set_epsilon(Real new_val);
     Real get_epsilon() const { return epsilon; }
@@ -188,76 +187,12 @@ private:
     void print_debug();
     void print_matching();
 
-    std::string log_filename_prefix;
     const Real k_max_relative_error = 2.0; // if relative error cannot be estimated or is too large, use this value
     void reset_round_stat(); // empty, if logging is disable
     void reset_phase_stat();
 
     std::unordered_set<size_t> never_assigned_bidders;
     std::unordered_set<size_t> never_assigned_items;
-
-#ifdef LOG_AUCTION
-    std::unordered_set<size_t> unassigned_normal_bidders;
-    std::unordered_set<size_t> unassigned_diag_bidders;
-
-    std::unordered_set<size_t> unassigned_normal_items;
-    std::unordered_set<size_t> unassigned_diag_items;
-
-
-    size_t all_assigned_round { 0 };
-    size_t all_assigned_round_found { false };
-
-    int num_forward_rounds_non_cumulative { 0 };
-    int num_forward_rounds { 0 };
-
-    int num_reverse_rounds_non_cumulative { 0 };
-    int num_reverse_rounds { 0 };
-
-    // all per-round vars are non-cumulative
-
-    // forward rounds
-    int num_normal_forward_bids_submitted { 0 };
-    int num_diag_forward_bids_submitted { 0 };
-
-    int num_forward_diag_to_diag_assignments { 0 };
-    int num_forward_diag_to_normal_assignments { 0 };
-    int num_forward_normal_to_diag_assignments { 0 };
-    int num_forward_normal_to_normal_assignments { 0 };
-
-    int num_forward_diag_from_diag_thefts { 0 };
-    int num_forward_diag_from_normal_thefts { 0 };
-    int num_forward_normal_from_diag_thefts { 0 };
-    int num_forward_normal_from_normal_thefts { 0 };
-
-    // reverse rounds
-    int num_normal_reverse_bids_submitted { 0 };
-    int num_diag_reverse_bids_submitted { 0 };
-
-    int num_reverse_diag_to_diag_assignments { 0 };
-    int num_reverse_diag_to_normal_assignments { 0 };
-    int num_reverse_normal_to_diag_assignments { 0 };
-    int num_reverse_normal_to_normal_assignments { 0 };
-
-    int num_reverse_diag_from_diag_thefts { 0 };
-    int num_reverse_diag_from_normal_thefts { 0 };
-    int num_reverse_normal_from_diag_thefts { 0 };
-    int num_reverse_normal_from_normal_thefts { 0 };
-
-    // price change statistics
-    std::vector<std::vector<size_t>> forward_price_change_cnt_vec;
-    std::vector<std::vector<size_t>> reverse_price_change_cnt_vec;
-
-    size_t parallel_threshold = 5000;
-    int num_parallelizable_rounds { 0 };
-    int num_parallelizable_forward_rounds { 0 };
-    int num_parallelizable_reverse_rounds { 0 };
-
-    int num_parallel_bids { 0 };
-    int num_total_bids { 0 };
-
-    int num_parallel_assignments { 0 };
-    int num_total_assignments { 0 };
-#endif
 
 };
 

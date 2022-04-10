@@ -1,11 +1,8 @@
-#define LOG_AUCTION
 #include "catch/catch.hpp"
 
 #include <sstream>
 #include <iostream>
 
-
-#undef LOG_AUCTION
 
 #include "wasserstein.h"
 #include "tests_reader.h"

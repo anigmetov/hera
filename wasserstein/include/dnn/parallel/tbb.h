@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <boost/range.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/foreach.hpp>
 
 #ifdef TBB
@@ -16,6 +16,8 @@
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/collections_load_imp.hpp>
 #include <boost/serialization/collections_save_imp.hpp>
+
+using namespace boost::placeholders;
 
 namespace hera
 {

@@ -208,8 +208,7 @@ namespace ws
     template<class RealType>
     inline RealType wasserstein_cost_vec(const std::vector<DiagramPoint<RealType>>& A,
                                   const std::vector<DiagramPoint<RealType>>& B,
-                                  AuctionParams<RealType>& params,
-                                  const std::string& _log_filename_prefix)
+                                  AuctionParams<RealType>& params)
     {
         if (params.wasserstein_power < 1.0) {
             throw std::runtime_error("Bad q in Wasserstein " + std::to_string(params.wasserstein_power));
@@ -230,7 +229,7 @@ namespace ws
         RealType result;
 
         // just use Gauss-Seidel
-        AuctionRunnerGS<RealType> auction(A, B, params, _log_filename_prefix);
+        AuctionRunnerGS<RealType> auction(A, B, params);
         auction.run_auction();
         result = auction.get_wasserstein_cost();
         params.final_relative_error = auction.get_relative_error();
@@ -245,8 +244,7 @@ template<class PairContainer>
 inline typename DiagramTraits<PairContainer>::RealType
 wasserstein_cost(const PairContainer& A,
                 const PairContainer& B,
-                AuctionParams< typename DiagramTraits<PairContainer>::RealType >& params,
-                const std::string& _log_filename_prefix = "")
+                AuctionParams< typename DiagramTraits<PairContainer>::RealType >& params)
 {
     using Traits = DiagramTraits<PairContainer>;
 
@@ -355,7 +353,7 @@ wasserstein_cost(const PairContainer& A,
     if (infinity_cost == plus_inf) {
         return infinity_cost;
     } else {
-        return infinity_cost + wasserstein_cost_vec(dgm_A, dgm_B, params, _log_filename_prefix);
+        return infinity_cost + wasserstein_cost_vec(dgm_A, dgm_B, params);
     }
 
 }
@@ -364,11 +362,10 @@ template<class PairContainer>
 inline typename DiagramTraits<PairContainer>::RealType
 wasserstein_dist(const PairContainer& A,
                  const PairContainer& B,
-                 AuctionParams<typename DiagramTraits<PairContainer>::RealType>& params,
-                 const std::string& _log_filename_prefix = "")
+                 AuctionParams<typename DiagramTraits<PairContainer>::RealType>& params)
 {
     using Real = typename DiagramTraits<PairContainer>::RealType;
-    return std::pow(hera::wasserstein_cost(A, B, params, _log_filename_prefix), Real(1.)/params.wasserstein_power);
+    return std::pow(hera::wasserstein_cost(A, B, params), Real(1.)/params.wasserstein_power);
 }
 
 } // end of namespace hera

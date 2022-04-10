@@ -61,9 +61,7 @@ AuctionRunnerFR<R, AO>::AuctionRunnerFR(const std::vector<DgmPoint>& A,
                                           const Real _eps_factor,
                                           const int _max_num_phases,
                                           const Real _gamma_threshold,
-                                          const size_t _max_bids_per_round,
-                                          const std::string& _log_filename_prefix
-                                         ) :
+                                          const size_t _max_bids_per_round) :
     bidders(A),
     items(B),
     num_bidders(A.size()),
@@ -96,8 +94,7 @@ AuctionRunnerFR<R, AO>::AuctionRunnerFR(const std::vector<DgmPoint>& A,
     partial_cost(0.0),
     unassigned_bidders_persistence(total_bidders_persistence),
     unassigned_items_persistence(total_items_persistence),
-    gamma_threshold(_gamma_threshold),
-    log_filename_prefix(_log_filename_prefix)
+    gamma_threshold(_gamma_threshold)
 {
     assert(A.size() == B.size());
     for(const auto& p : bidders) {
@@ -157,13 +154,6 @@ template<class R, class AO>
 void AuctionRunnerFR<R, AO>::reset_phase_stat()
 {
     num_rounds_non_cumulative = 0;
-#ifdef LOG_AUCTION
-    num_parallelizable_rounds = 0;
-    num_parallelizable_forward_rounds = 0;
-    num_parallelizable_reverse_rounds = 0;
-    num_forward_rounds_non_cumulative = 0;
-    num_reverse_rounds_non_cumulative = 0;
-#endif
 }
 
 
@@ -172,34 +162,6 @@ void AuctionRunnerFR<R, AO>::reset_round_stat()
 {
     num_forward_bids_submitted = 0;
     num_reverse_bids_submitted = 0;
-#ifdef LOG_AUCTION
-    num_normal_forward_bids_submitted = 0;
-    num_diag_forward_bids_submitted = 0;
-
-    num_forward_diag_to_diag_assignments = 0;
-    num_forward_diag_to_normal_assignments = 0;
-    num_forward_normal_to_diag_assignments = 0;
-    num_forward_normal_to_normal_assignments = 0;
-
-    num_forward_diag_from_diag_thefts = 0;
-    num_forward_diag_from_normal_thefts = 0;
-    num_forward_normal_from_diag_thefts = 0;
-    num_forward_normal_from_normal_thefts = 0;
-
-    // reverse rounds
-    num_normal_reverse_bids_submitted = 0;
-    num_diag_reverse_bids_submitted = 0;
-
-    num_reverse_diag_to_diag_assignments = 0;
-    num_reverse_diag_to_normal_assignments = 0;
-    num_reverse_normal_to_diag_assignments = 0;
-    num_reverse_normal_to_normal_assignments = 0;
-
-    num_reverse_diag_from_diag_thefts = 0;
-    num_reverse_diag_from_normal_thefts = 0;
-    num_reverse_normal_from_diag_thefts = 0;
-    num_reverse_normal_from_normal_thefts = 0;
-#endif
 }
 
 
@@ -233,63 +195,6 @@ void AuctionRunnerFR<R, AO>::assign_forward(IdxType item_idx, IdxType bidder_idx
     // new edge was added to matching, increase partial cost
     partial_cost += get_item_bidder_cost(item_idx, bidder_idx);
 
-#ifdef LOG_AUCTION
-
-    if (unassigned_bidders.size() > parallel_threshold) {
-        num_parallel_assignments++;
-    }
-    num_total_assignments++;
-
-
-    int it_d = is_item_diagonal(item_idx);
-    int b_d = is_bidder_diagonal(bidder_idx);
-    // 2 - None
-    int old_d = ( k_invalid_index == old_item_owner ) ? 2 : is_bidder_diagonal(old_item_owner);
-    int key = 100 * old_d + 10 * b_d + it_d;
-    switch(key) {
-        case 211 : num_forward_diag_to_diag_assignments++;
-                   break;
-        case 210 : num_forward_diag_to_normal_assignments++;
-                   break;
-        case 201 : num_forward_normal_to_diag_assignments++;
-                   break;
-        case 200 : num_forward_normal_to_normal_assignments++;
-                   break;
-
-        case 111 : num_forward_diag_to_diag_assignments++;
-                   num_forward_diag_from_diag_thefts++;
-                   break;
-        case 110 : num_forward_diag_to_normal_assignments++;
-                   num_forward_diag_from_diag_thefts++;
-                   break;
-                   break;
-        case 101 : num_forward_normal_to_diag_assignments++;
-                   num_forward_normal_from_diag_thefts++;
-                   break;
-                   break;
-        case 100 : num_forward_normal_to_normal_assignments++;
-                   num_forward_normal_from_diag_thefts++;
-                   break;
-
-        case 11  : num_forward_diag_to_diag_assignments++;
-                   num_forward_diag_from_normal_thefts++;
-                   break;
-        case 10  : num_forward_diag_to_normal_assignments++;
-                   num_forward_diag_from_normal_thefts++;
-                   break;
-                   break;
-        case 1   : num_forward_normal_to_diag_assignments++;
-                   num_forward_normal_from_normal_thefts++;
-                   break;
-                   break;
-        case 0   : num_forward_normal_to_normal_assignments++;
-                   num_forward_normal_from_normal_thefts++;
-                   break;
-        default  : std::cerr << "key = " << key << std::endl;
-                   throw std::runtime_error("Bug in logging, wrong key");
-                   break;
-    }
-#endif
 
     sanity_check();
 }
@@ -323,63 +228,6 @@ void AuctionRunnerFR<R, AO>::assign_reverse(IdxType item_idx, IdxType bidder_idx
 
     // new edge was added to matching, increase partial cost
     partial_cost += get_item_bidder_cost(item_idx, bidder_idx);
-
-#ifdef LOG_AUCTION
-    if (unassigned_items.size() > parallel_threshold) {
-        num_parallel_assignments++;
-    }
-    num_total_assignments++;
-
-    int it_d = is_item_diagonal(item_idx);
-    int b_d = is_bidder_diagonal(bidder_idx);
-    // 2 - None
-    int old_d = (k_invalid_index == old_bidder_owner) ? 2 : is_item_diagonal(old_bidder_owner);
-    int key = 100 * old_d + 10 * it_d + b_d;
-    switch(key) {
-        case 211 : num_reverse_diag_to_diag_assignments++;
-                   break;
-        case 210 : num_reverse_diag_to_normal_assignments++;
-                   break;
-        case 201 : num_reverse_normal_to_diag_assignments++;
-                   break;
-        case 200 : num_reverse_normal_to_normal_assignments++;
-                   break;
-
-        case 111 : num_reverse_diag_to_diag_assignments++;
-                   num_reverse_diag_from_diag_thefts++;
-                   break;
-        case 110 : num_reverse_diag_to_normal_assignments++;
-                   num_reverse_diag_from_diag_thefts++;
-                   break;
-                   break;
-        case 101 : num_reverse_normal_to_diag_assignments++;
-                   num_reverse_normal_from_diag_thefts++;
-                   break;
-                   break;
-        case 100 : num_reverse_normal_to_normal_assignments++;
-                   num_reverse_normal_from_diag_thefts++;
-                   break;
-
-        case 11  : num_reverse_diag_to_diag_assignments++;
-                   num_reverse_diag_from_normal_thefts++;
-                   break;
-        case 10  : num_reverse_diag_to_normal_assignments++;
-                   num_reverse_diag_from_normal_thefts++;
-                   break;
-                   break;
-        case 1   : num_reverse_normal_to_diag_assignments++;
-                   num_reverse_normal_from_normal_thefts++;
-                   break;
-                   break;
-        case 0   : num_reverse_normal_to_normal_assignments++;
-                   num_reverse_normal_from_normal_thefts++;
-                   break;
-        default  : std::cerr << "key = " << key << std::endl;
-                   throw std::runtime_error("Bug in logging, wrong key");
-                   break;
-    }
-
-#endif
 }
 
 template<class R, class AO>
@@ -409,10 +257,6 @@ void AuctionRunnerFR<R, AO>::assign_to_best_bidder(IdxType item_idx)
     auto new_bidder_price = -get_item_bidder_cost(item_idx, best_bidder_idx) - best_bid_value;
     reverse_oracle.set_price(best_bidder_idx, new_bidder_price, false);
     check_epsilon_css();
-#ifdef LOG_AUCTION
-    forward_price_change_cnt_vec.back()[item_idx]++;
-    reverse_price_change_cnt_vec.back()[best_bidder_idx]++;
-#endif
 }
 
 template<class R, class AO>
@@ -430,10 +274,6 @@ void AuctionRunnerFR<R, AO>::assign_to_best_item(IdxType bidder_idx)
     reverse_oracle.sanity_check();
     auto new_item_price = -get_item_bidder_cost(best_item_idx, bidder_idx) - best_bid_value;
     forward_oracle.set_price(best_item_idx, new_item_price, false);
-#ifdef LOG_AUCTION
-    forward_price_change_cnt_vec.back()[best_item_idx]++;
-    reverse_price_change_cnt_vec.back()[bidder_idx]++;
-#endif
     check_epsilon_css();
 }
 
@@ -487,20 +327,6 @@ void AuctionRunnerFR<R, AO>::submit_forward_bid(IdxType bidder_idx, const IdxVal
 
     items_with_bids.insert(best_item_idx);
 
-#ifdef LOG_AUCTION
-
-    if (unassigned_bidders.size() > parallel_threshold) {
-        num_parallel_bids++;
-    }
-    num_total_bids++;
-
-
-    if (is_bidder_diagonal(bidder_idx)) {
-        num_diag_forward_bids_submitted++;
-    } else {
-        num_normal_forward_bids_submitted++;
-    }
-#endif
 }
 
 template<class R, class AO>
@@ -525,19 +351,6 @@ void AuctionRunnerFR<R, AO>::submit_reverse_bid(IdxType item_idx, const IdxValPa
     }
     bidders_with_bids.insert(best_bidder_idx);
 
-#ifdef LOG_AUCTION
-
-    if (unassigned_items.size() > parallel_threshold) {
-        num_parallel_bids++;
-    }
-    num_total_bids++;
-
-    if (is_item_diagonal(item_idx)) {
-        num_diag_reverse_bids_submitted++;
-    } else {
-        num_normal_reverse_bids_submitted++;
-    }
-#endif
 }
 
 
@@ -627,35 +440,6 @@ void AuctionRunnerFR<R, AO>::flush_assignment()
     for(size_t item_idx = 0; item_idx < num_items; ++item_idx) {
         unassigned_items_by_persistence.insert(std::make_pair(items[item_idx].persistence_lp(1.0), item_idx));
     }
-#endif
-
-#ifdef LOG_AUCTION
-
-    reset_phase_stat();
-
-    forward_price_change_cnt_vec.push_back(std::vector<size_t>(num_items, 0));
-    reverse_price_change_cnt_vec.push_back(std::vector<size_t>(num_bidders, 0));
-
-    // all bidders and items become unassigned
-    for(size_t bidder_idx = 0; bidder_idx < num_bidders; ++bidder_idx) {
-        if (is_bidder_normal(bidder_idx)) {
-            unassigned_normal_bidders.insert(bidder_idx);
-        } else {
-            unassigned_diag_bidders.insert(bidder_idx);
-        }
-    }
-
-    never_assigned_bidders = unassigned_bidders;
-
-    for(size_t item_idx = 0; item_idx < items.size(); ++item_idx) {
-        if (is_item_normal(item_idx)) {
-            unassigned_normal_items.insert(item_idx);
-        } else {
-            unassigned_diag_items.insert(item_idx);
-        }
-    }
-
-    never_assigned_items = unassigned_items;
 #endif
     check_epsilon_css();
 }
@@ -803,13 +587,6 @@ void AuctionRunnerFR<R, AO>::add_unassigned_bidder(const size_t bidder_idx)
     unassigned_bidders_by_persistence.insert(std::make_pair(bidder.persistence_lp(1.0), bidder_idx));
 #endif
 
-#ifdef LOG_AUCTION
-    if (is_bidder_diagonal(bidder_idx)) {
-        unassigned_diag_bidders.insert(bidder_idx);
-    } else {
-        unassigned_normal_bidders.insert(bidder_idx);
-    }
-#endif
 }
 
 template<class R, class AO>
@@ -823,13 +600,6 @@ void AuctionRunnerFR<R, AO>::add_unassigned_item(const size_t item_idx)
     unassigned_items_by_persistence.insert(std::make_pair(item.persistence_lp(1.0), item_idx));
 #endif
 
-#ifdef LOG_AUCTION
-    if (is_item_diagonal(item_idx)) {
-        unassigned_diag_items.insert(item_idx);
-    } else {
-        unassigned_normal_items.insert(item_idx);
-    }
-#endif
 }
 
 
@@ -845,17 +615,6 @@ void AuctionRunnerFR<R, AO>::remove_unassigned_bidder(const size_t bidder_idx)
     unassigned_bidders_by_persistence.erase(std::make_pair(bidders[bidder_idx].persistence_lp(1.0), bidder_idx));
 #endif
 
-#ifdef LOG_AUCTION
-    if (is_bidder_diagonal(bidder_idx)) {
-        unassigned_diag_bidders.erase(bidder_idx);
-    } else {
-        unassigned_normal_bidders.erase(bidder_idx);
-    }
-    if (never_assigned_bidders.empty() and not all_assigned_round_found) {
-        all_assigned_round = num_rounds_non_cumulative;
-        all_assigned_round_found = true;
-    }
-#endif
 }
 
 template<class R, class AO>
@@ -870,17 +629,6 @@ void AuctionRunnerFR<R, AO>::remove_unassigned_item(const size_t item_idx)
     unassigned_items_by_persistence.erase(std::make_pair(items[item_idx].persistence_lp(1.0), item_idx));
 #endif
 
-#ifdef LOG_AUCTION
-    if (is_item_normal(item_idx)) {
-        unassigned_normal_items.erase(item_idx);
-    } else {
-        unassigned_diag_items.erase(item_idx);
-    }
-    if (never_assigned_items.empty() and not all_assigned_round_found) {
-        all_assigned_round = num_rounds_non_cumulative;
-        all_assigned_round_found = true;
-    }
-#endif
 }
 
 template<class R, class AO>
@@ -906,14 +654,6 @@ void AuctionRunnerFR<R, AO>::run_reverse_auction_phase()
         num_rounds_non_cumulative++;
 
         check_epsilon_css();
-#ifdef LOG_AUCTION
-        if (unassigned_items.size() >= parallel_threshold) {
-            ++num_parallelizable_reverse_rounds;
-            ++num_parallelizable_rounds;
-        }
-        num_reverse_rounds++;
-        num_reverse_rounds_non_cumulative++;
-#endif
 
         reset_round_stat();
         // bidding
@@ -986,14 +726,6 @@ void AuctionRunnerFR<R, AO>::run_forward_auction_phase()
     while (continue_forward(original_unassigned_bidders, min_forward_matching_increment)) {
         check_epsilon_css();
         num_rounds++;
-#ifdef LOG_AUCTION
-        if (unassigned_bidders.size() >= parallel_threshold) {
-            ++num_parallelizable_forward_rounds;
-            ++num_parallelizable_rounds;
-        }
-        num_forward_rounds++;
-        num_forward_rounds_non_cumulative++;
-#endif
 
         reset_round_stat();
         // bidding step
@@ -1024,33 +756,6 @@ void AuctionRunnerFR<R, AO>::run_forward_auction_phase()
 
         check_epsilon_css();
 
-#ifdef LOG_AUCTION
-        forward_plot_logger->info("{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16} {17} {18} {19} {20} {21} {22}",
-                                  num_phase,
-                                  num_rounds,
-                                  num_forward_rounds,
-                                  unassigned_bidders.size(),
-                                  get_gamma(),
-                                  partial_cost,
-                                  forward_oracle.get_epsilon(),
-                                  num_normal_forward_bids_submitted,
-                                  num_diag_forward_bids_submitted,
-                                  num_forward_diag_to_diag_assignments,
-                                  num_forward_diag_to_normal_assignments,
-                                  num_forward_normal_to_diag_assignments,
-                                  num_forward_normal_to_normal_assignments,
-                                  num_forward_diag_from_diag_thefts,
-                                  num_forward_diag_from_normal_thefts,
-                                  num_forward_normal_from_diag_thefts,
-                                  num_forward_normal_from_normal_thefts,
-                                  unassigned_normal_bidders.size(),
-                                  unassigned_diag_bidders.size(),
-                                  unassigned_normal_items.size(),
-                                  unassigned_diag_items.size(),
-                                  forward_oracle.get_heap_top_size(),
-                                  get_relative_error(false)
-                                 );
-#endif
     } ;
 
 }

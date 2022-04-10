@@ -236,7 +236,7 @@ namespace ws
     template<class Real>
     struct DistImpl<Real, DiagramPoint<Real>>
     {
-        Real operator()(const DiagramPoint<Real>& a, const DiagramPoint<Real>& b, const Real p, const int dim)
+        Real operator()(const DiagramPoint<Real>& a, const DiagramPoint<Real>& b, const Real p, const int /*dim */)
         {
             Real result = 0.0;
             if ( a.is_diagonal() and b.is_diagonal()) {

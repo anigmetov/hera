@@ -4,8 +4,6 @@
 #include <iostream>
 
 
-#undef LOG_AUCTION
-
 #include "wasserstein_pure_geom.hpp"
 #include "tests_reader.h"
 

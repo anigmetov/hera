@@ -270,7 +270,6 @@ IdxValPair<Real_> AuctionOracleKDTreeRestricted<Real_, PointContainer_>::get_opt
     // and vice versa.
 
     size_t best_item_idx { k_invalid_index };
-    size_t second_best_item_idx { k_invalid_index };
     size_t best_diagonal_item_idx { k_invalid_index };
     Real best_item_value;
     Real second_best_item_value;
@@ -297,17 +296,14 @@ IdxValPair<Real_> AuctionOracleKDTreeRestricted<Real_, PointContainer_>::get_opt
             best_item_idx = proj_item_idx;
             best_item_value = proj_item_value;
             second_best_item_value = best_diagonal_item_value_;
-            second_best_item_idx = best_diagonal_item_idx;
         } else if (proj_item_value < second_best_diagonal_item_value_) {
             best_item_idx = best_diagonal_item_idx;
             best_item_value = best_diagonal_item_value_;
             second_best_item_value = proj_item_value;
-            second_best_item_idx = proj_item_idx;
         } else {
             best_item_idx = best_diagonal_item_idx;
             best_item_value = best_diagonal_item_value_;
             second_best_item_value = second_best_diagonal_item_value_;
-            second_best_item_idx = second_best_diagonal_item_idx_;
         }
     } else {
         // for normal bidder get 2 best items among non-diagonal points from

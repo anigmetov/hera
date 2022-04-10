@@ -53,9 +53,7 @@ namespace ws {
     template<class R, class AO, class PC>
     AuctionRunnerJac<R, AO, PC>::AuctionRunnerJac(const PointContainer& A,
                                               const PointContainer& B,
-                                              const AuctionParams<Real>& params,
-                                              const std::string &_log_filename_prefix
-    ) :
+                                              const AuctionParams<Real>& params) :
             bidders(A),
             items(B),
             num_bidders(A.size()),
@@ -71,9 +69,9 @@ namespace ws {
             bid_table(A.size(), std::make_pair(k_invalid_index, k_lowest_bid_value)),
             oracle(bidders, items, params),
             max_bids_per_round(params.max_bids_per_round),
-            dimension(params.dim),
+            dimension(params.dim)
 #ifndef WASSERSTEIN_PURE_GEOM
-            total_items_persistence(std::accumulate(items.begin(),
+            , total_items_persistence(std::accumulate(items.begin(),
                                                     items.end(),
                                                     R(0.0),
                                                     [params](const Real &ps, const DgmPoint &item) {
@@ -89,9 +87,8 @@ namespace ws {
             )),
             unassigned_bidders_persistence(total_bidders_persistence),
             unassigned_items_persistence(total_items_persistence),
-            gamma_threshold(params.gamma_threshold),
+            gamma_threshold(params.gamma_threshold)
 #endif
-            log_filename_prefix(_log_filename_prefix)
     {
         assert(A.size() == B.size());
 
@@ -119,74 +116,6 @@ namespace ws {
         }
 #endif
 
-#ifdef LOG_AUCTION
-        parallel_threshold = 16;
-        console_logger = spdlog::get("console");
-        if (not console_logger) {
-            console_logger = spdlog::stdout_logger_st("console");
-        }
-        console_logger->set_pattern("[%H:%M:%S.%e] %v");
-#ifdef ORDERED_BY_PERSISTENCE
-        if (max_bids_per_round == 1) {
-            console_logger->info("Gauss-Seidel imitated by Jacobi runner, q = {0}, max_bids_per_round = {1}, batch_size = {4}, gamma_threshold = {2}, diag_first = {3} ORDERED_BY_PERSISTENCE",
-                              wasserstein_power,
-                              max_bids_per_round,
-                              gamma_threshold,
-                              diag_first,
-                              batch_size);
-        } else {
-            console_logger->info("Jacobi runner, q = {0}, max_bids_per_round = {1}, batch_size = {4},  gamma_threshold = {2}, diag_first = {3} ORDERED_BY_PERSISTENCE",
-                              wasserstein_power,
-                              max_bids_per_round,
-                              gamma_threshold,
-                              diag_first,
-                              batch_size);
-        }
-
-#else
-        if (max_bids_per_round == 1) {
-            console_logger->info(
-                    "Gauss-Seidel imitated by Jacobi runner, q = {0}, max_bids_per_round = {1}, batch_size = {4}, gamma_threshold = {2}, diag_first = {3}",
-                    wasserstein_power,
-                    max_bids_per_round,
-                    gamma_threshold,
-                    diag_first,
-                    batch_size);
-        } else {
-            console_logger->info(
-                    "Jacobi runner, q = {0}, max_bids_per_round = {1}, batch_size = {4},  gamma_threshold = {2}, diag_first = {3}",
-                    wasserstein_power,
-                    max_bids_per_round,
-                    gamma_threshold,
-                    diag_first,
-                    batch_size);
-        }
-#endif
-
-        plot_logger_file_name = log_filename_prefix + "_plot.txt";
-        plot_logger = spdlog::get(plot_logger_name);
-        if (not plot_logger) {
-            plot_logger = spdlog::basic_logger_st(plot_logger_name, plot_logger_file_name);
-        }
-        plot_logger->info("New plot starts here, diagram size = {0}, gamma_threshold = {1}, epsilon_common_ratio = {2}",
-                          bidders.size(),
-                          gamma_threshold,
-                          epsilon_common_ratio);
-        plot_logger->set_pattern("%v");
-
-        price_stat_logger_file_name = log_filename_prefix + "_price_change_stat";
-        price_stat_logger = spdlog::get(price_state_logger_name);
-        if (not price_stat_logger) {
-            price_stat_logger = spdlog::basic_logger_st(price_state_logger_name,
-                                                        price_stat_logger_file_name);
-        }
-        price_stat_logger->info(
-                "New price statistics starts here, diagram size = {0}, gamma_threshold = {1}, epsilon_common_ratio = {2}",
-                bidders.size(),
-                gamma_threshold,
-                epsilon_common_ratio);
-        price_stat_logger->set_pattern("%v");
-#endif
     }
 
 #ifndef WASSERSTEIN_PURE_GEOM
@@ -233,24 +162,6 @@ namespace ws {
 
         // new edge was added to matching, increase partial cost
         partial_cost += get_item_bidder_cost(item_idx, bidder_idx);
-
-#ifdef LOG_AUCTION
-        if (is_item_diagonal(item_idx)) {
-            num_diag_assignments++;
-            num_diag_assignments_non_cumulative++;
-        } else {
-            num_normal_assignments++;
-            num_normal_assignments_non_cumulative++;
-        }
-
-        if (k_invalid_index != old_item_owner) {
-            if (is_bidder_diagonal(bidder_idx) and is_bidder_diagonal(old_item_owner)) {
-                num_diag_stole_from_diag++;
-            }
-        }
-#endif
-
-        //sanity_check();
     }
 
     template<class R, class AO, class PC>
@@ -268,15 +179,6 @@ namespace ws {
         IdxValPairR best_bid{bid_table[item_idx]};
         assign_item_to_bidder(item_idx, best_bid.first);
         oracle.set_price(item_idx, best_bid.second);
-#ifdef LOG_AUCTION
-
-        if (is_step_parallel) {
-            num_parallel_assignments++;
-        }
-        num_total_assignments++;
-
-        price_change_cnt_vec.back()[item_idx]++;
-#endif
     }
 
     template<class R, class AO, class PC>
@@ -300,18 +202,6 @@ namespace ws {
             bid_table[item_idx].second = bid_value;
         }
         items_with_bids.insert(item_idx);
-
-#ifdef LOG_AUCTION
-
-        num_total_bids++;
-
-
-        if (is_bidder_diagonal(bidder_idx)) {
-            num_diag_bids_submitted++;
-        } else {
-            num_normal_bids_submitted++;
-        }
-#endif
     }
 
     template<class R, class AO, class PC>
@@ -347,7 +237,7 @@ namespace ws {
 
     template<class R, class AO, class PC>
     typename AuctionRunnerJac<R, AO, PC>::Real
-    AuctionRunnerJac<R, AO, PC>::get_relative_error(const bool debug_output) const
+    AuctionRunnerJac<R, AO, PC>::get_relative_error() const
     {
         if (partial_cost == 0.0 and unassigned_bidders.empty())
             return 0.0;
@@ -360,21 +250,10 @@ namespace ws {
         // cost minus n epsilon
         Real reduced_cost = partial_cost - num_bidders * get_epsilon();
         if (reduced_cost < 0) {
-#ifdef LOG_AUCTION
-            if (debug_output) {
-                console_logger->info("Epsilon too large, reduced_cost = {0}, gamma = {1}", reduced_cost, gamma);
-            }
-#endif
             result = k_max_relative_error;
         } else {
             Real denominator = std::pow(reduced_cost, 1.0 / wasserstein_power) - gamma;
             if (denominator <= 0) {
-#ifdef LOG_AUCTION
-                if (debug_output) {
-                    console_logger->info("Epsilon too large, reduced_cost = {0}, denominator = {1}, gamma = {2}",
-                                         reduced_cost, denominator, gamma);
-                }
-#endif
                 result = k_max_relative_error;
             } else {
                 Real numerator = 2 * gamma +
@@ -382,17 +261,6 @@ namespace ws {
                                  std::pow(reduced_cost, 1.0 / wasserstein_power);
 
                 result = numerator / denominator;
-#ifdef LOG_AUCTION
-                if (debug_output) {
-                    console_logger->info(
-                            "Reduced_cost = {0}, denominator = {1}, numerator {2}, error = {3},  gamma = {4}",
-                            reduced_cost,
-                            denominator,
-                            numerator,
-                            result,
-                            gamma);
-                }
-#endif
             }
         }
         return result;
@@ -437,30 +305,6 @@ namespace ws {
         unassigned_bidders_persistence = total_bidders_persistence;
         unassigned_items_persistence = total_items_persistence;
 
-#ifdef LOG_AUCTION
-
-        price_change_cnt_vec.push_back(std::vector<size_t>(num_items, 0));
-
-        never_assigned_bidders = unassigned_bidders;
-
-        for (size_t item_idx = 0; item_idx < items.size(); ++item_idx) {
-            unassigned_items.insert(item_idx);
-            if (is_item_normal(item_idx)) {
-                unassigned_normal_items.insert(item_idx);
-            } else {
-                unassigned_diag_items.insert(item_idx);
-            }
-        }
-
-        num_diag_bids_submitted = 0;
-        num_normal_bids_submitted = 0;
-        num_diag_assignments = 0;
-        num_normal_assignments = 0;
-
-        all_assigned_round = 0;
-        all_assigned_round_found = false;
-        num_rounds_non_cumulative = 0;
-#endif
 #endif
 
     } // flush_assignment
@@ -480,65 +324,6 @@ namespace ws {
         for (int phase_num = 0; phase_num < max_num_phases; ++phase_num) {
             flush_assignment();
             run_auction_phase();
-
-#ifdef LOG_AUCTION
-            console_logger->info(
-                    "Phase {0} done, current_result = {1}, eps = {2}, error = {7}, num_rounds = {3}, num_assignments = {4},  num_bids_submitted = {5}, # unassigned = {6}",
-                    num_phase,
-                    partial_cost,
-                    get_epsilon(),
-                    format_int<>(num_rounds),
-                    format_int<>(num_normal_assignments + num_diag_assignments),
-                    format_int<>(num_normal_bids_submitted + num_diag_bids_submitted),
-                    unassigned_bidders.size(),
-                    get_relative_error(num_phase == 1)
-            );
-
-//        console_logger->info("num_rounds (non-cumulative)= {0}, num_diag_assignments = {1}, num_normal_assignments = {2}, num_diag_bids_submitted = {3},  num_normal_bids_submitted = {4}",
-//                              format_int<>(num_rounds_non_cumulative),
-//                              format_int<>(num_diag_assignments),
-//                              format_int<>(num_normal_assignments),
-//                              format_int<>(num_diag_bids_submitted),
-//                              format_int<>(num_normal_bids_submitted)
-//                             );
-
-            console_logger->info(
-                    "num_parallel_bids / num_total_bids = {0} / {1} = {2}, num_parallel_assignments / num_total_aassignments = {3} / {4} = {5}",
-                    format_int<>(num_parallel_bids),
-                    format_int<>(num_total_bids),
-                    static_cast<double>(num_parallel_bids) / static_cast<double>(num_total_bids),
-                    format_int<>(num_parallel_assignments),
-                    format_int<>(num_total_assignments),
-                    static_cast<double>(num_parallel_assignments) / static_cast<double>(num_total_assignments)
-            );
-
-            console_logger->info(
-                    "num_parallel_diag_bids / num_total_diag_bids = {0} / {1} = {2}, num_parallel_normal_bids / num_total_normal_bids = {3} / {4} = {5}",
-                    format_int<>(num_parallel_diag_bids),
-                    format_int<>(num_total_diag_bids),
-                    static_cast<double>(num_parallel_diag_bids) / static_cast<double>(num_total_diag_bids),
-                    format_int<>(num_parallel_normal_bids),
-                    format_int<>(num_total_normal_bids),
-                    static_cast<double>(num_parallel_normal_bids) / static_cast<double>(num_total_normal_bids)
-            );
-
-//        console_logger->info("num_rounds before all biders assigned = {0}, num_rounds (non-cumulative)= {1}, fraction = {2}",
-//                              format_int<>(all_assigned_round),
-//                              format_int<>(num_rounds_non_cumulative),
-//                              static_cast<double>(all_assigned_round) / static_cast<double>(num_rounds_non_cumulative)
-//                             );
-
-            for (size_t item_idx = 0; item_idx < num_items; ++item_idx) {
-                price_stat_logger->info("{0} {1} {2} {3} {4}",
-                                        phase_num,
-                                        item_idx,
-                                        items[item_idx][0],
-                                        items[item_idx][1],
-                                        price_change_cnt_vec.back()[item_idx]
-                );
-            }
-#endif
-
 
             if (is_done())
                 break;
@@ -618,31 +403,15 @@ namespace ws {
             unassigned_normal_bidders.erase(bidder_idx);
         }
 
-
-#ifdef LOG_AUCTION
-        never_assigned_bidders.erase(bidder_idx);
-        if (never_assigned_bidders.empty() and not all_assigned_round_found) {
-            all_assigned_round = num_rounds_non_cumulative;
-            all_assigned_round_found = true;
-        }
-#endif
 #endif
     }
 
     template<class R, class AO, class PC>
     void AuctionRunnerJac<R, AO, PC>::remove_unassigned_item(const size_t item_idx) {
+        // to suppress unused parameter warning
+        (void)item_idx;
 #ifndef WASSERSTEIN_PURE_GEOM
         unassigned_items_persistence -= get_cost_to_diagonal(items[item_idx]);
-
-#ifdef LOG_AUCTION
-        unassigned_items.erase(item_idx);
-
-        if (is_item_normal(item_idx)) {
-            unassigned_normal_items.erase(item_idx);
-        } else {
-            unassigned_diag_items.erase(item_idx);
-        }
-#endif
 #endif
     }
 
@@ -650,12 +419,6 @@ namespace ws {
     template<class Range>
     void AuctionRunnerJac<R, AO, PC>::run_bidding_step(const Range &active_bidders)
     {
-#ifdef LOG_AUCTION
-        is_step_parallel = false;
-        size_t diag_bids_submitted = 0;
-        size_t normal_bids_submitted = 0;
-#endif
-
         clear_bid_table();
         size_t bids_submitted = 0;
         for (const auto bidder_idx : active_bidders) {
@@ -663,37 +426,8 @@ namespace ws {
             ++bids_submitted;
 
             submit_bid(bidder_idx, oracle.get_optimal_bid(bidder_idx));
-
-#ifdef LOG_AUCTION
-            if (is_bidder_diagonal(bidder_idx)) {
-                diag_bids_submitted++;
-            } else {
-                normal_bids_submitted++;
-            }
-
-            if (bids_submitted >= parallel_threshold) {
-                is_step_parallel = true;
-            }
-
-            if (bids_submitted >= max_bids_per_round) {
-                break;
-            }
-            if (diag_first and not unassigned_diag_bidders.empty() and
-                diag_bids_submitted >= oracle.get_heap_top_size()) {
-                continue;
-            }
-#endif
         }
 
-#ifdef LOG_AUCTION
-        num_total_diag_bids += diag_bids_submitted;
-        num_total_normal_bids += normal_bids_submitted;
-        if (is_step_parallel) {
-            num_parallel_bids += bids_submitted;
-            num_parallel_diag_bids += diag_bids_submitted;
-            num_parallel_normal_bids += normal_bids_submitted;
-        }
-#endif
     }
 
     template<class R, class AO, class PC>
@@ -720,12 +454,6 @@ namespace ws {
 
         do {
             num_rounds++;
-#ifdef LOG_AUCTION
-            num_diag_stole_from_diag = 0;
-            num_normal_assignments_non_cumulative = 0;
-            num_diag_assignments_non_cumulative = 0;
-            num_rounds_non_cumulative++;
-#endif
 
             // bidding
 #ifdef ORDERED_BY_PERSISTENCE
@@ -756,26 +484,6 @@ namespace ws {
             for (auto item_idx : items_with_bids) {
                 assign_to_best_bidder(item_idx);
             }
-#ifdef LOG_AUCTION
-            plot_logger->info("{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14}",
-                              num_phase,
-                              num_rounds,
-                              unassigned_bidders.size(),
-                              get_gamma(),
-                              partial_cost,
-                              oracle.get_epsilon(),
-                              unassigned_normal_bidders.size(),
-                              unassigned_diag_bidders.size(),
-                              unassigned_normal_items.size(),
-                              unassigned_diag_items.size(),
-                              num_normal_assignments_non_cumulative,
-                              num_diag_assignments_non_cumulative,
-                              oracle.get_heap_top_size(),
-                              get_relative_error(false),
-                              num_diag_stole_from_diag
-            );
-#endif
-            //sanity_check();
         } while (continue_auction_phase());
     }
 

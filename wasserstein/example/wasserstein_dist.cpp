@@ -33,8 +33,6 @@ derivative works thereof, in binary and source code form.
 
 #include "opts/opts.h"
 
-//#define LOG_AUCTION
-
 //#include "auction_runner_fr.h"
 //#include "auction_runner_fr.hpp"
 
@@ -138,14 +136,7 @@ int main(int argc, char* argv[])
         params.max_bids_per_round = std::numeric_limits<decltype(params.max_bids_per_round)>::max();
 
 
-    std::string log_filename_prefix = ( 11 <= argc ) ? argv[10] : "";
-
-
-#ifdef LOG_AUCTION
-    spdlog::set_level(spdlog::level::info);
-#endif
-
-    Real res = hera::wasserstein_dist(diagramA, diagramB, params, log_filename_prefix);
+    Real res = hera::wasserstein_dist(diagramA, diagramB, params);
 
     std::cout << std::setprecision(15) << res << std::endl;
     if (print_relative_error)
