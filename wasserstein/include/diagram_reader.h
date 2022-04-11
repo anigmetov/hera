@@ -92,6 +92,7 @@ inline RealType parse_real_from_str(const std::string& s)
 template<class RealType = double, class ContType_ = std::vector<std::pair<RealType, RealType>>>
 inline bool read_diagram_point_set(const char* fname, ContType_& result, int& decPrecision)
 {
+    bool zero_pers_warning_printed = false;
     size_t lineNumber { 0 };
     result.clear();
     std::ifstream f(fname);
@@ -157,9 +158,10 @@ inline bool read_diagram_point_set(const char* fname, ContType_& result, int& de
             if (x != y) {
                 result.push_back(std::make_pair(x, y));
             } else {
-#ifndef FOR_R_TDA
-                std::cerr << "Warning: point with 0 persistence ignored in " << fname << ":" << lineNumber << "\n";
-#endif
+                if (!zero_pers_warning_printed) {
+                    std::cerr << "Warning: point with 0 persistence ignored in " << fname << ":" << lineNumber << "\n";
+                    zero_pers_warning_printed = true;
+                }
             }
         }
         catch (const std::invalid_argument& e) {
@@ -206,6 +208,8 @@ inline bool read_diagram_point_set(const std::string& fname, ContType_& result)
 template<class RealType = double, class ContType_ = std::vector<std::pair<RealType, RealType> > >
 inline bool read_diagram_dipha(const std::string& fname, unsigned int dim, ContType_& result)
 {
+    bool zero_pers_warning_printed = false;
+
     std::ifstream file;
     file.open(fname, std::ios::in | std::ios::binary);
 
@@ -257,10 +261,9 @@ inline bool read_diagram_dipha(const std::string& fname, unsigned int dim, ContT
             d = tmp_d;
 
         if ((unsigned int)d == dim) {
-            if (death == birth) {
-#ifndef FOR_R_TDA
+            if (death == birth && !zero_pers_warning_printed) {
                 std::cerr << "Warning: point with 0 persistence ignored in " << fname << "." << std::endl;
-#endif
+                zero_pers_warning_printed = true;
             } else {
                 result.push_back(std::make_pair(birth, death));
             }
