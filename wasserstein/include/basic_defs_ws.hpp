@@ -92,7 +92,7 @@ inline Real DiagramPoint<Real>::persistence_lp(const Real p) const
     else {
         Real u { (getRealY() + getRealX())/2 };
         int dim = 2;
-        DiagramPoint<Real> a_proj(u, u, DiagramPoint<Real>::DIAG);
+        DiagramPoint<Real> a_proj(u, u, DiagramPoint<Real>::DIAG, /*dummy id*/ 0);
         return dist_lp(*this, a_proj, p, dim);
     }
 }
@@ -112,15 +112,9 @@ inline std::ostream& operator<<(std::ostream& output, const DiagramPoint<Real> p
 #endif
 
 template <class Real>
-DiagramPoint<Real>::DiagramPoint(Real xx, Real yy, Type ttype) :
-    x(xx),
-    y(yy),
-    type(ttype)
+DiagramPoint<Real>::DiagramPoint(Real x, Real y, Type type, int id) :
+    x(x), y(y), type(type), id(id)
 {
-    //if ( yy < xx )
-        //throw "Point is below the diagonal";
-    //if ( yy == xx and ttype != DiagramPoint<Real>::DIAG)
-        //throw "Point on the main diagonal must have DIAG type";
 }
 
 template <class Real>
@@ -129,7 +123,7 @@ Real DiagramPoint<Real>::getRealX() const
     if (is_normal())
         return x;
     else
-        return Real(0.5) * (x + y);
+        return (x + y) / 2;
 }
 
 template <class Real>
@@ -138,7 +132,7 @@ Real DiagramPoint<Real>::getRealY() const
     if (is_normal())
         return y;
     else
-        return Real(0.5) * (x + y);
+        return (x + y) / 2;
 }
 
 template<class Container>

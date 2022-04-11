@@ -53,6 +53,7 @@ struct DiagramTraits
 
     static RealType get_x(const PointType& p)       { return p[0]; }
     static RealType get_y(const PointType& p)       { return p[1]; }
+    static IdType   get_id(const PointType& p)      { return p.id; }
 };
 
 template<class PairContainer_, class RealType_>
@@ -63,6 +64,7 @@ struct DiagramTraits<PairContainer_, std::pair<RealType_, RealType_>>
 
     static RealType get_x(const PointType& p)       { return p.first; }
     static RealType get_y(const PointType& p)       { return p.second; }
+    static IdType   get_id(const PointType& p)      { return 0; }
 };
 
 
@@ -92,19 +94,30 @@ namespace ws
     }
 
     // to handle points with one coordinate = infinity
-    template<class RealType>
-    inline RealType get_one_dimensional_cost(std::vector<RealType>& set_A,
-            std::vector<RealType>& set_B,
-            const RealType wasserstein_power)
+    template<class T, class P>
+    inline decltype(auto) get_one_dimensional_cost(std::vector<T>& pts_A, std::vector<T>& pts_B, P& params)
     {
-        if (set_A.size() != set_B.size()) {
+        using RealType = typename std::remove_reference<decltype(std::get<0>(pts_A[0]))>::type;
+
+        if (pts_A.size() != pts_B.size())
             return std::numeric_limits<RealType>::infinity();
-        }
-        std::sort(set_A.begin(), set_A.end());
-        std::sort(set_B.begin(), set_B.end());
-        RealType result = 0.0;
-        for(size_t i = 0; i < set_A.size(); ++i) {
-            result += std::pow(std::fabs(set_A[i] - set_B[i]), wasserstein_power);
+
+        std::sort(pts_A.begin(), pts_A.end());
+        std::sort(pts_B.begin(), pts_B.end());
+
+        RealType result = 0;
+
+        for(size_t i = 0; i < pts_A.size(); ++i) {
+            RealType a = std::get<0>(pts_A[i]);
+            RealType b = std::get<0>(pts_B[i]);
+
+            if (params.return_matching and params.match_inf_points) {
+                IdType id_a = std::get<1>(pts_A[i]);
+                IdType id_b = std::get<1>(pts_B[i]);
+                params.add_to_matching(id_a, id_b);
+            }
+
+            result += std::pow(std::fabs(a - b), params.wasserstein_power);
         }
         return result;
     }
@@ -230,9 +243,19 @@ namespace ws
 
         // just use Gauss-Seidel
         AuctionRunnerGS<RealType> auction(A, B, params);
+
         auction.run_auction();
         result = auction.get_wasserstein_cost();
         params.final_relative_error = auction.get_relative_error();
+
+        if (params.return_matching) {
+            for(size_t bidder_idx = 0; bidder_idx < auction.num_bidders; ++bidder_idx) {
+                IdType bidder_id = auction.get_bidder_id(bidder_idx);
+                IdType item_id = auction.get_bidders_item_id(bidder_idx);
+                params.add_to_matching(bidder_id, item_id);
+            }
+        }
+
         return result;
     }
 
@@ -254,6 +277,7 @@ wasserstein_cost(const PairContainer& A,
     constexpr RealType plus_inf = std::numeric_limits<RealType>::infinity();
     constexpr RealType minus_inf = -std::numeric_limits<RealType>::infinity();
 
+    // TODO: return matching here too?
     if (hera::ws::are_equal(A, B)) {
         return 0.0;
     }
@@ -264,11 +288,14 @@ wasserstein_cost(const PairContainer& A,
     RealType total_cost_B = 0.0;
 
     using DgmPoint = hera::ws::DiagramPoint<RealType>;
+    using OneDimPoint = std::tuple<RealType, IdType>;
+
+    params.clear_matching();
 
     std::vector<DgmPoint> dgm_A, dgm_B;
-    // coordinates of points at infinity
-    std::vector<RealType> x_plus_A, x_minus_A, y_plus_A, y_minus_A;
-    std::vector<RealType> x_plus_B, x_minus_B, y_plus_B, y_minus_B;
+    // points at infinity
+    std::vector<OneDimPoint> x_plus_A, x_minus_A, y_plus_A, y_minus_A;
+    std::vector<OneDimPoint> x_plus_B, x_minus_B, y_plus_B, y_minus_B;
     // points with both coordinates infinite are treated as equal
     int n_minus_inf_plus_inf_A = 0;
     int n_plus_inf_minus_inf_A = 0;
@@ -276,10 +303,11 @@ wasserstein_cost(const PairContainer& A,
     int n_plus_inf_minus_inf_B = 0;
     // loop over A, add projections of A-points to corresponding positions
     // in B-vector
-    for(auto&& pair_A : A) {
+    for(auto&& point_A : A) {
         a_empty = false;
-        RealType x = Traits::get_x(pair_A);
-        RealType y = Traits::get_y(pair_A);
+        RealType x = Traits::get_x(point_A);
+        RealType y = Traits::get_y(point_A);
+        IdType  id = Traits::get_id(point_A);
 
         // skip diagonal points, including (inf, inf), (-inf, -inf)
         if (x == y) {
@@ -291,24 +319,25 @@ wasserstein_cost(const PairContainer& A,
         } else if (x == minus_inf && y == plus_inf) {
             n_minus_inf_plus_inf_A++;
         } else if ( x == plus_inf) {
-            y_plus_A.push_back(y);
+            y_plus_A.emplace_back(y, Traits::get_id(point_A));
         } else if (x == minus_inf) {
-            y_minus_A.push_back(y);
+            y_minus_A.emplace_back(y, Traits::get_id(point_A));
         } else if (y == plus_inf) {
-            x_plus_A.push_back(x);
+            x_plus_A.emplace_back(x, Traits::get_id(point_A));
         } else if (y == minus_inf) {
-            x_minus_A.push_back(x);
+            x_minus_A.emplace_back(x, Traits::get_id(point_A));
         } else {
-            dgm_A.emplace_back(x, y,  DgmPoint::NORMAL);
-            dgm_B.emplace_back(x, y,  DgmPoint::DIAG);
+            dgm_A.emplace_back(x, y,  DgmPoint::NORMAL, id);
+            dgm_B.emplace_back(x, y,  DgmPoint::DIAG, -id - 1);
             total_cost_A += std::pow(dgm_A.back().persistence_lp(params.internal_p), params.wasserstein_power);
         }
     }
     // the same for B
-    for(auto&& pair_B : B) {
+    for(auto&& point_B : B) {
         b_empty = false;
-        RealType x = Traits::get_x(pair_B);
-        RealType y = Traits::get_y(pair_B);
+        RealType x = Traits::get_x(point_B);
+        RealType y = Traits::get_y(point_B);
+        IdType  id = Traits::get_id(point_B);
 
         if (x == y) {
             continue;
@@ -319,16 +348,16 @@ wasserstein_cost(const PairContainer& A,
         } else if (x == minus_inf && y == plus_inf) {
             n_minus_inf_plus_inf_B++;
         } else if (x == plus_inf) {
-            y_plus_B.push_back(y);
+            y_plus_B.emplace_back(y, Traits::get_id(point_B));
         } else if (x == minus_inf) {
-            y_minus_B.push_back(y);
+            y_minus_B.emplace_back(y, Traits::get_id(point_B));
         } else if (y == plus_inf) {
-            x_plus_B.push_back(x);
+            x_plus_B.emplace_back(x, Traits::get_id(point_B));
         } else if (y == minus_inf) {
-            x_minus_B.push_back(x);
+            x_minus_B.emplace_back(x, Traits::get_id(point_B));
         } else {
-            dgm_A.emplace_back(x, y,  DgmPoint::DIAG);
-            dgm_B.emplace_back(x, y,  DgmPoint::NORMAL);
+            dgm_A.emplace_back(x, y,  DgmPoint::DIAG, -id - 1);
+            dgm_B.emplace_back(x, y,  DgmPoint::NORMAL, id);
             total_cost_B += std::pow(dgm_B.back().persistence_lp(params.internal_p), params.wasserstein_power);
         }
     }
@@ -338,10 +367,10 @@ wasserstein_cost(const PairContainer& A,
     if (n_plus_inf_minus_inf_A != n_plus_inf_minus_inf_B || n_minus_inf_plus_inf_A != n_minus_inf_plus_inf_B)
         infinity_cost = plus_inf;
     else {
-        infinity_cost += ws::get_one_dimensional_cost(x_plus_A, x_plus_B, params.wasserstein_power);
-        infinity_cost += ws::get_one_dimensional_cost(x_minus_A, x_minus_B, params.wasserstein_power);
-        infinity_cost += ws::get_one_dimensional_cost(y_plus_A, y_plus_B, params.wasserstein_power);
-        infinity_cost += ws::get_one_dimensional_cost(y_minus_A, y_minus_B, params.wasserstein_power);
+        infinity_cost += ws::get_one_dimensional_cost(x_plus_A, x_plus_B, params);
+        infinity_cost += ws::get_one_dimensional_cost(x_minus_A, x_minus_B, params);
+        infinity_cost += ws::get_one_dimensional_cost(y_plus_A, y_plus_B, params);
+        infinity_cost += ws::get_one_dimensional_cost(y_minus_A, y_minus_B, params);
     }
 
     if (a_empty)

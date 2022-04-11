@@ -57,6 +57,10 @@ public:
     Real get_wasserstein_distance();
     Real get_relative_error() const { return relative_error; };
     void enable_logging(const char* log_filename, const size_t _max_unassigned_to_log);
+
+    IdType get_bidder_id(size_t bidder_idx) const { return bidders.at(bidder_idx).id; }
+    IdType get_bidders_item_id(size_t bidder_idx) const { return items.at(bidders_to_items.at(bidder_idx)).id; }
+
 //private:
     // private data
     PointContainer bidders, items;
