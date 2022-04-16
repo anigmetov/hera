@@ -154,8 +154,6 @@ public:
     void remove_unassigned_item(const size_t item_idx);
 
 #ifndef WASSERSTEIN_PURE_GEOM
-    bool is_item_diagonal(const size_t item_idx) const { return item_idx < num_diag_items; }
-    bool is_item_normal(const size_t item_idx) const { return not is_item_diagonal(item_idx); }
     bool is_bidder_diagonal(const size_t bidder_idx) const { return bidder_idx >= num_normal_bidders; }
     bool is_bidder_normal(const size_t bidder_idx) const { return not is_bidder_diagonal(bidder_idx); }
 #endif

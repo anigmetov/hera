@@ -34,7 +34,5 @@ derivative works thereof, in binary and source code form.
 
 #include "auction_oracle_base.h"
 #include "auction_oracle_kdtree_restricted.h"
-#include "auction_oracle_kdtree_single_diag.h"
-#include "auction_oracle_stupid_sparse_restricted.h"
 
 #endif // HERA_AUCTION_ORACLE_H

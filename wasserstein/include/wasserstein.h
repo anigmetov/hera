@@ -37,7 +37,6 @@ derivative works thereof, in binary and source code form.
 #include "basic_defs_ws.h"
 #include "diagram_reader.h"
 #include "auction_runner_gs.h"
-#include "auction_runner_gs_single_diag.h"
 #include "auction_runner_jac.h"
 
 
