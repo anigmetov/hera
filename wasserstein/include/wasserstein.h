@@ -39,7 +39,6 @@ derivative works thereof, in binary and source code form.
 #include "auction_runner_gs.h"
 #include "auction_runner_gs_single_diag.h"
 #include "auction_runner_jac.h"
-#include "auction_runner_fr.h"
 
 
 namespace hera

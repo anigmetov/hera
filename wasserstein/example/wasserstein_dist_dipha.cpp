@@ -32,9 +32,6 @@ derivative works thereof, in binary and source code form.
 #include <iomanip>
 #include <vector>
 
-//#include "auction_runner_fr.h"
-//#include "auction_runner_fr.hpp"
-
 #include "wasserstein.h"
 
 // any container of pairs of doubles can be used,
