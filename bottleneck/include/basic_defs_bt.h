@@ -54,9 +54,9 @@ derivative works thereof, in binary and source code form.
 namespace hera {
 
     template<class Real = double>
-    Real get_infinity()
+    inline constexpr Real get_infinity()
     {
-        return Real(-1.0);
+        return Real(-1);
     }
 
     namespace bt {

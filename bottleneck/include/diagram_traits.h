@@ -3,7 +3,7 @@
 
 namespace hera {
 
-template<class PairContainer_, class PointType_ = typename std::remove_reference< decltype(*std::declval<PairContainer_>().begin())>::type >
+template<class PairContainer_, class PointType_ = typename std::remove_const_t<std::remove_reference_t< decltype(*std::declval<PairContainer_>().begin())>> >
 struct DiagramTraits
 {
     using Container = PairContainer_;
