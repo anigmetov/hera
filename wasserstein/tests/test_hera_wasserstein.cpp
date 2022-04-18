@@ -1,10 +1,10 @@
-#include "catch/catch.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 #include <sstream>
 #include <iostream>
 
 
-#include "wasserstein.h"
+#include <hera/wasserstein.h>
 #include "tests_reader.h"
 
 using namespace hera_test;
@@ -139,11 +139,11 @@ TEST_CASE("file cases", "wasserstein_dist")
 
 
     SECTION("from file:") {
-        const char* file_name = "test_list.txt";
+        const char* file_name = "data/test_list.txt";
         std::ifstream f;
         f.open(file_name);
         if (!f.good()) {
-            std::cerr << "Must run from tests/data" << std::endl;
+            std::cerr << "Cannot open file data/test_list.txt" << std::endl;
             REQUIRE(false);
         }
 

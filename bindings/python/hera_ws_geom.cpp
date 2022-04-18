@@ -4,7 +4,7 @@
 
 namespace py = pybind11;
 
-#include <wasserstein_pure_geom.hpp>
+#include <hera/wasserstein_pure_geom.hpp>
 
 using DynamicPointVector = hera::ws::dnn::DynamicPointVector<double>;
 

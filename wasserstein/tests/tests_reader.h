@@ -9,7 +9,7 @@
 #include <cassert>
 #include <cmath>
 
-#include "hera_infinity.h"
+#include <hera/hera_infinity.h>
 
 namespace  hera_test {
     inline std::vector<std::string> split_on_delim(const std::string& s, char delim)

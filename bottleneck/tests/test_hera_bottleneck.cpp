@@ -1,9 +1,10 @@
-#include "catch/catch.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 #include <sstream>
+#include <limits>
 #include <iostream>
 
-#include "bottleneck.h"
+#include <hera/bottleneck.h>
 
 using PairVector = std::vector<std::pair<double, double>>;
 using PairVectorF = std::vector<std::pair<float, float>>;
@@ -549,8 +550,8 @@ TEST_CASE("file cases", "bottleneck_dist")
     PairVector diagram_A, diagram_B;
     hera::bt::MatchingEdge<double> longest_edge;
 
-    const char* file_name = "../tests/data/test_list.txt";
-    std::string dir_prefix = "../tests/data/";
+    const char* file_name = "data/test_list.txt";
+    std::string dir_prefix = "data/";
     std::ifstream f;
     f.open(file_name);
     std::vector<TestFromFileCase> test_params;

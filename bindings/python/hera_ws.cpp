@@ -4,7 +4,7 @@
 
 namespace py = pybind11;
 
-#include <wasserstein.h>
+#include <hera/wasserstein.h>
 
 
 double wasserstein_dist(const std::vector<std::pair<double, double>>& points_1, const std::vector<std::pair<double, double>>& points_2, const std::vector<double>& prices)

@@ -5,7 +5,7 @@
 
 namespace py = pybind11;
 
-#include <bottleneck.h>
+#include <hera/bottleneck.h>
 
 double bottleneck_distance_approx(const std::vector<std::pair<double, double>>& points_1, const std::vector<std::pair<double, double>>& points_2, double delta)
 {

@@ -1,10 +1,9 @@
-#include "catch/catch.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 #include <sstream>
 #include <iostream>
 
-
-#include "wasserstein_pure_geom.hpp"
+#include <hera/wasserstein_pure_geom.hpp>
 #include "tests_reader.h"
 
 using namespace hera_test;

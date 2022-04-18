@@ -1,6 +1,7 @@
 /*.cfg
 *build*/
 .idea/
+.peru/
 *.gitattributes
 *.opensdf
 *.sdf
