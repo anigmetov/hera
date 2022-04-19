@@ -581,8 +581,8 @@ TEST_CASE("file cases", "bottleneck_dist")
                 ts.delta = 0.00000001;
 
             REQUIRE((hera_answer == ts.answer or fabs(hera_answer - ts.answer) <= ts.delta * hera_answer));
-//            REQUIRE((ts.longest_edges.empty() or
-//                     std::find(ts.longest_edges.begin(), ts.longest_edges.end(), hera_le) != ts.longest_edges.end()));
+            REQUIRE((ts.longest_edges.empty() or hera_answer == std::numeric_limits<double>::infinity() or
+                     std::find(ts.longest_edges.begin(), ts.longest_edges.end(), hera_le) != ts.longest_edges.end()));
 
             double hera_answer_exact = hera::bottleneckDistExact(diagram_A, diagram_B, 14, longest_edge, true);
             std::pair<int, int> hera_le_exact { longest_edge.first.user_tag, longest_edge.second.user_tag };
@@ -597,7 +597,7 @@ TEST_CASE("file cases", "bottleneck_dist")
             // check that longest_edge length matches the bottleneck distance
 
             double hera_le_cost;
-            bool check_longest_edge_cost = true;
+            bool check_longest_edge_cost = hera_answer_exact != std::numeric_limits<double>::infinity();
             if (longest_edge.first.user_tag >= 0 and longest_edge.second.user_tag < 0) {
                 // longest edge: off-diagonal point of A connected to its diagonal projection
                 hera_le_cost = longest_edge.first.persistence_lp(ts.internal_p);
@@ -610,13 +610,14 @@ TEST_CASE("file cases", "bottleneck_dist")
             } else {
                 check_longest_edge_cost = false;
             }
-//            if (check_longest_edge_cost and hera_le_cost != hera_answer_exact) {
-//                std::cout << "PROBLEM HERE: " << ts << ", longest  edge " << longest_edge.first << " - "
-//                          << longest_edge.second << ", hera_le_cost " << hera_le_cost << ", answwer "
-//                          << hera_answer_exact << std::endl;
-//            }
-            check_longest_edge_cost = false;
-            REQUIRE( (not check_longest_edge_cost or fabs(hera_le_cost - hera_answer_exact) < 0.0001 * hera_answer_exact) );
+
+            if (check_longest_edge_cost and hera_le_cost != hera_answer_exact) {
+                std::cerr << "PROBLEM HERE: " << ts << ", longest  edge " << longest_edge.first << " - "
+                          << longest_edge.second << ", hera_le_cost " << hera_le_cost << ", answwer "
+                          << hera_answer_exact << std::endl;
+            }
+
+            REQUIRE( (not check_longest_edge_cost or hera_le_cost == hera_answer_exact or fabs(hera_le_cost - hera_answer_exact) < 0.0001 * hera_answer_exact) );
         }
     }
 

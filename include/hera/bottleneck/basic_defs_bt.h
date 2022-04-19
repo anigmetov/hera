@@ -417,7 +417,7 @@ namespace hera {
             using DgmPoint = DiagramPoint<Real>;
             using DgmPointSet = DiagramPointSet<Real>;
 
-            IdType uniqueId { 1 };
+            IdType uniqueId { 0 };
             DgmPointSet newA, newB;
 
             // copy normal points from A to newA
