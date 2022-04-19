@@ -47,93 +47,11 @@ static const int64_t DIPHA_MAGIC = 8067171840;
 static const int64_t DIPHA_PERSISTENCE_DIAGRAM = 2;
 
 namespace ws {
-// Point
-
-template <class Real>
-bool Point<Real>::operator==(const Point<Real>& other) const
-{
-    return ((this->x == other.x) and (this->y == other.y));
-}
-
-template <class Real>
-bool Point<Real>::operator!=(const Point<Real>& other) const
-{
-    return !(*this == other);
-}
 
 
-#ifndef FOR_R_TDA
-template <class Real>
-inline std::ostream& operator<<(std::ostream& output, const Point<Real> p)
-{
-    output << "(" << p.x << ", " << p.y << ")";
-    return output;
-}
-#endif
-
-template <class Real>
-inline Real sqr_dist(const Point<Real>& a, const Point<Real>& b)
-{
-    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
-}
-
-template <class Real>
-inline Real dist(const Point<Real>& a, const Point<Real>& b)
-{
-    return sqrt(sqr_dist(a, b));
-}
 
 
-template <class Real>
-inline Real DiagramPoint<Real>::persistence_lp(const Real p) const
-{
-    if (is_diagonal())
-        return 0.0;
-    else {
-        Real u { (getRealY() + getRealX())/2 };
-        int dim = 2;
-        DiagramPoint<Real> a_proj(u, u, DiagramPoint<Real>::DIAG, /*dummy id*/ 0);
-        return dist_lp(*this, a_proj, p, dim);
-    }
-}
 
-
-#ifndef FOR_R_TDA
-template <class Real>
-inline std::ostream& operator<<(std::ostream& output, const DiagramPoint<Real> p)
-{
-    if ( p.type == DiagramPoint<Real>::DIAG ) {
-        output << "(" << p.x << ", " << p.y << ", " <<  0.5 * (p.x + p.y) << " DIAG )";
-    } else {
-        output << "(" << p.x << ", " << p.y << ", " << " NORMAL)";
-    }
-    return output;
-}
-#endif
-
-template <class Real>
-DiagramPoint<Real>::DiagramPoint(Real x, Real y, Type type, int id) :
-    x(x), y(y), type(type), id(id)
-{
-}
-
-template <class Real>
-Real DiagramPoint<Real>::getRealX() const
-{
-    if (is_normal())
-        return x;
-    else
-        return (x + y) / 2;
-}
-
-template <class Real>
-Real DiagramPoint<Real>::getRealY() const
-{
-    if (is_normal())
-        return y;
-    else
-        return (x + y) / 2;
-}
 
 template<class Container>
 inline std::string format_container_to_log(const Container& cont)

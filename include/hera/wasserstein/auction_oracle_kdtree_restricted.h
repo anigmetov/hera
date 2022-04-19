@@ -54,7 +54,7 @@ struct AuctionOracleKDTreeRestricted : AuctionOracleBase<Real_, PointContainer_>
 
     using LossesHeapR       = typename ws::LossesHeapOld<Real>;
     using LossesHeapRHandle = typename ws::LossesHeapOld<Real>::handle_type;
-    using DiagramPointR     = typename ws::DiagramPoint<Real>;
+    using DiagramPointR     = typename hera::DiagramPoint<Real>;
     using DebugOptimalBidR  = typename ws::DebugOptimalBid<Real>;
 
     using DnnPoint          = dnn::Point<2, Real>;

@@ -44,194 +44,135 @@ derivative works thereof, in binary and source code form.
 #include <assert.h>
 
 #include "def_debug_bt.h"
-
-#ifndef FOR_R_TDA
-
+#include <hera/common.h>
 #include <iostream>
-
-#endif
 
 namespace hera {
 
-    template<class Real = double>
-    inline constexpr Real get_infinity()
-    {
-        return Real(-1);
-    }
-
     namespace bt {
 
-
         typedef int IdType;
-        constexpr IdType MinValidId = 10;
 
-        template<class Real = double>
-        struct Point
-        {
-            Real x, y;
+//        template<class Real = double>
+//        struct DiagramPoint
+//        {
+//            // Points above the diagonal have type NORMAL
+//            // Projections onto the diagonal have type DIAG
+//            // for DIAG points only x-coordinate is relevant
+//            // to-do: add getters/setters, checks in constructors, etc
+//            enum Type
+//            {
+//                NORMAL, DIAG
+//            };
+//            // data members
+//        private:
+//            Real x, y;
+//        public:
+//            Type type;
+//            IdType id;
+//            IdType user_id;
 
-            bool operator==(const Point<Real>& other) const
-            {
-                return ((this->x == other.x) and (this->y == other.y));
-            }
+//            // operators, constructors
+//            bool operator==(const DiagramPoint<Real>& other) const
+//            {
+//                // compare by id only
+//                assert(this->id >= MinValidId);
+//                assert(other.id >= MinValidId);
+//                bool areEqual { this->id == other.id };
+//                assert(!areEqual or ((this->x == other.x) and (this->y == other.y) and (this->type == other.type)));
+//                return areEqual;
+//            }
 
-            bool operator!=(const Point<Real>& other) const
-            {
-                return !(*this == other);
-            }
+//            bool operator!=(const DiagramPoint& other) const
+//            {
+//                return !(*this == other);
+//            }
 
-            Point(Real ax, Real ay) :
-                    x(ax), y(ay)
-            {}
+//            DiagramPoint() :
+//                    x(0.0),
+//                    y(0.0),
+//                    type(DiagramPoint::DIAG),
+//                    id(MinValidId - 1),
+//                    user_id(-1)
+//            {
+//            }
 
-            Point() :
-                    x(0.0), y(0.0)
-            {}
+//            DiagramPoint(Real _x, Real _y, Type _type, IdType _id, IdType _user_id) :
+//                    x(_x),
+//                    y(_y),
+//                    type(_type),
+//                    id(_id),
+//                    user_id(_user_id)
+//            {
+//                if (_y == _x and _type != DIAG) {
+//                    throw std::runtime_error("Point on the main diagonal must have DIAG type");
+//                }
 
-#ifndef FOR_R_TDA
-
-            template<class R>
-            friend std::ostream& operator<<(std::ostream& output, const Point<R>& p)
-            {
-                output << "(" << p.x << ", " << p.y << ")";
-                return output;
-            }
-
-#endif
-        };
-
-        template<class Real = double>
-        struct DiagramPoint
-        {
-            // Points above the diagonal have type NORMAL
-            // Projections onto the diagonal have type DIAG
-            // for DIAG points only x-coordinate is relevant
-            // to-do: add getters/setters, checks in constructors, etc
-            enum Type
-            {
-                NORMAL, DIAG
-            };
-            // data members
-        private:
-            Real x, y;
-        public:
-            Type type;
-            IdType id;
-            IdType user_id;
-
-            // operators, constructors
-            bool operator==(const DiagramPoint<Real>& other) const
-            {
-                // compare by id only
-                assert(this->id >= MinValidId);
-                assert(other.id >= MinValidId);
-                bool areEqual { this->id == other.id };
-                assert(!areEqual or ((this->x == other.x) and (this->y == other.y) and (this->type == other.type)));
-                return areEqual;
-            }
-
-            bool operator!=(const DiagramPoint& other) const
-            {
-                return !(*this == other);
-            }
-
-            DiagramPoint() :
-                    x(0.0),
-                    y(0.0),
-                    type(DiagramPoint::DIAG),
-                    id(MinValidId - 1),
-                    user_id(-1)
-            {
-            }
-
-            DiagramPoint(Real _x, Real _y, Type _type, IdType _id, IdType _user_id) :
-                    x(_x),
-                    y(_y),
-                    type(_type),
-                    id(_id),
-                    user_id(_user_id)
-            {
-                if (_y == _x and _type != DIAG) {
-                    throw std::runtime_error("Point on the main diagonal must have DIAG type");
-                }
-
-            }
+//            }
 
 
-            bool isDiagonal() const
-            { return type == DIAG; }
+//            bool is_diagonal() const
+//            { return type == DIAG; }
 
-            bool isNormal() const
-            { return type == NORMAL; }
+//            bool is_normal() const
+//            { return type == NORMAL; }
 
-            bool isInfinity() const
-            {
-                return x == std::numeric_limits<Real>::infinity() or
-                       x == -std::numeric_limits<Real>::infinity() or
-                       y == std::numeric_limits<Real>::infinity() or
-                       y == -std::numeric_limits<Real>::infinity();
-            }
+//            bool is_infinity() const
+//            {
+//                return x == std::numeric_limits<Real>::infinity() or
+//                       x == -std::numeric_limits<Real>::infinity() or
+//                       y == std::numeric_limits<Real>::infinity() or
+//                       y == -std::numeric_limits<Real>::infinity();
+//            }
 
-            Real inline getRealX() const // return the x-coord
-            {
-                return x;
-            }
+//            Real inline getRealX() const // return the x-coord
+//            {
+//                return x;
+//            }
 
-            Real inline getRealY() const // return the y-coord
-            {
-                return y;
-            }
+//            Real inline getRealY() const // return the y-coord
+//            {
+//                return y;
+//            }
 
-            IdType inline get_user_id() const
-            {
-                if (isNormal())
-                    return user_id;
-                else
-                    return -1;
-            }
+//            IdType inline get_user_id() const
+//            {
+//                if (is_normal())
+//                    return user_id;
+//                else
+//                    return -1;
+//            }
 
-            Real inline get_persistence(const Real internal_p = get_infinity()) const
-            {
-                if (isDiagonal())
-                    return 0.0;
-                Real pers = fabs(y - x) / 2;
-                if (internal_p == get_infinity()) {
-                    return pers;
-                } else if (internal_p == 1.0) {
-                    return 2 * pers;
-                } else {
-                    return std::pow(static_cast<Real>(2), static_cast<Real>(1) / internal_p);
-                }
-            }
+//            Real inline get_persistence(const Real internal_p = get_infinity()) const
+//            {
+//                if (is_diagonal())
+//                    return 0.0;
+//                Real pers = fabs(y - x) / 2;
+//                if (internal_p == get_infinity()) {
+//                    return pers;
+//                } else if (internal_p == 1.0) {
+//                    return 2 * pers;
+//                } else {
+//                    return std::pow(static_cast<Real>(2), static_cast<Real>(1) / internal_p);
+//                }
+//            }
 
-#ifndef FOR_R_TDA
+//#ifndef FOR_R_TDA
 
-            friend std::ostream& operator<<(std::ostream& output, const DiagramPoint& p)
-            {
-                if (p.isDiagonal()) {
-                    output << "(" << p.x << ", " << p.y << ", " << 0.5 * (p.x + p.y) << ", " << p.id << " DIAG )";
-                } else {
-                    output << "(" << p.x << ", " << p.y << ", " << p.id << " NORMAL)";
-                }
-                return output;
-            }
-#endif
-        };
+//            friend std::ostream& operator<<(std::ostream& output, const DiagramPoint& p)
+//            {
+//                if (p.is_diagonal()) {
+//                    output << "(" << p.x << ", " << p.y << ", " << 0.5 * (p.x + p.y) << ", " << p.id << " DIAG )";
+//                } else {
+//                    output << "(" << p.x << ", " << p.y << ", " << p.id << " NORMAL)";
+//                }
+//                return output;
+//            }
+//#endif
+//        };
 
         template<class Real>
         using MatchingEdge = std::pair<DiagramPoint<Real>, DiagramPoint<Real>>;
-
-        // compute l-inf distance between two diagram points
-        template<class Real>
-        inline Real distLInf(const DiagramPoint<Real>& a, const DiagramPoint<Real>& b)
-        {
-            if (a.isDiagonal() and b.isDiagonal()) {
-                // distance between points on the diagonal is 0
-                return 0.0;
-            }
-            // otherwise distance is a usual l-inf distance
-            return std::max(fabs(a.getRealX() - b.getRealX()), fabs(a.getRealY() - b.getRealY()));
-        }
 
         // this function works with points at infinity as well
         // not needed in actual computation, since these points are processed
@@ -239,7 +180,7 @@ namespace hera {
         template<class Real>
         inline Real dist_l_inf_slow(const DiagramPoint<Real>& a, const DiagramPoint<Real>& b)
         {
-            if (a.isDiagonal() and b.isDiagonal()) {
+            if (a.is_diagonal() and b.is_diagonal()) {
                 // distance between points on the diagonal is 0
                 return 0.0;
             }
@@ -253,33 +194,6 @@ namespace hera {
             return result;
         }
 
-
-
-        template<class Real = double>
-        inline Real get_infinity()
-        {
-            return Real(-1.0);
-        }
-
-        template<class T>
-        inline void hash_combine(std::size_t& seed, const T& v)
-        {
-            std::hash<T> hasher;
-            seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        }
-
-        template<class Real = double>
-        struct DiagramPointHash
-        {
-            size_t operator()(const DiagramPoint<Real>& p) const
-            {
-                assert(p.id >= MinValidId);
-                return std::hash<int>()(p.id);
-            }
-        };
-
-        template<class Real = double>
-        Real distLInf(const DiagramPoint<Real>& a, const DiagramPoint<Real>& b);
 
         //template<class Real = double>
         //typedef std::unordered_set<Point, PointHash> PointSet;
@@ -303,7 +217,7 @@ namespace hera {
         private:
 
             bool isLinked { false };
-            IdType maxId { MinValidId + 1 };
+            IdType maxId { 1 };
             std::unordered_set<DgmPoint, DgmPointHash> points;
 
         public:
@@ -338,7 +252,7 @@ namespace hera {
                 if (isLinked) {
                     auto ptIter = points.begin();
                     while (ptIter != points.end()) {
-                        if (ptIter->isDiagonal()) {
+                        if (ptIter->is_diagonal()) {
                             ptIter = points.erase(ptIter);
                         } else {
                             ptIter++;
@@ -404,7 +318,6 @@ namespace hera {
                 return points.find(p);
             }
 
-#ifndef FOR_R_TDA
 
             friend std::ostream& operator<<(std::ostream& output, const DiagramPointSet& ps)
             {
@@ -416,7 +329,6 @@ namespace hera {
                 return output;
             }
 
-#endif
 
             friend void addProjections<Real_>(DiagramPointSet<Real_>& A, DiagramPointSet<Real_>& B);
 
@@ -425,7 +337,7 @@ namespace hera {
             {
                 isLinked = false;
                 clear();
-                IdType uniqueId = MinValidId + 1;
+                IdType uniqueId = 0;
                 IdType user_id = 0;
                 for (auto iter = begin_iter; iter != end_iter; ++iter) {
                     insert(DgmPoint(iter->first, iter->second, DgmPoint::NORMAL, uniqueId++, user_id++));
@@ -438,7 +350,7 @@ namespace hera {
                 using Traits = DiagramTraits<PointContainer>;
                 isLinked = false;
                 clear();
-                IdType uniqueId = MinValidId + 1;
+                IdType uniqueId = 0;
                 IdType user_id = 0;
                 for (const auto& pt : dgm_cont) {
                     Real x = Traits::get_x(pt);
@@ -464,7 +376,7 @@ namespace hera {
 
 
             // default ctor, empty diagram
-            DiagramPointSet(IdType minId = MinValidId + 1) :
+            DiagramPointSet(IdType minId = 1) :
                     maxId(minId + 1)
             {};
 
@@ -481,14 +393,14 @@ namespace hera {
             DiagramPoint<Real> begA = *(A.begin());
             DiagramPoint<Real> optB = *(B.begin());
             for (const auto& pointB : B) {
-                if (distLInf(begA, pointB) > result) {
-                    result = distLInf(begA, pointB);
+                if (dist_l_inf(begA, pointB) > result) {
+                    result = dist_l_inf(begA, pointB);
                     optB = pointB;
                 }
             }
             for (const auto& pointA : A) {
-                if (distLInf(pointA, optB) > result) {
-                    result = distLInf(pointA, optB);
+                if (dist_l_inf(pointA, optB) > result) {
+                    result = dist_l_inf(pointA, optB);
                 }
             }
             return result;
@@ -505,28 +417,28 @@ namespace hera {
             using DgmPoint = DiagramPoint<Real>;
             using DgmPointSet = DiagramPointSet<Real>;
 
-            IdType uniqueId { MinValidId + 1 };
+            IdType uniqueId { 1 };
             DgmPointSet newA, newB;
 
             // copy normal points from A to newA
             // add projections to newB
             for (auto& pA : A) {
-                if (pA.isNormal() and not pA.isInfinity()) {
+                if (pA.is_normal() and not pA.is_infinity()) {
                     // add pA's projection to B
-                    DgmPoint dpA { pA.getRealX(), pA.getRealY(), DgmPoint::NORMAL, uniqueId++, pA.get_user_id() };
+                    DgmPoint dpA { pA.getRealX(), pA.getRealY(), DgmPoint::NORMAL, uniqueId++, pA.user_tag };
                     DgmPoint dpB { (pA.getRealX() + pA.getRealY()) / 2, (pA.getRealX() + pA.getRealY()) / 2,
-                                   DgmPoint::DIAG, uniqueId++, -1 };
+                                   DgmPoint::DIAG, uniqueId++, -1 - pA.user_tag };
                     newA.insert(dpA);
                     newB.insert(dpB);
                 }
             }
 
             for (auto& pB : B) {
-                if (pB.isNormal() and not pB.isInfinity()) {
+                if (pB.is_normal() and not pB.is_infinity()) {
                     // add pB's projection to A
-                    DgmPoint dpB { pB.getRealX(), pB.getRealY(), DgmPoint::NORMAL, uniqueId++, pB.get_user_id() };
+                    DgmPoint dpB { pB.getRealX(), pB.getRealY(), DgmPoint::NORMAL, uniqueId++, pB.user_tag };
                     DgmPoint dpA { (pB.getRealX() + pB.getRealY()) / 2, (pB.getRealX() + pB.getRealY()) / 2,
-                                   DgmPoint::DIAG, uniqueId++, -1 };
+                                   DgmPoint::DIAG, uniqueId++, -1 - pB.user_tag };
                     newB.insert(dpB);
                     newA.insert(dpA);
                 }
@@ -543,7 +455,7 @@ namespace hera {
         //template<class Real>
         //std::ostream& operator<<(std::ostream& output, const DiagramPoint<Real>& p)
         //{
-        //    if ( p.isDiagonal() ) {
+        //    if ( p.is_diagonal() ) {
         //        output << "(" << p.x << ", " << p.y << ", " <<  0.5 * (p.x + p.y) << ", "  << p.id << " DIAG )";
         //    } else {
         //        output << "(" << p.x << ", " << p.y << ", " << p.id << " NORMAL)";

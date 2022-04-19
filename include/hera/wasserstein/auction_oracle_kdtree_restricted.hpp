@@ -160,14 +160,14 @@ void AuctionOracleKDTreeRestricted<Real_, PointContainer_>::remove_top_diag_inde
 template<class Real_, class PointContainer_>
 void AuctionOracleKDTreeRestricted<Real_, PointContainer_>::increment_top_diag_counter()
 {
-    assert(top_diag_counter_ >= 0 and top_diag_counter_ < top_diag_indices_.size());
+    assert(top_diag_counter_ < top_diag_indices_.size());
 
     ++top_diag_counter_;
     if (top_diag_counter_ >= top_diag_indices_.size()) {
         top_diag_counter_ -= top_diag_indices_.size();
     }
 
-    assert(top_diag_counter_ >= 0 and top_diag_counter_ < top_diag_indices_.size());
+    assert(top_diag_counter_ < top_diag_indices_.size());
 }
 
 
@@ -276,7 +276,7 @@ IdxValPair<Real_> AuctionOracleKDTreeRestricted<Real_, PointContainer_>::get_opt
 
 
     size_t proj_item_idx = bidder_idx;
-    assert( 0 <= proj_item_idx and proj_item_idx < this->items.size() );
+    assert( proj_item_idx < this->items.size() );
     assert(this->items[proj_item_idx].type != bidder.type);
     Real proj_item_value = this->get_value_for_bidder(bidder_idx, proj_item_idx);
 
@@ -388,7 +388,7 @@ void AuctionOracleKDTreeRestricted<Real_, PointContainer_>::set_price(IdxType it
     this->prices[item_idx] = new_price;
     if ( this->items[item_idx].is_normal() ) {
         assert(0 <= item_idx and item_idx < static_cast<IdxType>(kdtree_items_.size()));
-        assert(0 <= kdtree_items_[item_idx] and kdtree_items_[item_idx] < dnn_point_handles_.size());
+        assert(kdtree_items_[item_idx] < dnn_point_handles_.size());
         kdtree_->change_weight( dnn_point_handles_[kdtree_items_[item_idx]], new_price);
     } else {
         assert(diag_heap_handles_.size() > heap_handles_indices_.at(item_idx));

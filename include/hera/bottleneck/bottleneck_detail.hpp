@@ -124,7 +124,7 @@ namespace hera {
         };
 
         template<class Real>
-        using CoordPointPair = std::pair<Real, typename hera::bt::DiagramPoint<Real>>;
+        using CoordPointPair = std::pair<Real, typename hera::DiagramPoint<Real>>;
 
         template<class Real>
         using CoordPointVector = std::vector<typename hera::bt::CoordPointPair<Real>>;
@@ -567,7 +567,7 @@ namespace hera {
                         }
                         // we're here => ptB lies in vertical stripe,
                         // check if distance fits into the interval we've found
-                        Real pwDist = distLInf(iterA->second, ptB);
+                        Real pwDist = dist_l_inf(iterA->second, ptB);
                         if (pwDist >= minDist and pwDist <= maxDist) {
                             pairwiseDist.insert(pwDist);
                         }
@@ -604,7 +604,7 @@ namespace hera {
                         if (ptB.getRealY() < iterA->first - delta) {
                             break;
                         }
-                        Real pwDist = distLInf(iterA->second, ptB);
+                        Real pwDist = dist_l_inf(iterA->second, ptB);
                         if (pwDist >= minDist and pwDist <= maxDist) {
                             pairwiseDist.insert(pwDist);
                         }

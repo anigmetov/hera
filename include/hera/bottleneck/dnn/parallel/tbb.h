@@ -8,8 +8,10 @@
 #include <vector>
 
 #include <boost/range.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/foreach.hpp>
+
+using namespace boost::placeholders;
 
 #ifdef TBB
 

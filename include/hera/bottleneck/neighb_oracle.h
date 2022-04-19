@@ -78,7 +78,7 @@ public:
     bool getNeighbour(const DgmPoint& q, DgmPoint& result) const
     {
         for(auto pit = pointSet.cbegin(); pit != pointSet.cend(); ++pit) {
-            if ( distLInf(*pit, q) <= r) {
+            if ( dist_l_inf(*pit, q) <= r) {
                 result = *pit;
                 return true;
             }
@@ -90,7 +90,7 @@ public:
     {
         result.clear();
         for(const auto& point : pointSet) {
-            if ( distLInf(point, q) <= r) {
+            if ( dist_l_inf(point, q) <= r) {
                 result.push_back(point);
             }
         }
@@ -159,7 +159,7 @@ public:
             diagonalPoints.reserve(S.size() / 2);
             for(auto pit = S.cbegin(); pit != S.cend(); ++pit) {
                 allPoints.push_back(*pit);
-                if (pit->isDiagonal()) {
+                if (pit->is_diagonal()) {
                     diagonalPoints.insert(*pit);
                 }
             }
@@ -207,7 +207,7 @@ public:
         //std::cout << *this << std::endl;
         // distance between two diagonal points
         // is  0
-        if (q.isDiagonal()) {
+        if (q.is_diagonal()) {
             if (!diagonalPoints.empty()) {
                 result = *diagonalPoints.cbegin();
                 //std::cout <<  "Neighbour found in diagonal points, res =  " <<  result;
@@ -246,7 +246,7 @@ public:
         //std::cout <<  "Entered getAllNeighbours for q = " << q << std::endl;
         result.clear();
         // add diagonal points, if necessary
-        if (  q.isDiagonal() ) {
+        if (  q.is_diagonal() ) {
             for( auto& diagPt : diagonalPoints ) {
                 result.push_back(diagPt);
             }

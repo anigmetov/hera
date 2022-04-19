@@ -285,7 +285,7 @@ wasserstein_cost(const PairContainer& A,
     RealType total_cost_A = 0.0;
     RealType total_cost_B = 0.0;
 
-    using DgmPoint = hera::ws::DiagramPoint<RealType>;
+    using DgmPoint = hera::DiagramPoint<RealType>;
     using OneDimPoint = std::tuple<RealType, IdType>;
 
     params.clear_matching();
@@ -380,7 +380,7 @@ wasserstein_cost(const PairContainer& A,
     if (infinity_cost == plus_inf) {
         return infinity_cost;
     } else {
-        return infinity_cost + wasserstein_cost_vec(dgm_A, dgm_B, params);
+        return infinity_cost + hera::ws::wasserstein_cost_vec(dgm_A, dgm_B, params);
     }
 
 }

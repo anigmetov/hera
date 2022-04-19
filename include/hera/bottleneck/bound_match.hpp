@@ -64,7 +64,7 @@ namespace hera {
             }
             output << " perfect)" << std::endl;
             for (auto atob : m.AToB) {
-                output << atob.first << " <-> " << atob.second << "  distance: " << distLInf(atob.first, atob.second)
+                output << atob.first << " <-> " << atob.second << "  distance: " << dist_l_inf(atob.first, atob.second)
                        << std::endl;
             }
             return output;
@@ -212,7 +212,7 @@ namespace hera {
             //bool isDebug { false };
             sanityCheck();
             for (auto aToBIter = AToB.begin(); aToBIter != AToB.end();) {
-                if (distLInf(aToBIter->first, aToBIter->second) > newThreshold) {
+                if (dist_l_inf(aToBIter->first, aToBIter->second) > newThreshold) {
                     // remove edge from AToB and BToA
                     BToA.erase(aToBIter->second);
                     aToBIter = AToB.erase(aToBIter);
@@ -230,19 +230,19 @@ namespace hera {
             MatchingEdge<R> edge;
             for (const auto& x : AToB) {
                 //std::cout << "max_dist = " << max_dist << std::endl;
-                //std::cout << "distance = " << distLInf(x.first, x.second) << std::endl;
+                //std::cout << "distance = " << dist_l_inf(x.first, x.second) << std::endl;
 
                 // for now skew edges may appear in the matching
                 // but they should not be returned to user
                 // if currrent edge is a skew edge, there must another edge
                 // with the same cost
                 R curr_dist;
-                if (x.first.isDiagonal() and x.second.isNormal()) {
-                    curr_dist = x.second.get_persistence(hera::get_infinity());
-                } else if (x.first.isNormal() and x.second.isDiagonal()) {
-                    curr_dist = x.first.get_persistence(hera::get_infinity());
+                if (x.first.is_diagonal() and x.second.is_normal()) {
+                    curr_dist = x.second.persistence_lp(hera::get_infinity());
+                } else if (x.first.is_normal() and x.second.is_diagonal()) {
+                    curr_dist = x.first.persistence_lp(hera::get_infinity());
                 } else {
-                    curr_dist = distLInf(x.first, x.second);
+                    curr_dist = dist_l_inf(x.first, x.second);
                 }
                 if (max_dist < curr_dist) {
                     max_dist = curr_dist;
