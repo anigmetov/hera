@@ -15,3 +15,5 @@ def bottleneck_dist(dgm_a, dgm_b, delta: float=0.01, return_bottleneck_edge: boo
             return bottleneck_distance_approx(dgm_a, dgm_b, delta)
 
 
+def wasserstein_dist(dgm_a, dgm_b, params):
+    pass

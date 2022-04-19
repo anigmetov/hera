@@ -29,9 +29,26 @@ derivative works thereof, in binary and source code form.
 #define HERA_DIAGRAM_POINT_H
 
 #include <ostream>
+#include <cassert>
+#include <limits>
 #include <functional>
 
+
 namespace hera {
+
+//    enum class OwnerType { k_none, k_normal, k_diagonal };
+//
+//    inline std::ostream& operator<<(std::ostream& s, const OwnerType t)
+//    {
+//        switch(t)
+//        {
+//        case OwnerType::k_none : s << "NONE"; break;
+//        case OwnerType::k_normal: s << "NORMAL"; break;
+//        case OwnerType::k_diagonal: s << "DIAGONAL"; break;
+//        }
+//        return s;
+//    }
+
     template<class Real_ = double>
     struct DiagramPoint {
         // types
@@ -53,6 +70,12 @@ namespace hera {
         DiagramPoint(Real x, Real y, Type type, int id, int user_tag = 0)
                 :
                 x(x), y(y), type(type), id(id), user_tag(user_tag)
+        {
+        };
+
+        DiagramPoint(Real x, Real y, int id, int user_tag = 0)
+                :
+                x(x), y(y), type( (x == y) ? DIAG : NORMAL), id(id), user_tag(user_tag)
         {
         };
 
@@ -141,9 +164,9 @@ namespace hera {
     inline std::ostream& operator<<(std::ostream& output, const DiagramPoint<Real> p)
     {
         if (p.type == DiagramPoint<Real>::DIAG) {
-            output << "(" << p.x << ", " << p.y << ", " << 0.5 * (p.x + p.y) << " DIAG )";
+            output << "(" << p.x << ", " << p.y << ", " << 0.5 * (p.x + p.y) << " DIAG)";
         } else {
-            output << "(" << p.x << ", " << p.y << ", " << " NORMAL)";
+            output << "(" << p.x << ", " << p.y <<  ")";
         }
         return output;
     }
