@@ -1,11 +1,16 @@
 imports:
     pybind11: ./bindings/python/pybind11
     Catch2:   ./extern/Catch2
+    opts:     ./extern/opts
 
 git module pybind11:
     url: git@github.com:pybind/pybind11.git
-    rev: 9ec1128c7aac3d069a4ec2bd1dfc7f57c6526d1c
+    rev: e8e229fa0b486118bf91321b923f8158055c053c
 
 git module Catch2:
     url: git@github.com:catchorg/Catch2.git
     rev: 72f037266415fee521adc598bd324fea8001cd77
+
+git module opts:
+    url: git@github.com:mrzv/opts.git
+    rev: 3f6a6637ac841f8f867fc0cba3e13258f6dc3300

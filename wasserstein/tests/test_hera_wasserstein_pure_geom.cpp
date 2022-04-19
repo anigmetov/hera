@@ -52,7 +52,6 @@ TEST_CASE("simple point clouds", "wasserstein_dist_pure_geom")
     params.initial_epsilon = 0.0;
     params.epsilon_common_ratio = 0.0;
     params.max_num_phases = 30;
-    params.gamma_threshold = 0.0;
     params.max_bids_per_round = 0;  // use Jacobi
 
 
@@ -105,4 +104,3 @@ TEST_CASE("simple point clouds", "wasserstein_dist_pure_geom")
         }
     }
 }
-

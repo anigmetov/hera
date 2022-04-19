@@ -1,5 +1,5 @@
 #include <iostream>
-#include "matching_distance.h"
+#include <hera/matching_distance.h>
 
 using namespace md;
 

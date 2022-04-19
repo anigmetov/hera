@@ -46,41 +46,29 @@ int main(int argc, char* argv[])
 
     hera::AuctionParams<Real> params;
     params.max_num_phases = 800;
+    bool help { false };
+    bool print_relative_error { false };
 
-    opts::Options ops(argc, argv);
+    opts::Options ops;
     ops >> opts::Option('q', "degree", params.wasserstein_power, "Wasserstein degree")
         >> opts::Option('d', "error", params.delta, "Relative error")
         >> opts::Option('p', "internal-p", params.internal_p, "Internal norm")
         >> opts::Option("initial-epsilon", params.initial_epsilon, "Initial epsilon")
         >> opts::Option("epsilon-factor", params.epsilon_common_ratio, "Epsilon factor")
         >> opts::Option("max-bids-per-round", params.max_bids_per_round, "Maximal number of bids per round")
-        >> opts::Option('m', "max-rounds", params.max_num_phases, "Maximal number of iterations");
+        >> opts::Option('m', "max-rounds", params.max_num_phases, "Maximal number of iterations")
+        >> opts::Option('e', "--print-error", print_relative_error, "Print real relative error")
+        >> opts::Option('t', "tolerate", params.tolerate_max_iter_exceeded, "Suppress max-iterations-exceeded error and print the best result.")
+        >> opts::Option('h', "help", help, "Print help")
+    ;
 
-
-    bool print_relative_error = ops >> opts::Present('e', "--print-error", "Print real relative error");
-
-    params.tolerate_max_iter_exceeded  = ops >> opts::Present('t', "tolerate", "Suppress max-iterations-exceeded error and print the best result.");
 
     std::string dgm_fname_1, dgm_fname_2;
-    bool dgm_1_given = (ops >> opts::PosOption(dgm_fname_1));
-    bool dgm_2_given = (ops >> opts::PosOption(dgm_fname_2));
-
-    //std::cout << "q = " << params.wasserstein_power << ", delta = " << params.delta << ", p = " << params.internal_p << ", max_round = " << params.max_num_phases <<  std::endl;
-    //std::cout << "print relative error: " << print_relative_error << std::endl;
-    //std::cout << "dgm1: " << dgm_fname_1 << std::endl;
-    //std::cout << "dgm2: " << dgm_fname_2 << std::endl;
-
-    if (not dgm_1_given or not dgm_2_given) {
-        std::cerr << "Usage: " << argv[0] << " file1 file2 " << std::endl;
+    if (!ops.parse(argc, argv) || help || !(ops >> opts::PosOption(dgm_fname_1) >> opts::PosOption(dgm_fname_2))) {
+        std::cerr << "Usage: " << argv[0] << " file-1 file-2\n" << std::endl;
         std::cerr << "compute Wasserstein distance between persistence diagrams in file1 and file2.\n";
-        std::cerr << ops << std::endl;
-        return 1;
-    }
-
-    if (ops >> opts::Present('h', "help", "show help message")) {
-        std::cout << "Usage: " << argv[0] << " file1 file2 " << std::endl;
-        std::cout << "compute Wasserstein distance between persistence diagrams in file1 and file2.\n";
         std::cout << ops << std::endl;
+        return 1;
     }
 
     if (!hera::read_diagram_point_set<Real, PairVector>(dgm_fname_1, diagramA)) {
@@ -100,7 +88,6 @@ int main(int argc, char* argv[])
         hera::remove_duplicates<Real>(diagramA, diagramB);
     }
 
-    //default relative error:  1%
     if ( params.delta <= 0.0) {
         std::cerr << "relative error was \"" << params.delta << "\", must be a number > 0.0. Cannot proceed. " << std::endl;
         std::exit(1);
@@ -110,7 +97,6 @@ int main(int argc, char* argv[])
     if (std::isinf(params.internal_p)) {
         params.internal_p = hera::get_infinity<Real>();
     }
-
 
     if (not hera::is_p_valid_norm<Real>(params.internal_p)) {
         std::cerr << "internal-p was \"" << params.internal_p << "\", must be a number >= 1.0 or inf. Cannot proceed. " << std::endl;
@@ -131,7 +117,6 @@ int main(int argc, char* argv[])
 
     if (params.max_bids_per_round == 0)
         params.max_bids_per_round = std::numeric_limits<decltype(params.max_bids_per_round)>::max();
-
 
     Real res = hera::wasserstein_dist(diagramA, diagramB, params);
 

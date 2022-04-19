@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pytest
 
 from pybind11_tests import ConstructorStats, UserType
@@ -264,6 +263,22 @@ def test_variant(doc):
     )
 
 
+@pytest.mark.skipif(
+    not hasattr(m, "load_monostate_variant"), reason="no std::monostate"
+)
+def test_variant_monostate(doc):
+    assert m.load_monostate_variant(None) == "std::monostate"
+    assert m.load_monostate_variant(1) == "int"
+    assert m.load_monostate_variant("1") == "std::string"
+
+    assert m.cast_monostate_variant() == (None, 5, "Hello")
+
+    assert (
+        doc(m.load_monostate_variant)
+        == "load_monostate_variant(arg0: Union[None, int, str]) -> str"
+    )
+
+
 def test_vec_of_reference_wrapper():
     """#171: Can't return reference wrappers (or STL structures containing them)"""
     assert (
@@ -283,7 +298,7 @@ def test_stl_pass_by_pointer(msg):
             1. (v: List[int] = None) -> List[int]
 
         Invoked with:
-    """  # noqa: E501 line too long
+    """
     )
 
     with pytest.raises(TypeError) as excinfo:
@@ -295,7 +310,7 @@ def test_stl_pass_by_pointer(msg):
             1. (v: List[int] = None) -> List[int]
 
         Invoked with: None
-    """  # noqa: E501 line too long
+    """
     )
 
     assert m.stl_pass_by_pointer([1, 2, 3]) == [1, 2, 3]

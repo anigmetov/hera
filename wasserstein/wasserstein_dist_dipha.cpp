@@ -109,8 +109,6 @@ int main(int argc, char* argv[])
         params.max_bids_per_round = std::numeric_limits<decltype(params.max_bids_per_round)>::max();
 
 
-    params.gamma_threshold = (11 <= argc) ? atof(argv[10]) : 0.0;
-
     params.max_num_phases = 800;
 
     double res = hera::wasserstein_dist(diagramA, diagramB, params);

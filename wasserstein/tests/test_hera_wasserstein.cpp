@@ -22,7 +22,6 @@ TEST_CASE("simple cases", "wasserstein_dist")
     params.initial_epsilon = 0.0;
     params.epsilon_common_ratio = 0.0;
     params.max_num_phases = 30;
-    params.gamma_threshold = 0.0;
     params.max_bids_per_round = 0;  // use Jacobi
 
     SECTION("trivial: two empty diagrams") {
@@ -134,7 +133,6 @@ TEST_CASE("file cases", "wasserstein_dist")
     params.initial_epsilon = 0.0;
     params.epsilon_common_ratio = 0.0;
     params.max_num_phases = 30;
-    params.gamma_threshold = 0.0;
     params.max_bids_per_round = 1;  // use Jacobi
 
 
@@ -202,7 +200,6 @@ TEST_CASE("infinity points", "wasserstein_dist")
     params.initial_epsilon = 0.0;
     params.epsilon_common_ratio = 0.0;
     params.max_num_phases = 30;
-    params.gamma_threshold = 0.0;
     params.max_bids_per_round = 0;  // use Jacobi
 
     // do not use Hera's infinity! it is -1

@@ -48,53 +48,16 @@ derivative works thereof, in binary and source code form.
 #include <hera/common.h>
 #include "dnn/geometry/euclidean-dynamic.h"
 #include "def_debug_ws.h"
-
-#define MIN_VALID_ID 10
+#include "auction_params.h"
 
 namespace hera
 {
-
-using IdType = int;
 
 template<class Real = double>
 inline bool is_p_valid_norm(const Real& p)
 {
     return is_infinity<Real>(p) or p >= Real(1);
 }
-
-template<class Real = double>
-struct AuctionParams
-{
-    Real wasserstein_power { 1.0 };
-    Real delta { 0.01 }; // relative error
-    Real internal_p { get_infinity<Real>() };
-    Real initial_epsilon { 0.0 }; // 0.0 means maxVal / 4.0
-    Real epsilon_common_ratio { 5.0 };
-    Real gamma_threshold { 0.0 };  // for experiments, not in use now
-    int max_num_phases { std::numeric_limits<decltype(max_num_phases)>::max() };
-    int max_bids_per_round { 1 };  // imitate Gauss-Seidel is default behaviour
-    unsigned int dim { 2 }; // for pure geometric version only; ignored in persistence diagrams
-    Real final_relative_error;  // out parameter - after auction terminates, contains the real relative error
-    bool tolerate_max_iter_exceeded { false }; // whether auction should throw an exception on max. iterations exceeded
-    bool return_matching { false }; // whether to return optimal matching along with cost
-    bool match_inf_points { true }; // whether to add infinite points to matching; ignored, if return_matching is false
-
-    std::unordered_map<IdType, IdType> matching_a_to_b_;
-    std::unordered_map<IdType, IdType> matching_b_to_a_;
-
-    void clear_matching()
-    {
-        matching_a_to_b_.clear();
-        matching_b_to_a_.clear();
-    }
-
-    void add_to_matching(IdType a, IdType b)
-    {
-        assert(matching_a_to_b_.count(a) == 0 and matching_b_to_a_.count(b) == 0);
-        matching_a_to_b_[a] = b;
-        matching_b_to_a_[b] = a;
-    }
-};
 
 namespace ws
 {
