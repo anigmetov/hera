@@ -42,15 +42,36 @@ derivative works thereof, in binary and source code form.
 #include <cctype>
 #include <algorithm>
 #include <map>
+#include <cmath>
 #include <limits>
 
-#include "basic_defs_ws.hpp"
+#include "diagram_point.h"
+#include "infinity.h"
 
 #ifdef WASSERSTEIN_PURE_GEOM
 #include "dnn/geometry/euclidean-dynamic.h"
 #endif
 
 namespace hera {
+
+static const int64_t DIPHA_MAGIC = 8067171840;
+static const int64_t DIPHA_PERSISTENCE_DIAGRAM = 2;
+
+template <typename T> inline void reverse_endianness(T & x)
+{
+    uint8_t * p = reinterpret_cast<uint8_t *>(&x);
+    std::reverse(p, p + sizeof(T));
+}
+
+template <typename T> inline T read_le(std::istream & s)
+{
+    T result;
+    s.read(reinterpret_cast<char *>(&result), sizeof(T));
+#ifdef BIGENDIAN
+    reverse_endianness(result);
+#endif
+    return result;
+}
 
 // cannot choose stod, stof or stold based on RealType,
 // lazy solution: partial specialization

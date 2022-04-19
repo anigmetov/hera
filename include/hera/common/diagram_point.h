@@ -33,6 +33,8 @@ derivative works thereof, in binary and source code form.
 #include <limits>
 #include <functional>
 
+#include "infinity.h"
+
 
 namespace hera {
 

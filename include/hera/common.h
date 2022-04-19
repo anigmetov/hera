@@ -38,5 +38,6 @@ derivative works thereof, in binary and source code form.
 #include <hera/common/point.h>
 #include <hera/common/diagram_point.h>
 #include <hera/common/diagram_traits.h>
+#include <hera/common/diagram_reader.h>
 
 #endif

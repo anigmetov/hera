@@ -564,8 +564,8 @@ TEST_CASE("file cases", "bottleneck_dist")
     SECTION("from file:") {
 
         for (auto& ts : test_params) {
-            bool read_file_A = hera::readDiagramPointSet(dir_prefix + ts.file_1, diagram_A);
-            bool read_file_B = hera::readDiagramPointSet(dir_prefix + ts.file_2, diagram_B);
+            bool read_file_A = hera::read_diagram_point_set(dir_prefix + ts.file_1, diagram_A);
+            bool read_file_B = hera::read_diagram_point_set(dir_prefix + ts.file_2, diagram_B);
             REQUIRE(read_file_A);
             REQUIRE(read_file_B);
 

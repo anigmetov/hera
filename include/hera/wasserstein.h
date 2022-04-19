@@ -35,7 +35,7 @@ derivative works thereof, in binary and source code form.
 
 #include "wasserstein/def_debug_ws.h"
 #include "wasserstein/basic_defs_ws.h"
-#include "wasserstein/diagram_reader.h"
+#include "common/diagram_reader.h"
 #include "wasserstein/auction_runner_gs.h"
 #include "wasserstein/auction_runner_jac.h"
 
