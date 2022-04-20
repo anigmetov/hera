@@ -26,8 +26,7 @@ DynamicPointVector convert_2d_points_to_dnn(const std::vector<std::pair<double, 
     return result;
 }
 
-
-double wasserstein_cost(const std::vector<std::pair<double, double>>& points_1, const std::vector<std::pair<double, double>>& points_2, const std::vector<double>& prices)
+double wasserstein_cost_point_cloud(const std::vector<std::pair<double, double>>& points_1, const std::vector<std::pair<double, double>>& points_2, const std::vector<double>& prices)
 {
     using Traits = hera::ws::dnn::DynamicPointTraits<double>;
     constexpr int dim = 2;
@@ -55,5 +54,5 @@ double wasserstein_cost(const std::vector<std::pair<double, double>>& points_1, 
 
 void init_ws_geom(py::module& m)
 {
-    m.def("wasserstein_cost", wasserstein_cost);
+    m.def("wasserstein_cost_point_cloud", wasserstein_cost_point_cloud);
 }

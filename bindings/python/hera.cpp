@@ -9,17 +9,20 @@
 
 namespace py = pybind11;
 
+using DiagramPoint = hera::DiagramPoint<double>;
+using AuctionParams = hera::AuctionParams<double>;
+using PairVector = std::vector<std::pair<double, double>>;
+
 void init_ws_geom(py::module&);
 
-double wasserstein_dist(const std::vector<std::pair<double, double>>& points_1, const std::vector<std::pair<double, double>>& points_2, const std::vector<double>& prices)
+double wasserstein_dist(const PairVector& points_1, const PairVector& points_2, AuctionParams& params, const std::vector<double>& prices)
 {
-    hera::AuctionParams<double> params;
     return hera::wasserstein_dist(points_1, points_2, params);
 }
 
-void init_ws(py::module& m)
+double wasserstein_cost(const PairVector& points_1, const PairVector& points_2, AuctionParams& params, const std::vector<double>& prices)
 {
-    m.def("wasserstein_dist", wasserstein_dist);
+    return hera::wasserstein_cost(points_1, points_2, params);
 }
 
 double bottleneck_distance_approx(const std::vector<std::pair<double, double>>& points_1, const std::vector<std::pair<double, double>>& points_2, double delta)
@@ -51,19 +54,8 @@ decltype(auto) bottleneck_distance_exact_with_edge(const std::vector<std::pair<d
     return std::make_pair(dist, longest_edge);
 }
 
-
-void init_bt(py::module& m)
-{
-    m.def("bottleneck_distance_approx", bottleneck_distance_approx);
-    m.def("bottleneck_distance_approx_with_edge", bottleneck_distance_approx_with_edge);
-    m.def("bottleneck_distance_exact", bottleneck_distance_exact);
-    m.def("bottleneck_distance_exact_with_edge", bottleneck_distance_exact_with_edge);
-}
-
 PYBIND11_MODULE(_hera, m)
 {
-    using DiagramPoint = hera::DiagramPoint<double>;
-
     m.doc() = "Hera python bindings";
 
     py::class_<DiagramPoint>(m, "DiagramPoint")
@@ -75,7 +67,36 @@ PYBIND11_MODULE(_hera, m)
             .def_readwrite("user_tag", &DiagramPoint::user_tag)
             ;
 
-    init_bt(m);
-    init_ws(m);
+    py::class_<AuctionParams>(m, "AuctionParams")
+            .def(py::init<>())
+            .def_readwrite("wasserstein_power", &AuctionParams::wasserstein_power)
+            .def_readwrite("delta", &AuctionParams::delta)
+            .def_readwrite("internal_p", &AuctionParams::internal_p)
+            .def_readwrite("epsilon_common_ratio", &AuctionParams::epsilon_common_ratio)
+            .def_readwrite("inital_epsilon", &AuctionParams::initial_epsilon)
+            .def_readwrite("max_num_phases", &AuctionParams::max_num_phases)
+            .def_readwrite("max_bids_per_round", &AuctionParams::max_bids_per_round)
+            .def_readwrite("dim", &AuctionParams::dim)
+            .def_readwrite("final_relative_error", &AuctionParams::final_relative_error)
+            .def_readwrite("tolerate_max_iter_exceeded", &AuctionParams::tolerate_max_iter_exceeded)
+            .def_readwrite("return_matching", &AuctionParams::return_matching)
+            .def_readwrite("match_inf_points", &AuctionParams::match_inf_points)
+            .def_readwrite("matching_a_to_b", &AuctionParams::matching_a_to_b_)
+            .def_readwrite("matching_b_to_a", &AuctionParams::matching_b_to_a_)
+            .def("clear_matching", &AuctionParams::clear_matching)
+            .def("add_to_matching", &AuctionParams::add_to_matching)
+            ;
+
+    // bottleneck
+    m.def("bottleneck_distance_approx", bottleneck_distance_approx);
+    m.def("bottleneck_distance_approx_with_edge", bottleneck_distance_approx_with_edge);
+    m.def("bottleneck_distance_exact", bottleneck_distance_exact);
+    m.def("bottleneck_distance_exact_with_edge", bottleneck_distance_exact_with_edge);
+
+    // Wasserstein
+    m.def("wasserstein_dist", wasserstein_dist);
+    m.def("wasserstein_cost", wasserstein_cost);
+
+    // Wasserstein - point clouds
     init_ws_geom(m);
 }
