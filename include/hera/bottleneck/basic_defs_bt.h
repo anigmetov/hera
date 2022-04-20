@@ -239,6 +239,7 @@ namespace hera {
                 } else {
                     assert(!doCheck);
                 }
+                (void)doCheck; // to suppress warning, doCheck is unused in Release mode
             }
 
 

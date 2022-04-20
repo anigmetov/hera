@@ -32,6 +32,7 @@ derivative works thereof, in binary and source code form.
 #include <cassert>
 #include <limits>
 #include <functional>
+#include <tuple>
 
 #include "infinity.h"
 
@@ -124,10 +125,6 @@ namespace hera {
             }
         }
 
-        struct LexicographicCmp {
-            bool operator()(const DiagramPoint& p1, const DiagramPoint& p2) const { return p1.type < p2.type || (p1.type == p2.type && (p1.x < p2.x || (p1.x == p2.x && p1.y < p2.y))); }
-        };
-
         const Real& operator[](const int idx) const
         {
             switch(idx) {
@@ -159,6 +156,26 @@ namespace hera {
         bool operator!=(const DiagramPoint& other) const
         {
             return !(*this == other);
+        }
+
+        bool operator<(const DiagramPoint<Real>& other) const
+        {
+            return std::tie(type, x, y, id, user_tag) < std::tie(other.type, other.x, other.y, other.id, other.user_tag);
+        }
+
+        bool operator<=(const DiagramPoint<Real>& other) const
+        {
+            return std::tie(type, x, y, id, user_tag) <= std::tie(other.type, other.x, other.y, other.id, other.user_tag);
+        }
+
+        bool operator>(const DiagramPoint<Real>& other) const
+        {
+            return !(*this <= other);
+        }
+
+        bool operator>=(const DiagramPoint<Real>& other) const
+        {
+            return !(*this < other);
         }
     };
 

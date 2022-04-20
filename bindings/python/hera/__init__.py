@@ -25,9 +25,10 @@ def wasserstein_dist_1(dgm_a: typing.List[typing.Tuple[float, float]], dgm_b: ty
         params = AuctionParams()
     if prices is None:
         prices = []
-
-    dist = wasserstein_dist(dgm_a, dgm_b, params, prices)
-    if params.return_matching:
-        return (dist, params.matching_a_to_b, params.matching_b_to_a)
+    if not params.return_matching:
+        return wasserstein_dist(dgm_a, dgm_b, params, prices)
     else:
-        return dist
+        dgm_a = [ DiagramPoint(b, d, i, i) for i, (b, d) in enumerate(dgm_a) ]
+        dgm_b = [ DiagramPoint(b, d, i, i) for i, (b, d) in enumerate(dgm_b) ]
+        dist = wasserstein_dist(dgm_a, dgm_b, params, prices)
+        return (dist, params.matching_a_to_b, params.matching_b_to_a)

@@ -12,15 +12,26 @@ namespace py = pybind11;
 using DiagramPoint = hera::DiagramPoint<double>;
 using AuctionParams = hera::AuctionParams<double>;
 using PairVector = std::vector<std::pair<double, double>>;
+using DgmPtVector = std::vector<DiagramPoint>;
 
 void init_ws_geom(py::module&);
 
-double wasserstein_dist(const PairVector& points_1, const PairVector& points_2, AuctionParams& params, const std::vector<double>& prices)
+double wasserstein_dist_p(const PairVector& points_1, const PairVector& points_2, AuctionParams& params, const std::vector<double>& prices)
 {
     return hera::wasserstein_dist(points_1, points_2, params);
 }
 
-double wasserstein_cost(const PairVector& points_1, const PairVector& points_2, AuctionParams& params, const std::vector<double>& prices)
+double wasserstein_cost_p(const PairVector& points_1, const PairVector& points_2, AuctionParams& params, const std::vector<double>& prices)
+{
+    return hera::wasserstein_cost(points_1, points_2, params);
+}
+
+double wasserstein_dist_d(const DgmPtVector& points_1, const DgmPtVector& points_2, AuctionParams& params, const std::vector<double>& prices)
+{
+    return hera::wasserstein_dist(points_1, points_2, params);
+}
+
+double wasserstein_cost_d(const DgmPtVector& points_1, const DgmPtVector& points_2, AuctionParams& params, const std::vector<double>& prices)
 {
     return hera::wasserstein_cost(points_1, points_2, params);
 }
@@ -94,8 +105,10 @@ PYBIND11_MODULE(_hera, m)
     m.def("bottleneck_distance_exact_with_edge", bottleneck_distance_exact_with_edge);
 
     // Wasserstein
-    m.def("wasserstein_dist", wasserstein_dist);
-    m.def("wasserstein_cost", wasserstein_cost);
+    m.def("wasserstein_dist", wasserstein_dist_p);
+    m.def("wasserstein_cost", wasserstein_cost_p);
+    m.def("wasserstein_dist", wasserstein_dist_d);
+    m.def("wasserstein_cost", wasserstein_cost_d);
 
     // Wasserstein - point clouds
     init_ws_geom(m);
