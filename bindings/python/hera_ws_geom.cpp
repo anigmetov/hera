@@ -19,6 +19,9 @@ using Tuple3dPoint = std::tuple<double, double, double>;
 using Vector2dPoints = std::vector<Pair2dPoint>;
 using Vector3dPoints = std::vector<Tuple3dPoint>;
 
+using Params = hera::AuctionParams<double>;
+using Result = hera::AuctionResult<double>;
+
 using Traits = hera::ws::dnn::DynamicPointTraits<double>;
 
 
@@ -53,7 +56,7 @@ DynamicPointVector convert_3d_points_to_dnn(const Vector3dPoints& points)
     return result;
 }
 
-double wasserstein_cost_geom(const Vector2dPoints& points_1, const Vector2dPoints& points_2, const std::vector<double>& prices)
+Result wasserstein_cost_geom_detailed(const Vector2dPoints& points_1, const Vector2dPoints& points_2,  Params& params, const std::vector<double>& prices)
 {
     using Traits = hera::ws::dnn::DynamicPointTraits<double>;
     constexpr int dim = 2;
@@ -67,14 +70,31 @@ double wasserstein_cost_geom(const Vector2dPoints& points_1, const Vector2dPoint
     auto dpoints_1 = convert_2d_points_to_dnn(points_1);
     auto dpoints_2 = convert_2d_points_to_dnn(points_2);
 
-    hera::AuctionParams<double> params;
-    params.dim = dim;
+    if (params.return_matching) {
+        std::cerr << "Matching for point clouds not implemented, need id for DynamicPoint" << std::endl;
+        throw std::runtime_error("Matching for point clouds not supported");
+    }
 
-    return hera::ws::wasserstein_cost(dpoints_1, dpoints_2, params, prices);
+    return hera::ws::wasserstein_cost_detailed(dpoints_1, dpoints_2, params, prices);
+}
+
+double wasserstein_cost_geom(const Vector2dPoints& points_1, const Vector2dPoints& points_2,  Params& params, const std::vector<double>& prices)
+{
+    return wasserstein_cost_geom_detailed(points_1, points_2, params, prices).cost;
+}
+
+double wasserstein_cost_geom_no_params(const Vector2dPoints& points_1, const Vector2dPoints& points_2, const std::vector<double>& prices)
+{
+    hera::AuctionParams<double> params;
+    params.dim = 2;
+
+    return wasserstein_cost_geom(points_1, points_2, params, prices);
 }
 
 
 void init_ws_geom(py::module& m)
 {
-    m.def("wasserstein_cost_geom", wasserstein_cost_geom);
+    m.def("wasserstein_cost_geom_detailed_", wasserstein_cost_geom_detailed);
+    m.def("wasserstein_cost_geom_", wasserstein_cost_geom_no_params);
+    m.def("wasserstein_cost_geom_", wasserstein_cost_geom);
 }

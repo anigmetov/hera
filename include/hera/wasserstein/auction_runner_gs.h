@@ -32,6 +32,8 @@ derivative works thereof, in binary and source code form.
 #include <memory>
 #include <unordered_set>
 
+#include "auction_params.h"
+#include "auction_result.h"
 #include "auction_oracle.h"
 
 namespace hera {
@@ -46,49 +48,45 @@ public:
     using IdxValPairR   = IdxValPair<Real>;
     using PointContainer = PointContainer_;
     using Prices         = std::vector<Real>;
+    using Params         = AuctionParams<Real>;
+    using Result         = AuctionResult<Real>;
 
 
     AuctionRunnerGS(const PointContainer& A,
                     const PointContainer& B,
-                    const AuctionParams<Real>& params,
+                    const Params& params,
                     const Prices& prices=Prices());
 
-    void set_epsilon(Real new_val) { assert(epsilon > 0.0); epsilon = new_val; };
+    void set_epsilon(Real new_val) { assert(new_val > 0.0); params.epsilon = new_val; };
     Real get_epsilon() const { return oracle.get_epsilon(); }
     Real get_wasserstein_cost();
     Real get_wasserstein_distance();
-    Real get_relative_error() const { return relative_error; };
+    Real get_relative_error() const { return result.relative_error; };
     void enable_logging(const char* log_filename, const size_t _max_unassigned_to_log);
 
-    int get_bidder_id(size_t bidder_idx) const { return bidders.at(bidder_idx).id; }
-    int get_bidders_item_id(size_t bidder_idx) const { return items.at(bidders_to_items.at(bidder_idx)).id; }
+    int get_bidder_id(size_t bidder_idx) const { return bidders[bidder_idx].get_id(); }
+    int get_bidders_item_id(size_t bidder_idx) const { return items[bidders_to_items[bidder_idx]].get_id(); }
 
-//private:
+    void run_auction();
+    Result get_result() const { return result; }
+private:
     // private data
     PointContainer bidders, items;
     const size_t num_bidders;
     const size_t num_items;
     std::vector<IdxType> items_to_bidders;
     std::vector<IdxType> bidders_to_items;
-    Real wasserstein_power;
-    Real epsilon;
-    Real delta;
-    Real internal_p;
-    Real initial_epsilon;
-    Real epsilon_common_ratio; // next epsilon = current epsilon / epsilon_common_ratio
-    const int max_num_phases; // maximal number of iterations of epsilon-scaling
-    bool tolerate_max_iter_exceeded;
-    Real weight_adj_const;
-    Real wasserstein_cost;
-    Real relative_error;
-    int dimension;
+
+    Params params;
+    Result result;
+
     // to get the 2 best items
     AuctionOracle oracle;
     std::unordered_set<size_t> unassigned_bidders;
+
     // private methods
-    void assign_item_to_bidder(const IdxType bidder_idx, const IdxType items_idx);
-    void run_auction();
-    void run_auction_phases(const int max_num_phases, const Real _initial_epsilon);
+    void assign_item_to_bidder(const IdxType item_idx, const IdxType bidder_idx);
+    void run_auction_phases();
     void run_auction_phase();
     void flush_assignment();
     // return 0, if item_idx is invalid
@@ -100,8 +98,6 @@ public:
     int count_unhappy();
     void print_matching();
     Real getDistanceToQthPowerInternal();
-    int num_phase { 0 };
-    int num_rounds { 0 };
     bool is_distance_computed {false};
 };
 

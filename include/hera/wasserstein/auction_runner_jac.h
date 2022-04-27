@@ -56,17 +56,19 @@ public:
     using IdxValPairR   = IdxValPair<Real>;
     using PointContainer = PointContainer_;
     using Prices         = std::vector<Real>;
+    using Params         = AuctionParams<Real>;
+    using Result         = AuctionResult<Real>;
 
     const Real k_lowest_bid_value = -1; // all bid values must be positive
 
 
     AuctionRunnerJac(const PointContainer& A,
                      const PointContainer& B,
-                     const AuctionParams<Real>& params,
+                     const Params& params,
                      const Prices& prices = Prices());
 
     void set_epsilon(Real new_val);
-    Real get_epsilon() const { return epsilon; }
+    Real get_epsilon() const { return oracle.get_epsilon(); }
     void run_auction();
     template<class Range>
     void run_bidding_step(const Range& r);
@@ -75,7 +77,12 @@ public:
     Real get_wasserstein_distance();
     Real get_wasserstein_cost();
     Real get_relative_error() const;
-//private:
+    Result get_result() const { return result; }
+
+    int get_bidder_id(size_t bidder_idx) const { return bidders[bidder_idx].get_id(); }
+    int get_bidders_item_id(size_t bidder_idx) const { return items[bidders_to_items[bidder_idx]].get_id(); }
+
+private:
     // private data
     PointContainer bidders;
     PointContainer items;
@@ -83,27 +90,17 @@ public:
     const size_t num_items;
     std::vector<IdxType> items_to_bidders;
     std::vector<IdxType> bidders_to_items;
-    Real wasserstein_power;
-    Real epsilon;
-    Real delta;
-    Real internal_p;
-    Real initial_epsilon;
-    const Real epsilon_common_ratio; // next epsilon = current epsilon / epsilon_common_ratio
-    const int max_num_phases; // maximal number of phases of epsilon-scaling
-    Real weight_adj_const;
-    Real wasserstein_cost;
+    Params params;
+    Result result;
     std::vector<IdxValPairR> bid_table;
     // to get the 2 best items
     AuctionOracle oracle;
     std::unordered_set<size_t> unassigned_bidders;
     std::unordered_set<size_t> items_with_bids;
+
     // to imitate Gauss-Seidel
-    const size_t max_bids_per_round;
     Real partial_cost { 0.0 };
     bool is_distance_computed { false };
-    int num_rounds { 0 };
-    int num_phase { 0 };
-    int dimension;
 
     size_t unassigned_threshold; // for experiments
 
@@ -123,8 +120,6 @@ public:
     const Real total_bidders_persistence;
     Real unassigned_bidders_persistence;
     Real unassigned_items_persistence;
-    Real gamma_threshold;
-
 
     size_t num_diag_items { 0 };
     size_t num_normal_items { 0 };
@@ -134,13 +129,11 @@ public:
 
 #endif
 
-
-
     // private methods
     void assign_item_to_bidder(const IdxType bidder_idx, const IdxType items_idx);
     void assign_to_best_bidder(const IdxType items_idx);
     void clear_bid_table();
-    void run_auction_phases(const int max_num_phases, const Real _initial_epsilon);
+    void run_auction_phases();
     void run_auction_phase();
     void submit_bid(IdxType bidder_idx, const IdxValPairR& items_bid_value_pair);
     void flush_assignment();

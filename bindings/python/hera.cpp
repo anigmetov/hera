@@ -11,6 +11,7 @@ namespace py = pybind11;
 
 using DiagramPoint = hera::DiagramPoint<double>;
 using AuctionParams = hera::AuctionParams<double>;
+using AuctionResult = hera::AuctionResult<double>;
 using PairVector = std::vector<std::pair<double, double>>;
 using DgmPtVector = std::vector<DiagramPoint>;
 
@@ -78,7 +79,22 @@ PYBIND11_MODULE(_hera, m)
             .def_readwrite("user_tag", &DiagramPoint::user_tag)
             ;
 
-    py::class_<AuctionParams>(m, "AuctionParams")
+    py::class_<AuctionResult>(m, "WassersteinResult")
+            .def(py::init<>())
+            .def_readwrite("num_rounds", &AuctionResult::num_rounds)
+            .def_readwrite("num_phases", &AuctionResult::num_phases)
+            .def_readwrite("distance", &AuctionResult::distance)
+            .def_readwrite("cost", &AuctionResult::cost)
+            .def_readwrite("final_relative_error", &AuctionResult::final_relative_error)
+            .def_readwrite("matching_a_to_b", &AuctionResult::matching_a_to_b_)
+            .def_readwrite("matching_b_to_a", &AuctionResult::matching_b_to_a_)
+            .def("compute_distance", &AuctionResult::compute_distance)
+            .def("clear_matching", &AuctionResult::clear_matching)
+            .def("add_to_matching", &AuctionResult::add_to_matching)
+            .def("__str__", [](const AuctionResult& r) { std::stringstream ss; ss << r; return ss.str(); })
+            ;
+
+    py::class_<AuctionParams>(m, "WassersteinParams")
             .def(py::init<>())
             .def_readwrite("wasserstein_power", &AuctionParams::wasserstein_power)
             .def_readwrite("delta", &AuctionParams::delta)
@@ -88,14 +104,9 @@ PYBIND11_MODULE(_hera, m)
             .def_readwrite("max_num_phases", &AuctionParams::max_num_phases)
             .def_readwrite("max_bids_per_round", &AuctionParams::max_bids_per_round)
             .def_readwrite("dim", &AuctionParams::dim)
-            .def_readwrite("final_relative_error", &AuctionParams::final_relative_error)
             .def_readwrite("tolerate_max_iter_exceeded", &AuctionParams::tolerate_max_iter_exceeded)
             .def_readwrite("return_matching", &AuctionParams::return_matching)
             .def_readwrite("match_inf_points", &AuctionParams::match_inf_points)
-            .def_readwrite("matching_a_to_b", &AuctionParams::matching_a_to_b_)
-            .def_readwrite("matching_b_to_a", &AuctionParams::matching_b_to_a_)
-            .def("clear_matching", &AuctionParams::clear_matching)
-            .def("add_to_matching", &AuctionParams::add_to_matching)
             ;
 
     // bottleneck
@@ -105,10 +116,10 @@ PYBIND11_MODULE(_hera, m)
     m.def("bottleneck_distance_exact_with_edge", bottleneck_distance_exact_with_edge);
 
     // Wasserstein
-    m.def("wasserstein_dist", wasserstein_dist_p);
-    m.def("wasserstein_cost", wasserstein_cost_p);
-    m.def("wasserstein_dist", wasserstein_dist_d);
-    m.def("wasserstein_cost", wasserstein_cost_d);
+    m.def("wasserstein_dist_", wasserstein_dist_p);
+    m.def("wasserstein_cost_", wasserstein_cost_p);
+    m.def("wasserstein_dist_", wasserstein_dist_d);
+    m.def("wasserstein_cost_", wasserstein_cost_d);
 
     // Wasserstein - point clouds
     init_ws_geom(m);

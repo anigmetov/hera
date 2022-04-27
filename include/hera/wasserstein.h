@@ -35,6 +35,8 @@ derivative works thereof, in binary and source code form.
 
 #include "wasserstein/def_debug_ws.h"
 #include "wasserstein/basic_defs_ws.h"
+#include "wasserstein/auction_params.h"
+#include "wasserstein/auction_result.h"
 #include "common/diagram_reader.h"
 #include "wasserstein/auction_runner_gs.h"
 #include "wasserstein/auction_runner_jac.h"
@@ -70,18 +72,18 @@ namespace ws
     }
 
     // to handle points with one coordinate = infinity
-    template<class T, class P>
-    inline decltype(auto) get_one_dimensional_cost(std::vector<T>& pts_A, std::vector<T>& pts_B, P& params)
+    template<class T, class P, class R>
+    inline void get_one_dimensional_cost(std::vector<T>& pts_A, std::vector<T>& pts_B, const P& params, R& result)
     {
         using RealType = typename std::remove_reference<decltype(std::get<0>(pts_A[0]))>::type;
 
-        if (pts_A.size() != pts_B.size())
-            return std::numeric_limits<RealType>::infinity();
+        if (pts_A.size() != pts_B.size()) {
+            result.cost = std::numeric_limits<RealType>::infinity();
+            return;
+        }
 
         std::sort(pts_A.begin(), pts_A.end());
         std::sort(pts_B.begin(), pts_B.end());
-
-        RealType result = 0;
 
         for(size_t i = 0; i < pts_A.size(); ++i) {
             RealType a = std::get<0>(pts_A[i]);
@@ -90,12 +92,11 @@ namespace ws
             if (params.return_matching and params.match_inf_points) {
                 int id_a = std::get<1>(pts_A[i]);
                 int id_b = std::get<1>(pts_B[i]);
-                params.add_to_matching(id_a, id_b);
+                result.add_to_matching(id_a, id_b);
             }
 
-            result += std::pow(std::fabs(a - b), params.wasserstein_power);
+            result.cost += std::pow(std::fabs(a - b), params.wasserstein_power);
         }
-        return result;
     }
 
 
@@ -190,6 +191,37 @@ namespace ws
 
     };
 
+    // CAUTION:
+    // this function assumes that all coordinates are finite
+    // points at infinity are processed in wasserstein_cost
+    template<class RealType>
+    inline AuctionResult<RealType> wasserstein_cost_vec_detailed(const std::vector<DiagramPoint<RealType>>& A,
+            const std::vector<DiagramPoint<RealType>>& B,
+            const AuctionParams<RealType> params)
+    {
+        if (params.wasserstein_power < 1.0) {
+            throw std::runtime_error("Bad q in Wasserstein " + std::to_string(params.wasserstein_power));
+        }
+        if (params.delta < 0.0) {
+            throw std::runtime_error("Bad delta in Wasserstein " + std::to_string(params.delta));
+        }
+        if (params.initial_epsilon < 0.0) {
+            throw std::runtime_error("Bad initial epsilon in Wasserstein" + std::to_string(params.initial_epsilon));
+        }
+        if (params.epsilon_common_ratio < 0.0) {
+            throw std::runtime_error("Bad epsilon factor in Wasserstein " + std::to_string(params.epsilon_common_ratio));
+        }
+
+        if (A.empty() and B.empty()) {
+            return AuctionResult<RealType>();
+        }
+
+        // just use Gauss-Seidel
+        AuctionRunnerGS<RealType> auction(A, B, params);
+
+        auction.run_auction();
+        return auction.get_result();
+    }
 
     // CAUTION:
     // this function assumes that all coordinates are finite
@@ -237,36 +269,29 @@ namespace ws
 
 } // ws
 
-
-
 template<class PairContainer>
-inline typename DiagramTraits<PairContainer>::RealType
-wasserstein_cost(const PairContainer& A,
-                const PairContainer& B,
-                AuctionParams< typename DiagramTraits<PairContainer>::RealType >& params)
+inline AuctionResult<typename DiagramTraits<PairContainer>::RealType>
+wasserstein_cost_detailed(const PairContainer& A,
+        const PairContainer& B,
+        const AuctionParams<typename DiagramTraits<PairContainer>::RealType >& params)
 {
     using Traits = DiagramTraits<PairContainer>;
-
-    //using PointType = typename Traits::PointType;
     using RealType  = typename Traits::RealType;
+    using DgmPoint = hera::DiagramPoint<RealType>;
+    using OneDimPoint = std::tuple<RealType, int>;
 
     constexpr RealType plus_inf = std::numeric_limits<RealType>::infinity();
     constexpr RealType minus_inf = -std::numeric_limits<RealType>::infinity();
 
     // TODO: return matching here too?
     if (hera::ws::are_equal(A, B)) {
-        return 0.0;
+        return AuctionResult<RealType>();
     }
 
     bool a_empty = true;
     bool b_empty = true;
-    RealType total_cost_A = 0.0;
-    RealType total_cost_B = 0.0;
-
-    using DgmPoint = hera::DiagramPoint<RealType>;
-    using OneDimPoint = std::tuple<RealType, int>;
-
-    params.clear_matching();
+    RealType total_cost_A = 0;
+    RealType total_cost_B = 0;
 
     std::vector<DgmPoint> dgm_A, dgm_B;
     // points at infinity
@@ -338,36 +363,53 @@ wasserstein_cost(const PairContainer& A,
         }
     }
 
-    RealType infinity_cost = 0;
+    AuctionResult<RealType> infinity_result;
 
-    if (n_plus_inf_minus_inf_A != n_plus_inf_minus_inf_B || n_minus_inf_plus_inf_A != n_minus_inf_plus_inf_B)
-        infinity_cost = plus_inf;
-    else {
-        infinity_cost += ws::get_one_dimensional_cost(x_plus_A, x_plus_B, params);
-        infinity_cost += ws::get_one_dimensional_cost(x_minus_A, x_minus_B, params);
-        infinity_cost += ws::get_one_dimensional_cost(y_plus_A, y_plus_B, params);
-        infinity_cost += ws::get_one_dimensional_cost(y_minus_A, y_minus_B, params);
-    }
-
-    if (a_empty)
-        return total_cost_B + infinity_cost;
-
-    if (b_empty)
-        return total_cost_A + infinity_cost;
-
-    if (infinity_cost == plus_inf) {
-        return infinity_cost;
+    if (n_plus_inf_minus_inf_A != n_plus_inf_minus_inf_B || n_minus_inf_plus_inf_A != n_minus_inf_plus_inf_B) {
+        infinity_result.cost = plus_inf;
+        infinity_result.distance = plus_inf;
+        return infinity_result;
     } else {
-        return infinity_cost + hera::ws::wasserstein_cost_vec(dgm_A, dgm_B, params);
+        ws::get_one_dimensional_cost(x_plus_A, x_plus_B, params, infinity_result);
+        ws::get_one_dimensional_cost(x_minus_A, x_minus_B, params, infinity_result);
+        ws::get_one_dimensional_cost(y_plus_A, y_plus_B, params, infinity_result);
+        ws::get_one_dimensional_cost(y_minus_A, y_minus_B, params, infinity_result);
     }
 
+    if (a_empty) {
+        AuctionResult<RealType> b_res;
+        b_res.cost = total_cost_B;
+        return add_results(b_res, infinity_result, params.wasserstein_power);
+    }
+
+    if (b_empty) {
+        AuctionResult<RealType> a_res;
+        a_res.cost = total_cost_A;
+        return add_results(a_res, infinity_result, params.wasserstein_power);
+    }
+
+    if (infinity_result.cost == plus_inf) {
+        return infinity_result;
+    } else {
+        return add_results(infinity_result, hera::ws::wasserstein_cost_vec_detailed(dgm_A, dgm_B, params), params.wasserstein_power);
+    }
+}
+
+
+template<class PairContainer>
+inline typename DiagramTraits<PairContainer>::RealType
+wasserstein_cost(const PairContainer& A,
+                const PairContainer& B,
+                const AuctionParams< typename DiagramTraits<PairContainer>::RealType > params)
+{
+    return wasserstein_cost_detailed(A, B, params).cost;
 }
 
 template<class PairContainer>
 inline typename DiagramTraits<PairContainer>::RealType
 wasserstein_dist(const PairContainer& A,
                  const PairContainer& B,
-                 AuctionParams<typename DiagramTraits<PairContainer>::RealType>& params)
+                 const AuctionParams<typename DiagramTraits<PairContainer>::RealType> params)
 {
     using Real = typename DiagramTraits<PairContainer>::RealType;
     return std::pow(hera::wasserstein_cost(A, B, params), Real(1.)/params.wasserstein_power);

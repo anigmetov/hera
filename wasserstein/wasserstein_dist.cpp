@@ -118,11 +118,11 @@ int main(int argc, char* argv[])
     if (params.max_bids_per_round == 0)
         params.max_bids_per_round = std::numeric_limits<decltype(params.max_bids_per_round)>::max();
 
-    Real res = hera::wasserstein_dist(diagramA, diagramB, params);
+    auto res = hera::wasserstein_cost_detailed(diagramA, diagramB, params);
 
-    std::cout << std::setprecision(15) << res << std::endl;
+    std::cout << std::setprecision(15) << res.distance << std::endl;
     if (print_relative_error)
-        std::cout << "Relative error: " << params.final_relative_error << std::endl;
+        std::cout << "Relative error: " << res.final_relative_error << std::endl;
 
     return 0;
 

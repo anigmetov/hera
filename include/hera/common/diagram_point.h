@@ -88,6 +88,8 @@ namespace hera {
         bool is_diagonal() const { return type == DIAG; }
         bool is_normal() const { return type == NORMAL; }
 
+        int get_id() const { return id; }
+
         // TODO: here we assume that Real has true infinity
         bool is_infinity() const
         {

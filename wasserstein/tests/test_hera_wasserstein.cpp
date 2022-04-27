@@ -160,6 +160,8 @@ TEST_CASE("file cases", "wasserstein_dist")
             REQUIRE( read_file_B );
             double hera_answer = hera::wasserstein_dist(diagram_A, diagram_B, params);
             bool is_correct = (hera_answer == ts.answer) || (fabs(hera_answer - ts.answer) <= 0.01 * hera_answer);
+            if (not is_correct)
+                std::cerr << ts.file_1 << ", " << ts.file_2 << ", must be " << ts.answer << ", got " << hera_answer << std::endl;
             REQUIRE(is_correct);
         }
     }

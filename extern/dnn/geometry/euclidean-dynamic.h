@@ -36,6 +36,9 @@ class DynamicPointVector
                 return (static_cast<Real*>(p))[i];
             }
 
+            // TODO: fix to return matching for point clouds
+            int get_id() const { return 0; }
+
         };
         struct iterator;
         typedef             iterator                                    const_iterator;
