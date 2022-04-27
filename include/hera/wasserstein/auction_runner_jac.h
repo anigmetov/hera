@@ -55,13 +55,15 @@ public:
     using DgmPoint      = typename AuctionOracle::DiagramPointR;
     using IdxValPairR   = IdxValPair<Real>;
     using PointContainer = PointContainer_;
+    using Prices         = std::vector<Real>;
 
     const Real k_lowest_bid_value = -1; // all bid values must be positive
 
 
     AuctionRunnerJac(const PointContainer& A,
                      const PointContainer& B,
-                     const AuctionParams<Real>& params);
+                     const AuctionParams<Real>& params,
+                     const Prices& prices = Prices());
 
     void set_epsilon(Real new_val);
     Real get_epsilon() const { return epsilon; }

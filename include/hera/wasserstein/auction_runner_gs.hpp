@@ -54,7 +54,8 @@ namespace ws {
 template<class R, class AO, class PC>
 AuctionRunnerGS<R, AO, PC>::AuctionRunnerGS(const PC& A,
                                         const PC& B,
-                                        const AuctionParams<Real>& params) :
+                                        const AuctionParams<Real>& params,
+                                        const Prices& prices) :
     bidders(A),
     items(B),
     num_bidders(A.size()),
@@ -72,6 +73,9 @@ AuctionRunnerGS<R, AO, PC>::AuctionRunnerGS(const PC& A,
     oracle(bidders, items, params)
 
 {
+    if (!prices.empty())
+        oracle.set_prices(prices);
+
     assert(initial_epsilon >= 0.0 );
     assert(epsilon_common_ratio >= 0.0 );
     assert(A.size() == B.size());

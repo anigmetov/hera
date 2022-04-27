@@ -53,7 +53,8 @@ namespace ws {
     template<class R, class AO, class PC>
     AuctionRunnerJac<R, AO, PC>::AuctionRunnerJac(const PointContainer& A,
                                               const PointContainer& B,
-                                              const AuctionParams<Real>& params) :
+                                              const AuctionParams<Real>& params,
+                                              const Prices& prices) :
             bidders(A),
             items(B),
             num_bidders(A.size()),
@@ -91,6 +92,9 @@ namespace ws {
 #endif
     {
         assert(A.size() == B.size());
+
+        if (!prices.empty())
+            oracle.set_prices(prices);
 
 #ifndef WASSERSTEIN_PURE_GEOM
         for (const auto &p : bidders) {

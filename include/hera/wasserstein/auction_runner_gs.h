@@ -45,11 +45,13 @@ public:
     using DgmPoint      = typename AuctionOracle::DiagramPointR;
     using IdxValPairR   = IdxValPair<Real>;
     using PointContainer = PointContainer_;
+    using Prices         = std::vector<Real>;
 
 
     AuctionRunnerGS(const PointContainer& A,
                     const PointContainer& B,
-                    const AuctionParams<Real>& params);
+                    const AuctionParams<Real>& params,
+                    const Prices& prices=Prices());
 
     void set_epsilon(Real new_val) { assert(epsilon > 0.0); epsilon = new_val; };
     Real get_epsilon() const { return oracle.get_epsilon(); }

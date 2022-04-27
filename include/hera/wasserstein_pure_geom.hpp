@@ -30,7 +30,7 @@ namespace ws
     using AuctionRunnerJacR = typename hera::ws::AuctionRunnerJac<Real, hera::ws::AuctionOracleKDTreePureGeom<Real>, hera::ws::dnn::DynamicPointVector<Real>>;
 
 
-inline double wasserstein_cost(const DynamicPointVector<double>& set_A, const DynamicPointVector<double>& set_B, const AuctionParams<double>& params)
+inline double wasserstein_cost(const DynamicPointVector<double>& set_A, const DynamicPointVector<double>& set_B, const AuctionParams<double>& params, const std::vector<double>& prices=std::vector<double>())
 {
     if (params.wasserstein_power < 1.0) {
         throw std::runtime_error("Bad q in Wasserstein " + std::to_string(params.wasserstein_power));
@@ -64,11 +64,11 @@ inline double wasserstein_cost(const DynamicPointVector<double>& set_A, const Dy
     }
 
     if (params.max_bids_per_round == 1) {
-        hera::ws::AuctionRunnerGSR<double> auction(set_A_copy, set_B_copy, params);
+        hera::ws::AuctionRunnerGSR<double> auction(set_A_copy, set_B_copy, params, prices);
         auction.run_auction();
         return auction.get_wasserstein_cost();
     } else {
-        hera::ws::AuctionRunnerJacR<double> auction(set_A_copy, set_B_copy, params);
+        hera::ws::AuctionRunnerJacR<double> auction(set_A_copy, set_B_copy, params, prices);
         auction.run_auction();
         return auction.get_wasserstein_cost();
     }
