@@ -15,7 +15,7 @@ add_custom_target  (hera ALL ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_CURRENT_SOURCE_DIR}/hera ${MODULE_OUTPUT_DIRECTORY}/hera
                     DEPENDS ${HERA_PYTHON})
 
-pybind11_add_module         (_hera hera.cpp hera_bt.cpp hera_ws.cpp hera_ws_geom.cpp)
+pybind11_add_module         (_hera hera.cpp hera_ws_geom.cpp)
 target_include_directories  (_hera PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../include")
 target_include_directories  (_hera PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../extern")
 

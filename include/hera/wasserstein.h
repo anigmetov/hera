@@ -35,35 +35,13 @@ derivative works thereof, in binary and source code form.
 
 #include "wasserstein/def_debug_ws.h"
 #include "wasserstein/basic_defs_ws.h"
-#include "wasserstein/diagram_reader.h"
+#include "common/diagram_reader.h"
 #include "wasserstein/auction_runner_gs.h"
 #include "wasserstein/auction_runner_jac.h"
 
 
 namespace hera
 {
-
-template<class PairContainer_, class PointType_ = typename std::remove_reference< decltype(*std::declval<PairContainer_>().begin())>::type >
-struct DiagramTraits
-{
-    using PointType = PointType_;
-    using RealType  = typename std::remove_reference< decltype(std::declval<PointType>()[0]) >::type;
-
-    static RealType get_x(const PointType& p)       { return p[0]; }
-    static RealType get_y(const PointType& p)       { return p[1]; }
-    static IdType   get_id(const PointType& p)      { return p.id; }
-};
-
-template<class PairContainer_, class RealType_>
-struct DiagramTraits<PairContainer_, std::pair<RealType_, RealType_>>
-{
-    using RealType  = RealType_;
-    using PointType = std::pair<RealType, RealType>;
-
-    static RealType get_x(const PointType& p)       { return p.first; }
-    static RealType get_y(const PointType& p)       { return p.second; }
-    static IdType   get_id(const PointType&)        { return 0; }
-};
 
 
 namespace ws
@@ -110,8 +88,8 @@ namespace ws
             RealType b = std::get<0>(pts_B[i]);
 
             if (params.return_matching and params.match_inf_points) {
-                IdType id_a = std::get<1>(pts_A[i]);
-                IdType id_b = std::get<1>(pts_B[i]);
+                int id_a = std::get<1>(pts_A[i]);
+                int id_b = std::get<1>(pts_B[i]);
                 params.add_to_matching(id_a, id_b);
             }
 
@@ -248,8 +226,8 @@ namespace ws
 
         if (params.return_matching) {
             for(size_t bidder_idx = 0; bidder_idx < auction.num_bidders; ++bidder_idx) {
-                IdType bidder_id = auction.get_bidder_id(bidder_idx);
-                IdType item_id = auction.get_bidders_item_id(bidder_idx);
+                int bidder_id = auction.get_bidder_id(bidder_idx);
+                int item_id = auction.get_bidders_item_id(bidder_idx);
                 params.add_to_matching(bidder_id, item_id);
             }
         }
@@ -286,7 +264,7 @@ wasserstein_cost(const PairContainer& A,
     RealType total_cost_B = 0.0;
 
     using DgmPoint = hera::DiagramPoint<RealType>;
-    using OneDimPoint = std::tuple<RealType, IdType>;
+    using OneDimPoint = std::tuple<RealType, int>;
 
     params.clear_matching();
 
@@ -305,7 +283,7 @@ wasserstein_cost(const PairContainer& A,
         a_empty = false;
         RealType x = Traits::get_x(point_A);
         RealType y = Traits::get_y(point_A);
-        IdType  id = Traits::get_id(point_A);
+        int  id = Traits::get_id(point_A);
 
         // skip diagonal points, including (inf, inf), (-inf, -inf)
         if (x == y) {
@@ -335,7 +313,7 @@ wasserstein_cost(const PairContainer& A,
         b_empty = false;
         RealType x = Traits::get_x(point_B);
         RealType y = Traits::get_y(point_B);
-        IdType  id = Traits::get_id(point_B);
+        int     id = Traits::get_id(point_B);
 
         if (x == y) {
             continue;

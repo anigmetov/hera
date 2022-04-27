@@ -1,5 +1,5 @@
-#ifndef HERA_DIAGRAM_TRAITS_H
-#define HERA_DIAGRAM_TRAITS_H
+#ifndef HERA_COMMON_DIAGRAM_TRAITS_H
+#define HERA_COMMON_DIAGRAM_TRAITS_H
 
 namespace hera {
 
@@ -12,34 +12,21 @@ struct DiagramTraits
 
     static RealType get_x(const PointType& p)       { return p[0]; }
     static RealType get_y(const PointType& p)       { return p[1]; }
+    static int     get_id(const PointType& p)       { return p.id; }
 };
 
-
-template<class PairContainer_>
-struct DiagramTraits<PairContainer_, std::pair<double, double>>
+template<class PairContainer_, class RealType_>
+struct DiagramTraits<PairContainer_, std::pair<RealType_, RealType_>>
 {
-    using PointType = std::pair<double, double>;
-    using RealType  = double;
-    using Container = std::vector<PointType>;
+    using RealType  = RealType_;
+    using PointType = std::pair<RealType, RealType>;
 
     static RealType get_x(const PointType& p)       { return p.first; }
     static RealType get_y(const PointType& p)       { return p.second; }
+    static int     get_id(const PointType&)         { return 0; }
 };
-
-
-template<class PairContainer_>
-struct DiagramTraits<PairContainer_, std::pair<float, float>>
-{
-    using PointType = std::pair<float, float>;
-    using RealType  = float;
-    using Container = std::vector<PointType>;
-
-    static RealType get_x(const PointType& p)       { return p.first; }
-    static RealType get_y(const PointType& p)       { return p.second; }
-};
-
 
 } // end namespace hera
 
 
-#endif // HERA_DIAGRAM_TRAITS_H
+#endif // HERA_COMMON_DIAGRAM_TRAITS_H

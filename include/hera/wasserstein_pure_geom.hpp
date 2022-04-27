@@ -4,7 +4,7 @@
 #define WASSERSTEIN_PURE_GEOM
 
 
-#include "wasserstein/diagram_reader.h"
+#include "common/diagram_reader.h"
 #include "wasserstein/auction_oracle_kdtree_pure_geom.h"
 #include "wasserstein/auction_runner_gs.h"
 #include "wasserstein/auction_runner_jac.h"

@@ -48,11 +48,11 @@ int main(int argc, char* argv[])
 
     PairVector diagramA, diagramB;
     int decPrecision { 0 };
-    if (!hera::readDiagramPointSet(argv[1], diagramA, decPrecision)) {
+    if (!hera::read_diagram_point_set(argv[1], diagramA, decPrecision)) {
         std::exit(1);
     }
 
-    if (!hera::readDiagramPointSet(argv[2], diagramB, decPrecision)) {
+    if (!hera::read_diagram_point_set(argv[2], diagramB, decPrecision)) {
         std::exit(1);
     }
 

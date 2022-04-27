@@ -36,7 +36,7 @@ derivative works thereof, in binary and source code form.
 #include <limits>
 #include <random>
 
-#include "diagram_traits.h"
+#include <hera/common.h>
 #include "basic_defs_bt.h"
 #include "bound_match.h"
 

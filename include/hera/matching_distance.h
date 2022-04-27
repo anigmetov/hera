@@ -9,13 +9,13 @@
 #include <algorithm>
 
 
-#include "common_defs.h"
-#include "cell_with_value.h"
-#include "box.h"
-#include "dual_point.h"
-#include "dual_box.h"
-#include "persistence_module.h"
-#include "bifiltration.h"
+#include "matching/common_defs.h"
+#include "matching/cell_with_value.h"
+#include "matching/box.h"
+#include "matching/dual_point.h"
+#include "matching/dual_box.h"
+#include "matching/persistence_module.h"
+#include "matching/bifiltration.h"
 #include "bottleneck.h"
 
 namespace md {
@@ -287,4 +287,4 @@ namespace md {
 
 } // namespace md
 
-#include "matching_distance.hpp"
+#include "matching/matching_distance.hpp"

@@ -23,5 +23,5 @@ enable_testing()
 
 add_subdirectory(bottleneck)
 add_subdirectory(wasserstein)
-#add_subdirectory(matching)
+add_subdirectory(matching)
 add_subdirectory(bindings/python)

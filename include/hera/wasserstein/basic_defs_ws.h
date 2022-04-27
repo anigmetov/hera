@@ -48,53 +48,16 @@ derivative works thereof, in binary and source code form.
 #include <hera/common.h>
 #include "dnn/geometry/euclidean-dynamic.h"
 #include "def_debug_ws.h"
-
-#define MIN_VALID_ID 10
+#include "auction_params.h"
 
 namespace hera
 {
-
-using IdType = int;
 
 template<class Real = double>
 inline bool is_p_valid_norm(const Real& p)
 {
     return is_infinity<Real>(p) or p >= Real(1);
 }
-
-template<class Real = double>
-struct AuctionParams
-{
-    Real wasserstein_power { 1.0 };
-    Real delta { 0.01 }; // relative error
-    Real internal_p { get_infinity<Real>() };
-    Real initial_epsilon { 0.0 }; // 0.0 means maxVal / 4.0
-    Real epsilon_common_ratio { 5.0 };
-    Real gamma_threshold { 0.0 };  // for experiments, not in use now
-    int max_num_phases { std::numeric_limits<decltype(max_num_phases)>::max() };
-    int max_bids_per_round { 1 };  // imitate Gauss-Seidel is default behaviour
-    unsigned int dim { 2 }; // for pure geometric version only; ignored in persistence diagrams
-    Real final_relative_error;  // out parameter - after auction terminates, contains the real relative error
-    bool tolerate_max_iter_exceeded { false }; // whether auction should throw an exception on max. iterations exceeded
-    bool return_matching { false }; // whether to return optimal matching along with cost
-    bool match_inf_points { true }; // whether to add infinite points to matching; ignored, if return_matching is false
-
-    std::unordered_map<IdType, IdType> matching_a_to_b_;
-    std::unordered_map<IdType, IdType> matching_b_to_a_;
-
-    void clear_matching()
-    {
-        matching_a_to_b_.clear();
-        matching_b_to_a_.clear();
-    }
-
-    void add_to_matching(IdType a, IdType b)
-    {
-        assert(matching_a_to_b_.count(a) == 0 and matching_b_to_a_.count(b) == 0);
-        matching_a_to_b_[a] = b;
-        matching_b_to_a_[b] = a;
-    }
-};
 
 namespace ws
 {
@@ -113,139 +76,6 @@ namespace ws
         return output;
     }
 
-    enum class OwnerType { k_none, k_normal, k_diagonal };
-
-    inline std::ostream& operator<<(std::ostream& s, const OwnerType t)
-    {
-        switch(t)
-        {
-            case OwnerType::k_none : s << "NONE"; break;
-            case OwnerType::k_normal: s << "NORMAL"; break;
-            case OwnerType::k_diagonal: s << "DIAGONAL"; break;
-        }
-        return s;
-    }
-
-//    template<class Real_ = double>
-//    struct DiagramPoint
-//    {
-//        using Real = Real_;
-//        // data members
-//        // Points above the diagonal have type NORMAL
-//        // Projections onto the diagonal have type DIAG
-//        // for DIAG points only x-coordinate is relevant
-//        enum Type { NORMAL, DIAG};
-//        Real x, y;
-//        Type type;
-//        int id;
-//        // methods
-//        DiagramPoint(Real xx, Real yy, Type ttype, int id);
-//        bool is_diagonal() const { return type == DIAG; }
-//        bool is_normal() const { return type == NORMAL; }
-//        Real getRealX() const; // return the x-coord
-//        Real getRealY() const; // return the y-coord
-//        Real persistence_lp(const Real p) const;
-//        struct LexicographicCmp
-//        {
-//            bool    operator()(const DiagramPoint& p1, const DiagramPoint& p2) const
-//            { return p1.type < p2.type || (p1.type == p2.type && (p1.x < p2.x || (p1.x == p2.x && p1.y < p2.y))); }
-//        };
-
-//        const Real& operator[](const int idx) const
-//        {
-//            switch(idx)
-//            {
-//                case 0 : return x;
-//                         break;
-//                case 1 : return y;
-//                         break;
-//                default: throw std::out_of_range("DiagramPoint has dimension 2");
-//            }
-//        }
-
-//        Real& operator[](const int idx)
-//        {
-//            switch(idx)
-//            {
-//                case 0 : return x;
-//                         break;
-//                case 1 : return y;
-//                         break;
-//                default: throw std::out_of_range("DiagramPoint has dimension 2");
-//            }
-//        }
-
-//    };
-
-
-//    template<class Real>
-//    struct DiagramPointHash {
-//        size_t operator()(const DiagramPoint<Real> &p) const
-//        {
-//            std::size_t seed = 0;
-//            hash_combine(seed, std::hash<Real>(p.x));
-//            hash_combine(seed, std::hash<Real>(p.y));
-//            hash_combine(seed, std::hash<bool>(p.is_diagonal()));
-//            return seed;
-//        }
-//    };
-
-
-//#ifndef FOR_R_TDA
-//    template <class Real = double>
-//    inline std::ostream& operator<<(std::ostream& output, const DiagramPoint<Real> p);
-//#endif
-
-//    template<class Real, class Pt>
-//    struct DistImpl
-//    {
-//        Real operator()(const Pt& a, const Pt& b, const Real p, const int dim)
-//        {
-//            Real result = 0.0;
-//            if (hera::is_infinity(p)) {
-//                for(int d = 0; d < dim; ++d) {
-//                    result = std::max(result, std::fabs(a[d] - b[d]));
-//                }
-//            } else if (p == 1.0) {
-//                for(int d = 0; d < dim; ++d) {
-//                    result += std::fabs(a[d] - b[d]);
-//                }
-//            } else {
-//                assert(p > 1.0);
-//                for(int d = 0; d < dim; ++d) {
-//                    result += std::pow(std::fabs(a[d] - b[d]), p);
-//                }
-//                result = std::pow(result, 1.0 / p);
-//            }
-//            return result;
-//        }
-//    };
-
-//    template<class Real>
-//    struct DistImpl<Real, DiagramPoint<Real>>
-//    {
-//        Real operator()(const DiagramPoint<Real>& a, const DiagramPoint<Real>& b, const Real p, const int [>dim <])
-//        {
-//            Real result = 0.0;
-//            if ( a.is_diagonal() and b.is_diagonal()) {
-//                return result;
-//            } else if (hera::is_infinity(p)) {
-//               result = std::max(std::fabs(a.getRealX() - b.getRealX()), std::fabs(a.getRealY() - b.getRealY()));
-//            } else if (p == 1.0) {
-//                result = std::fabs(a.getRealX() - b.getRealX()) + std::fabs(a.getRealY() - b.getRealY());
-//            } else {
-//                assert(p > 1.0);
-//                result = std::pow(std::pow(std::fabs(a.getRealX() - b.getRealX()), p) + std::pow(std::fabs(a.getRealY() - b.getRealY()), p), 1.0 / p);
-//            }
-//            return result;
-//        }
-//    };
-
-//    template<class R, class Pt>
-//    inline R dist_lp(const Pt& a, const Pt& b, const R p, const int dim)
-//    {
-//        return DistImpl<R, Pt>()(a, b, p, dim);
-//    }
 
     // TODO
     template<class Real, typename DiagPointContainer>
@@ -287,7 +117,6 @@ namespace ws
 
         return result;
     }
-
 
     template<class Container>
     inline std::string format_container_to_log(const Container& cont);

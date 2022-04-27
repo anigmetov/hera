@@ -1,5 +1,3 @@
-#include "common_defs.h"
-
 #include <iostream>
 #include <string>
 #include <cassert>

@@ -37,7 +37,6 @@ DynamicPointVector convert_2d_points_to_dnn(const Vector2dPoints& points)
     return result;
 }
 
-
 DynamicPointVector convert_3d_points_to_dnn(const Vector3dPoints& points)
 {
     constexpr int dim = 3;
