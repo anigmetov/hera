@@ -92,6 +92,7 @@ PYBIND11_MODULE(_hera, m)
             .def("clear_matching", &AuctionResult::clear_matching)
             .def("add_to_matching", &AuctionResult::add_to_matching)
             .def("__str__", [](const AuctionResult& r) { std::stringstream ss; ss << r; return ss.str(); })
+            .def("__repr__", [](const AuctionResult& r) { std::stringstream ss; ss << r; return ss.str(); })
             ;
 
     py::class_<AuctionParams>(m, "WassersteinParams")
@@ -107,6 +108,7 @@ PYBIND11_MODULE(_hera, m)
             .def_readwrite("tolerate_max_iter_exceeded", &AuctionParams::tolerate_max_iter_exceeded)
             .def_readwrite("return_matching", &AuctionParams::return_matching)
             .def_readwrite("match_inf_points", &AuctionParams::match_inf_points)
+            .def("__repr__", [](const AuctionParams& p) { std::stringstream ss; ss << p; return ss.str(); })
             ;
 
     // bottleneck
