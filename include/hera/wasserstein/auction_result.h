@@ -14,8 +14,11 @@ struct AuctionResult {
     Real cost {0};                  // cost of the final matching
     Real distance {0};              // Wasserstein distance, cost^(1/q)
     Real final_relative_error {0};  // the real relative error, can be less than user-specified delta
-    long int num_rounds {0};     // total number of bidding rounds in all phases
-    int num_phases {0};                // number of epsilon-scaling phases
+    Real start_epsilon {-1};        // epsilon used in the first phase of epsilon-scaling
+    Real final_epsilon {-1};        // epsilon used in the last phase of epsilon-scaling
+    long int num_rounds {0};        // total number of bidding rounds in all phases
+    int num_phases {0};             // number of epsilon-scaling phases
+    std::vector<Real> prices;       // final prices
 
     void compute_distance(Real q)  { distance = std::pow(cost, 1/ q); }
 

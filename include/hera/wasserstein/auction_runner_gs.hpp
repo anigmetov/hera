@@ -131,6 +131,8 @@ void AuctionRunnerGS<R, AO, PC>::run_auction_phases()
     result.final_relative_error = std::numeric_limits<Real>::max();
     // choose some initial epsilon
     oracle.set_epsilon(params.initial_epsilon);
+    result.start_epsilon = oracle.get_epsilon();
+    result.final_epsilon = oracle.get_epsilon();
     assert( oracle.get_epsilon() > 0 );
     for(int phase_num = 0; phase_num < params.max_num_phases; ++phase_num) {
         flush_assignment();
@@ -149,7 +151,10 @@ void AuctionRunnerGS<R, AO, PC>::run_auction_phases()
         }
         // decrease epsilon for the next iteration
         oracle.set_epsilon( oracle.get_epsilon() / params.epsilon_common_ratio );
+        result.final_epsilon = oracle.get_epsilon();
     }
+
+    result.prices = oracle.get_prices();
 }
 
 
