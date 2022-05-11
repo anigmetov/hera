@@ -12,8 +12,9 @@
 
 namespace hera {
 
-template<class Real = double>
+template<class Real_ = double>
 struct AuctionParams {
+    using Real = Real_;
     Real wasserstein_power {1};
     Real delta {0.01}; // relative error
     Real internal_p {get_infinity<Real>()};

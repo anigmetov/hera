@@ -112,6 +112,32 @@ PYBIND11_MODULE(_hera, m)
             .def_readwrite("return_matching", &AuctionParams::return_matching)
             .def_readwrite("match_inf_points", &AuctionParams::match_inf_points)
             .def("__repr__", [](const AuctionParams& p) { std::stringstream ss; ss << p; return ss.str(); })
+            .def(py::pickle(
+                // __getstate__
+                [](const AuctionParams& p) { return py::make_tuple(p.wasserstein_power, p.delta, p.internal_p,
+                    p.initial_epsilon, p.epsilon_common_ratio, p.max_num_phases, p.max_bids_per_round,
+                    p.dim, p.tolerate_max_iter_exceeded, p.return_matching, p.match_inf_points); },
+                // __setstate__
+                [](py::tuple t) {
+                    if (t.size() != 11)
+                        throw std::runtime_error("Invalid tuple for AuctionParams");
+
+                    AuctionParams p;
+
+                    p.wasserstein_power          = t[0].cast<decltype(p.wasserstein_power)>();
+                    p.delta                      = t[1].cast<decltype(p.delta)>();
+                    p.internal_p                 = t[2].cast<decltype(p.internal_p)>();
+                    p.initial_epsilon            = t[3].cast<decltype(p.initial_epsilon)>();
+                    p.epsilon_common_ratio       = t[4].cast<decltype(p.epsilon_common_ratio)>();
+                    p.max_num_phases             = t[5].cast<decltype(p.max_num_phases)>();
+                    p.max_bids_per_round         = t[6].cast<decltype(p.max_bids_per_round)>();
+                    p.dim                        = t[7].cast<decltype(p.dim)>();
+                    p.tolerate_max_iter_exceeded = t[8].cast<decltype(p.tolerate_max_iter_exceeded)>();
+                    p.return_matching            = t[9].cast<decltype(p.return_matching)>();
+                    p.match_inf_points           = t[10].cast<decltype(p.match_inf_points)>();
+
+                    return p;
+                }))
             ;
 
     // bottleneck
