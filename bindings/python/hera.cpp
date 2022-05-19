@@ -96,7 +96,32 @@ PYBIND11_MODULE(_hera, m)
             .def("add_to_matching", &AuctionResult::add_to_matching)
             .def("__str__", [](const AuctionResult& r) { std::stringstream ss; ss << r; return ss.str(); })
             .def("__repr__", [](const AuctionResult& r) { std::stringstream ss; ss << r; return ss.str(); })
-            ;
+            .def(py::pickle(
+                    // __getstate__
+                    [](const AuctionResult& p) { return py::make_tuple(p.num_rounds, p.num_phases, p.distance,
+                            p.cost, p.start_epsilon, p.final_epsilon, p.final_relative_error,
+                            p.prices, p.matching_a_to_b_, p.matching_b_to_a_); },
+                    // __setstate__
+                    [](py::tuple t) {
+                      if (t.size() != 10)
+                          throw std::runtime_error("Invalid tuple for AuctionResult");
+
+                      AuctionResult p;
+
+                      p.num_rounds             = t[0].cast<decltype(p.num_rounds)>();
+                      p.num_phases             = t[1].cast<decltype(p.num_phases)>();
+                      p.distance               = t[2].cast<decltype(p.distance)>();
+                      p.cost                   = t[3].cast<decltype(p.cost)>();
+                      p.start_epsilon          = t[4].cast<decltype(p.start_epsilon)>();
+                      p.final_epsilon          = t[5].cast<decltype(p.final_epsilon)>();
+                      p.final_relative_error   = t[6].cast<decltype(p.final_relative_error)>();
+                      p.prices                 = t[7].cast<decltype(p.prices)>();
+                      p.matching_a_to_b_       = t[8].cast<decltype(p.matching_a_to_b_)>();
+                      p.matching_b_to_a_       = t[9].cast<decltype(p.matching_b_to_a_)>();
+
+                      return p;
+                    }))
+        ;
 
     py::class_<AuctionParams>(m, "WassersteinParams")
             .def(py::init<>())

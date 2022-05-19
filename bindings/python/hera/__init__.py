@@ -36,6 +36,11 @@ def bottleneck_dist(dgm_a, dgm_b, delta: float = 0.01, return_bottleneck_edge: b
 
 def wasserstein_cost_geom(pts_a: typing.List[typing.Tuple[float, float]], pts_b: typing.List[typing.Tuple[float, float]],
                      params: typing.Optional[WassersteinParams] = None, prices=None):
+
+    if type(pts_a) is not list:
+        pts_a = [ (x, y) for x, y in pts_a ]
+    if type(pts_b) is not list:
+        pts_b = [ (x, y) for x, y in pts_a ]
     if params is None:
         params = WassersteinParams()
     if prices is None:
