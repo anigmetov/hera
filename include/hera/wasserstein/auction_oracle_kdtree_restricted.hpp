@@ -413,6 +413,16 @@ void AuctionOracleKDTreeRestricted<Real_, PointContainer_>::set_price(IdxType it
     }
 }
 
+template<class Real_, class PointContainer_>
+void AuctionOracleKDTreeRestricted<Real_, PointContainer_>::set_prices(const std::vector<Real_>& new_prices)
+{
+    if (new_prices.size() != this->items.size())
+        throw std::runtime_error("new_prices size mismatch");
+
+    for(IdxType item_idx = 0; item_idx < static_cast<IdxType>(this->num_items_); ++item_idx)
+        set_price(item_idx, new_prices[item_idx]);
+}
+
 
 template<class Real_, class PointContainer_>
 void AuctionOracleKDTreeRestricted<Real_, PointContainer_>::adjust_prices(Real delta)

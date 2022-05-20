@@ -43,7 +43,8 @@ struct AuctionResult {
 template<class Real>
 std::ostream& operator<<(std::ostream& out, const AuctionResult<Real>& r)
 {
-    out << "Result(cost=" << r.cost << ", distance=" << r.distance << ", num_rounds=" << r.num_rounds << ", num_phases=" << r.num_phases << ", error=" << r.final_relative_error << ")";
+    out << "Result(cost=" << r.cost << ", distance=" << r.distance << ", num_rounds=" << r.num_rounds << ", num_phases=" << r.num_phases << ", error=" << r.final_relative_error;
+    out << ", start_epsilon=" << r.start_epsilon << ", final_epsilon=" << r.final_epsilon << ")";
     return out;
 }
 

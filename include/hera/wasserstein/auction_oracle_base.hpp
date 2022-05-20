@@ -79,18 +79,6 @@ Real AuctionOracleBase<Real, PointContainer>::get_cost_for_diagonal_bidder(size_
     return std::pow(items[item_idx].persistence_lp(internal_p), wasserstein_power);
 }
 
-
-template<class Real, class PointContainer>
-void AuctionOracleBase<Real, PointContainer>::set_prices(const std::vector<Real>& new_prices)
-{
-    if (new_prices.size() != num_items_)
-        throw std::runtime_error("set_prices: number of elements in new_prices must equal number of items");
-
-    prices = new_prices;
-}
-
-
-
 template<class Real>
 std::ostream& operator<< (std::ostream& output, const DebugOptimalBid<Real>& db)
 {

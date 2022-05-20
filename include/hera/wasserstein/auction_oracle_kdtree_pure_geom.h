@@ -73,6 +73,7 @@ struct AuctionOracleKDTreePureGeom : AuctionOracleBase<Real_, PointContainer_> {
     std::vector<size_t> kdtree_items_;
     // methods
     void set_price(const IdxType items_idx, const Real new_price);
+    void set_prices(const std::vector<Real>& new_prices);
     IdxValPair<Real> get_optimal_bid(const IdxType bidder_idx);
     void adjust_prices();
     void adjust_prices(const Real delta);
