@@ -46,6 +46,8 @@ def wasserstein_cost_geom(pts_a: typing.List[typing.Tuple[float, float]], pts_b:
         params = WassersteinParams()
     if prices is None:
         prices = []
+    if type(prices) is not list:
+        prices = list(prices)
     if params.return_matching or return_detailed:
         return wasserstein_cost_geom_detailed_(pts_a, pts_b, params, prices)
     else:
