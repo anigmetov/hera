@@ -11,13 +11,13 @@ if(NOT CMAKE_BUILD_TYPE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif(NOT CMAKE_BUILD_TYPE)
 
-#if(NOT WIN32)
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-#    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -D_GLIBCXX_DEBUG")
-#    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 ")
-#    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} -O2 -g -ggdb")
-#endif(NOT WIN32)
+# Hera is header-only library
+# adding this target just makes it possible to automatically add
+# correct include directories by target_link_libraries(user_prog PRIVATE hera)
+add_library(hera INTERFACE)
+target_include_directories(hera INTERFACE include/ extern/)
 
+# TODO: detect system Catch2?
 add_subdirectory(extern/Catch2)
 enable_testing()
 

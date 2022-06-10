@@ -5,7 +5,7 @@ find_package(Boost REQUIRED)
 
 find_package(Threads)
 
-set(libraries ${libraries} "stdc++fs" ${CMAKE_THREAD_LIBS_INIT})
+set(libraries ${libraries} "stdc++fs" ${CMAKE_THREAD_LIBS_INIT} hera)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
@@ -17,9 +17,7 @@ endif()
 
 foreach(exec matching_dist module_example)
     add_executable(${exec} "${exec}.cpp")
-    target_include_directories(${exec} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include
-                                               ${CMAKE_CURRENT_SOURCE_DIR}/../extern
-                                               ${CMAKE_CURRENT_SOURCE_DIR}/../extern/opts/include)
+    target_include_directories(${exec} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../extern/opts/include)
     target_include_directories(${exec} SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
     target_link_libraries(${exec} PUBLIC ${libraries})
 
