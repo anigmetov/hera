@@ -46,7 +46,7 @@ namespace dnn
     };
 
     template<class Iterator, class F>
-    void                do_foreach(Iterator begin, Iterator end, const F& f)            { tbb::parallel_do(begin, end, f); }
+    void                do_foreach(Iterator begin, Iterator end, const F& f)            { tbb::parallel_for_each(begin, end, f); }
 
     template<class Range, class F>
     void                for_each_range_(const Range& r, const F& f)
