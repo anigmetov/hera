@@ -11,17 +11,31 @@ if(NOT CMAKE_BUILD_TYPE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif(NOT CMAKE_BUILD_TYPE)
 
+# by default Hera only provides the library
+# so that other projects using it do not build any executables.
+# That is why these options are OFF
+option(HERA_BUILD_EXAMPLES OFF)
+option(HERA_BUILD_PYTHON_BINDINGS OFF)
+option(HERA_BUILD_TESTS OFF)
+
 # Hera is header-only library
 # adding this target just makes it possible to automatically add
 # correct include directories by target_link_libraries(user_prog PRIVATE hera)
 add_library(hera INTERFACE)
 target_include_directories(hera INTERFACE include/ extern/)
 
-# TODO: detect system Catch2?
-add_subdirectory(extern/Catch2)
-enable_testing()
+if(HERA_BUILD_EXAMPLES)
+    add_subdirectory(bottleneck)
+    add_subdirectory(wasserstein)
+    add_subdirectory(matching)
+endif()
 
-add_subdirectory(bottleneck)
-add_subdirectory(wasserstein)
-add_subdirectory(matching)
-add_subdirectory(bindings/python)
+if(HERA_BUILD_PYTHON_BINDINGS)
+    add_subdirectory(bindings/python)
+endif()
+
+if(HERA_BUILD_TESTS)
+    # TODO: detect system Catch2?
+    add_subdirectory(extern/Catch2)
+    enable_testing()
+endif()

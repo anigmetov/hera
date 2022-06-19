@@ -9,7 +9,7 @@ Bug reports can be sent to "anigmetov EMAIL SIGN lbl DOT gov".
 
 ## Dependencies
 
-* Your compiler must support C++11.
+* Your compiler must support C++14.
 * Boost.
 
 ## Usage:
@@ -48,22 +48,9 @@ For example, the bi-filtration of a segment with vertices appearing at (0,0) and
 2. To use from your code.
 
 Here you can compute the matching distance either between bi-filtrations or between  persistence modules.
-First, you need to include `#include "matching_distance.h"` Practically every class you need is parameterized by Real type, which should be either float or double.  The header provides two functions called `matching_distance.` 
+First, you need to include `#include <hera/matching_distance.h>` Practically every class you need is parameterized by Real type, which should be either float or double.  The header provides two functions called `matching_distance.` 
 See `example/module_example.cpp` for additional details.
 
 ## License
 
 See `licence.txt` in the repository root folder.
-
-## Building
-
-CMakeLists.txt can be used to build the command-line utility in the standard
-way.  On Linux/Mac/Windows with Cygwin:
->    `mkdir build`
->    `cd build`
->   `cmake ..`
->    `make`
-
-On Windows with Visual Studio: use `cmake-gui` to create the solution in build directory and build it with VS.
-
-The library itself is header-only and does not require separate compilation.
