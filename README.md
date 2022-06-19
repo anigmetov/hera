@@ -28,34 +28,47 @@ cd build
 cmake ..
 make
 ```
-will not compile any binaries. There are CMake options HERA_BUILD_EXAMPLES and HERA_BUILD_PYTHON_BINDINGS, which are OFF. For tests, theres is option HERA_BUILD_TESTS.
+will not compile any binaries. There are CMake options HERA_BUILD_EXAMPLES and HERA_BUILD_PYTHON_BINDINGS, which are OFF. For tests, there is option HERA_BUILD_TESTS.
 
 - If you want to use python bindings:
 ```bash
- cd
- cd build
- cmake .. -D HERA_BUILD_PYTHON_BINDINGS=ON
- make -j8
+git clone git@github.com:anigmetov/hera.git
+cd hera
+mkdir build
+cd build
+cmake .. -DHERA_BUILD_PYTHON_BINDINGS=ON
+make -j8
 ```
-    The python library will be located in `build/bindings/python`.
+The python library `pyhera` will be located in `build/bindings/python`.
+You may also need to add `-DPYTHON_EXECUTABLE=path_to_python` as an option
+for `cmake`, if you notice that it detects a wrong version of python.
+
 - If you want to run executables from command-line giving them text files as an input:
 ```bash
- cd build
- cmake .. -DHERA_BUILD_EXAMPLES=ON
- make -j8
+git clone git@github.com:anigmetov/hera.git
+cd hera
+mkdir build
+cd build
+cmake .. -DHERA_BUILD_EXAMPLES=ON
+make -j8
  ```
-    This will build command-line utilities `bottleneck/bottleneck_dist.cpp`,
-    `wasserstein/wasserstein_dist.cpp`, `matching/matching_dist.cpp`. See
-    README files in the corresponding directories.
+This will build command-line utilities `bottleneck/bottleneck_dist`,
+`wasserstein/wasserstein_dist`, `matching/matching_dist`. See
+README files in the corresponding directories.
+It will also build `wasserstein/wasserstein_dist_dipha` to read diagrams in
+binary DIPHA format and `wasserstein/wasserstein_dist_point_cloud` to
+compute Wasserstein distance between sets of points of equal cardinality.
 
 - If you want to use Hera in your code, copy the Hera repository somewhere inside your project. Assuming that it is `your_project/extern/hera`, you only need two lines in your CMakeLists:
 ```cmake
-   add_subdirectory(extern/hera) # to discover hera library
+# to discover hera library
+add_subdirectory(extern/hera)
 
-   target_link_libraries(your_target PRIVATE hera)  # to add paths that Hera needs to target's include directories
+# to add paths that Hera needs to target's include directories
+target_link_libraries(your_target PRIVATE hera)
 ```
-    Inside your code you `#include<hera/wasserstein.h>, #include<hera/bottleneck.h>, #include<hera/matching.h>`, depending on the functions you need.
-    See examples in [bottleneck_dist.cpp](bottleneck/bottleneck_dist.cpp), [wasserstein_dist.cpp](wasserstein/wasserstein_dist.cpp) and [matching_dist.cpp](matching/matching_dist.cpp).
+Inside the code of `your_target` you `#include<hera/{bottleneck,wasserstein,matching}.h>`, depending on which functions you need.
+See examples in [bottleneck_dist.cpp](bottleneck/bottleneck_dist.cpp), [wasserstein_dist.cpp](wasserstein/wasserstein_dist.cpp) and [matching_dist.cpp](matching/matching_dist.cpp).
 
 
 ## References
