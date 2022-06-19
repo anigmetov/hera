@@ -24,6 +24,13 @@ option(HERA_BUILD_TESTS OFF)
 add_library(hera INTERFACE)
 target_include_directories(hera INTERFACE include/ extern/)
 
+if(HERA_BUILD_TESTS)
+    # TODO: detect system Catch2?
+    add_subdirectory(extern/Catch2)
+    set(HERA_BUILD_EXAMPLES ON)
+    enable_testing()
+endif()
+
 if(HERA_BUILD_EXAMPLES)
     add_subdirectory(bottleneck)
     add_subdirectory(wasserstein)
@@ -34,8 +41,4 @@ if(HERA_BUILD_PYTHON_BINDINGS)
     add_subdirectory(bindings/python)
 endif()
 
-if(HERA_BUILD_TESTS)
-    # TODO: detect system Catch2?
-    add_subdirectory(extern/Catch2)
-    enable_testing()
-endif()
+

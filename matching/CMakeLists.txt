@@ -28,4 +28,6 @@ foreach(exec matching_dist module_example)
     endif()
 endforeach()
 
-#add_subdirectory(tests)
+#if(HERA_BUILD_TESTS)
+#    add_subdirectory(tests)
+#endif()

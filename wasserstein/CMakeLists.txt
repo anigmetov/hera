@@ -19,4 +19,6 @@ foreach(wd wasserstein_dist wasserstein_dist_dipha wasserstein_dist_point_cloud)
     endif()
 endforeach()
 
-add_subdirectory(tests)
+if(HERA_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
