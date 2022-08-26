@@ -443,7 +443,7 @@ namespace md {
     // return matching distance
     // use priority queue to store dual cells
     // comparison function depends on the strategies in params_
-    // ressets hera calls counter
+    // resets hera calls counter
     template<class R, class T>
     R DistanceCalculator<R, T>::get_distance_pq()
     {

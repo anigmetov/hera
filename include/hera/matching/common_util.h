@@ -147,7 +147,7 @@ namespace md {
     }
 
 
-    // split string by delimeter
+    // split string by delimiter
     template<typename Out>
     void split_by_delim(const std::string &s, char delim, Out result) {
         std::stringstream ss(s);
