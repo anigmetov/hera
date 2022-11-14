@@ -1,5 +1,5 @@
-#ifndef HERA_WS_PARALLEL_H
-#define HERA_WS_PARALLEL_H
+#ifndef HERA_PARALLEL_H
+#define HERA_PARALLEL_H
 
 #include <vector>
 
@@ -21,8 +21,6 @@ using namespace boost::placeholders;
 
 
 namespace hera
-{
-namespace ws
 {
 namespace dnn
 {
@@ -94,7 +92,6 @@ namespace dnn
         tbb::tick_count start;
     };
 } // dnn
-} // ws
 } // hera
 
 // Serialization for tbb::concurrent_vector<...>
@@ -140,8 +137,6 @@ namespace boost
 #include <map>
 
 namespace hera
-{
-namespace ws
 {
 namespace dnn
 {
@@ -218,21 +213,17 @@ namespace dnn
     };
 
 } // dnn
-} // ws
 } // hera
 
 #endif // TBB
 
 namespace hera
 {
-namespace ws
-{
 namespace dnn
 {
     template<class Range, class F>
     void                do_foreach(const Range& range, const F& f)                      { do_foreach(boost::begin(range), boost::end(range), f); }
 } // dnn
-} // ws
 } // hera
 
 #endif
