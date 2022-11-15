@@ -40,8 +40,8 @@ derivative works thereof, in binary and source code form.
 #include "basic_defs_ws.h"
 #include "diagonal_heap.h"
 #include "auction_oracle_base.h"
-#include "dnn/geometry/euclidean-fixed.h"
-#include "dnn/local/kd-tree.h"
+#include <hera/dnn/geometry/euclidean-fixed.h>
+#include <hera/dnn/local/kd-tree.h>
 
 namespace hera {
 namespace ws {

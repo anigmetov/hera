@@ -40,8 +40,8 @@ namespace ba = boost::adaptors;
 
 #include "basic_defs_ws.h"
 #include "auction_oracle_base.h"
-#include "dnn/geometry/euclidean-dynamic.h"
-#include "dnn/local/kd-tree.h"
+#include <hera/dnn/geometry/euclidean-dynamic.h>
+#include <hera/dnn/local/kd-tree.h>
 
 namespace hera
 {

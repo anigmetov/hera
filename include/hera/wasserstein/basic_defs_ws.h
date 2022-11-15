@@ -46,7 +46,7 @@ derivative works thereof, in binary and source code form.
 #endif
 
 #include <hera/common.h>
-#include <dnn/geometry/euclidean-dynamic.h>
+#include <hera/dnn/geometry/euclidean-dynamic.h>
 #include "def_debug_ws.h"
 #include "auction_params.h"
 

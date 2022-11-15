@@ -49,7 +49,7 @@ derivative works thereof, in binary and source code form.
 #include "infinity.h"
 
 #ifdef WASSERSTEIN_PURE_GEOM
-#include "dnn/geometry/euclidean-dynamic.h"
+#include <hera/dnn/geometry/euclidean-dynamic.h>
 #endif
 
 namespace hera {

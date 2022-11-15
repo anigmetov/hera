@@ -34,8 +34,8 @@ derivative works thereof, in binary and source code form.
 #include <memory>
 
 #include "basic_defs_bt.h"
-#include "dnn/geometry/euclidean-fixed.h"
-#include "dnn/local/kd-tree.h"
+#include <hera/dnn/geometry/euclidean-fixed.h>
+#include <hera/dnn/local/kd-tree.h>
 
 
 
