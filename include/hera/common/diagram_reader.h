@@ -105,6 +105,14 @@ inline RealType parse_real_from_str(const std::string& s)
     static_assert(sizeof(RealType) != sizeof(RealType), "Must be specialized for each type you want to use, see above");
 }
 
+// when included in some external projects,
+// got an error with std::isspace used directly in find_if_not,
+// so added this to disambiguate
+inline bool is_space_helper(char x)
+{
+    return std::isspace(x);
+}
+
 // fill in result with points from file fname
 // return false if file can't be opened
 // or error occurred while reading
@@ -136,8 +144,8 @@ inline bool read_diagram_point_set(const char* fname, ContType_& result, int& de
             continue;
         }
          // trim whitespaces
-        auto whiteSpaceFront = std::find_if_not(line.begin(),line.end(),isspace);
-        auto whiteSpaceBack = std::find_if_not(line.rbegin(),line.rend(),isspace).base();
+        auto whiteSpaceFront = std::find_if_not(line.begin(), line.end(), is_space_helper);
+        auto whiteSpaceBack = std::find_if_not(line.rbegin(), line.rend(), is_space_helper).base();
         if (whiteSpaceBack <= whiteSpaceFront) {
             // line consists of spaces only - move to the next line
             continue;
