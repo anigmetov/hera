@@ -70,11 +70,6 @@ Result wasserstein_cost_geom_detailed(const Vector2dPoints& points_1, const Vect
     auto dpoints_1 = convert_2d_points_to_dnn(points_1);
     auto dpoints_2 = convert_2d_points_to_dnn(points_2);
 
-    if (params.return_matching) {
-        std::cerr << "Matching for point clouds not implemented, need id for DynamicPoint" << std::endl;
-        throw std::runtime_error("Matching for point clouds not supported");
-    }
-
     return hera::ws::wasserstein_cost_detailed(dpoints_1, dpoints_2, params, prices);
 }
 

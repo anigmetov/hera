@@ -59,7 +59,7 @@ inline AuctionResult<double> wasserstein_cost_detailed(const DynamicPointVector<
     DynamicPointVector<double> set_B_copy(set_B);
 
     // set point id to the index in vector
-    for(size_t i = 0; i < set_A.size(); ++i) {
+    for(size_t i = 0; i < set_A_copy.size(); ++i) {
         traits.id(set_A_copy[i]) = i;
         traits.id(set_B_copy[i]) = i;
     }
