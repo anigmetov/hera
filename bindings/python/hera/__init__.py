@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import typing
-from icecream import ic
+import numpy as np
 
 # from ._hera import bottleneck_distance_exact_with_edge, bottleneck_distance_exact, bottleneck_distance_approx_with_edge, \
 #     bottleneck_distance_approx, WassersteinParams, WassersteinResult, DiagramPoint
@@ -35,13 +35,15 @@ def bottleneck_dist(dgm_a, dgm_b, delta: float = 0.01, return_bottleneck_edge: b
 #     return hera_wasserstein_cost_geom(pts_1, pts_2, params, prices)
 #
 
-def wasserstein_cost_geom(pts_a: typing.List[typing.Tuple[float, float]], pts_b: typing.List[typing.Tuple[float, float]],
+def wasserstein_cost_geom(pts_a: np.ndarray, pts_b: np.ndarray,
                      params: typing.Optional[WassersteinParams] = None, prices=None, return_detailed=False):
 
-    if type(pts_a) is not list:
-        pts_a = [ (x, y) for x, y in pts_a ]
-    if type(pts_b) is not list:
-        pts_b = [ (x, y) for x, y in pts_b ]
+    # if type(pts_a) is not list:
+    #     pts_a = [ (x, y) for x, y in pts_a ]
+    # if type(pts_b) is not list:
+    #     pts_b = [ (x, y) for x, y in pts_b ]
+    if pts_a.shape != pts_b.shape:
+        raise RuntimeError("Pointclouds must have the same cardinality and dimension")
     if params is None:
         params = WassersteinParams()
     if prices is None:

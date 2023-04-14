@@ -159,6 +159,8 @@ int main(int argc, char* argv[])
 
     params.max_num_phases = 800;
 
+    params.return_matching = true;
+
     Real res = hera::ws::wasserstein_dist(set_A, set_B, params);
 
     std::cout << std::setprecision(15) << res << std::endl;
