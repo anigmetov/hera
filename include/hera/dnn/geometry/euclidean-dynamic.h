@@ -37,8 +37,10 @@ class DynamicPointVector
             }
 
             // TODO: fix to return matching for point clouds
-            int get_id() const { return 0; }
+            // unreliable hack for now: traits will set static member dim here
+            size_t get_id() const { return *((size_t*) ((Real*)(p) + dim)); }
 
+            static unsigned dim;
         };
         struct iterator;
         typedef             iterator                                    const_iterator;
@@ -74,6 +76,9 @@ class DynamicPointVector
         void serialize(Archive& ar, const unsigned int version)         { ar & point_capacity_ & storage_; }
 };
 
+template<class Real_>
+unsigned DynamicPointVector<Real_>::PointType::dim = 0;
+
 template<typename Real>
 struct DynamicPointTraits
 {
@@ -92,7 +97,7 @@ struct DynamicPointTraits
     typedef         Real                                                DistanceType;
 
                     DynamicPointTraits(unsigned dim = 0):
-                        dim_(dim)                                       {}
+                        dim_(dim)                                       { PointType::dim = dim; }
 
     DistanceType    distance(PointType p1, PointType p2) const
         {
