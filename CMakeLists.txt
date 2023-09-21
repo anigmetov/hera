@@ -11,6 +11,8 @@ if(NOT CMAKE_BUILD_TYPE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif(NOT CMAKE_BUILD_TYPE)
 
+find_package(Boost REQUIRED)
+
 # by default Hera only provides the library
 # so that other projects using it do not build any executables.
 # That is why these options are OFF
