@@ -543,7 +543,7 @@ namespace ws {
                 }
 
                 if (items_to_bidders.at(bidders_to_items[bidder_idx]) != static_cast<int>(bidder_idx)) {
-                    std::cerr << "Inconsitency: bidder_idx = " << bidder_idx;
+                    std::cerr << "Inconsistency: bidder_idx = " << bidder_idx;
                     std::cerr << ", item_idx in bidders_to_items = ";
                     std::cerr << bidders_to_items[bidder_idx];
                     std::cerr << ", bidder_idx in items_to_bidders = ";
@@ -566,7 +566,7 @@ namespace ws {
                 }
                 // check for consistency
                 if (bidders_to_items.at(items_to_bidders[item_idx]) != static_cast<int>(item_idx)) {
-                    std::cerr << "Inconsitency: item_idx = " << item_idx;
+                    std::cerr << "Inconsistency: item_idx = " << item_idx;
                     std::cerr << ", bidder_idx in items_to_bidders = ";
                     std::cerr << items_to_bidders[item_idx];
                     std::cerr << ", item_idx in bidders_to_items= ";

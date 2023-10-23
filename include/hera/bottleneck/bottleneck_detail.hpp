@@ -321,7 +321,7 @@ namespace hera {
                 }
             }
             std::vector<std::pair<Real, Real>> vv;
-            // keep points whose multiplicites are at most cutVal
+            // keep points whose multiplicities are at most cutVal
             // quick-and-dirty: fill in vv with copies of each point
             // to construct DiagramPointSet from it later
             for (const auto& ptQty : m) {
