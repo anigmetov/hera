@@ -81,7 +81,7 @@ nox -s build
 ### Full setup
 
 To setup an ideal development environment, run the following commands on a
-system with CMake 3.14+:
+system with CMake 3.15+:
 
 ```bash
 python3 -m venv venv
@@ -96,8 +96,8 @@ Tips:
 * You can use `virtualenv` (faster, from PyPI) instead of `venv`.
 * You can select any name for your environment folder; if it contains "env" it
   will be ignored by git.
-* If you don't have CMake 3.14+, just add "cmake" to the pip install command.
-* You can use `-DPYBIND11_FINDPYTHON=ON` to use FindPython on CMake 3.12+
+* If you don't have CMake 3.15+, just add "cmake" to the pip install command.
+* You can use `-DPYBIND11_FINDPYTHON=ON` to use FindPython.
 * In classic mode, you may need to set `-DPYTHON_EXECUTABLE=/path/to/python`.
   FindPython uses `-DPython_ROOT_DIR=/path/to` or
   `-DPython_EXECUTABLE=/path/to/python`.
@@ -135,7 +135,7 @@ The valid options are:
 * Use `-G` and the name of a generator to use something different. `cmake
   --help` lists the generators available.
       - On Unix, setting `CMAKE_GENERATER=Ninja` in your environment will give
-        you automatic mulithreading on all your CMake projects!
+        you automatic multithreading on all your CMake projects!
 * Open the `CMakeLists.txt` with QtCreator to generate for that IDE.
 * You can use `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` to generate the `.json` file
   that some tools expect.
@@ -149,8 +149,8 @@ To run the tests, you can "build" the check target:
 cmake --build build --target check
 ```
 
-`--target` can be spelled `-t` in CMake 3.15+. You can also run individual
-tests with these targets:
+`--target` can be spelled `-t`. You can also run individual tests with these
+targets:
 
 * `pytest`: Python tests only, using the
 [pytest](https://docs.pytest.org/en/stable/) framework
@@ -235,11 +235,13 @@ directory inside your pybind11 git clone. Files will be modified in place,
 so you can use git to monitor the changes.
 
 ```bash
-docker run --rm -v $PWD:/mounted_pybind11 -it silkeh/clang:12
-apt-get update && apt-get install -y python3-dev python3-pytest
-cmake -S /mounted_pybind11/ -B build -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);-fix" -DDOWNLOAD_EIGEN=ON -DDOWNLOAD_CATCH=ON -DCMAKE_CXX_STANDARD=17
-cmake --build build -j 2 -- --keep-going
+docker run --rm -v $PWD:/mounted_pybind11 -it silkeh/clang:15-bullseye
+apt-get update && apt-get install -y git python3-dev python3-pytest
+cmake -S /mounted_pybind11/ -B build -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);--use-color" -DDOWNLOAD_EIGEN=ON -DDOWNLOAD_CATCH=ON -DCMAKE_CXX_STANDARD=17
+cmake --build build -j 2
 ```
+
+You can add `--fix` to the options list if you want.
 
 ### Include what you use
 

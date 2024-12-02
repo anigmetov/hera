@@ -173,7 +173,8 @@ struct AdderBase {
     using DataVisitor = std::function<void(const Data &)>;
 
     virtual void
-    operator()(const Data &first, const Data &second, const DataVisitor &visitor) const = 0;
+    operator()(const Data &first, const Data &second, const DataVisitor &visitor) const
+        = 0;
     virtual ~AdderBase() = default;
     AdderBase() = default;
     AdderBase(const AdderBase &) = delete;
@@ -342,9 +343,8 @@ TEST_SUBMODULE(virtual_functions, m) {
              const AdderBase &adder,
              const AdderBase::DataVisitor &visitor) {
               adder(first, second, [&](const AdderBase::Data &first_plus_second) {
-                  adder(first_plus_second,
-                        third,
-                        visitor); // NOLINT(readability-suspicious-call-argument)
+                  // NOLINTNEXTLINE(readability-suspicious-call-argument)
+                  adder(first_plus_second, third, visitor);
               });
           });
 
@@ -589,4 +589,4 @@ void initialize_inherited_virtuals(py::module_ &m) {
     // Fix issue #1454 (crash when acquiring/releasing GIL on another thread in Python 2.7)
     m.def("test_gil", &test_gil);
     m.def("test_gil_from_thread", &test_gil_from_thread);
-};
+}

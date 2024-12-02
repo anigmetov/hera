@@ -28,6 +28,7 @@ target_include_directories(hera INTERFACE include/ extern/)
 
 if(HERA_BUILD_TESTS)
     # TODO: detect system Catch2?
+    set(CATCH_BUILD_STATIC_LIBRARY ON CACHE BOOL "To enable Catch2WithMain" FORCE)
     add_subdirectory(extern/Catch2)
     set(HERA_BUILD_EXAMPLES ON)
     enable_testing()

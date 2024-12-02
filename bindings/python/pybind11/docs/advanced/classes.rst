@@ -826,8 +826,7 @@ An instance can now be pickled as follows:
     always use the latest available version. Beware: failure to follow these
     instructions will cause important pybind11 memory allocation routines to be
     skipped during unpickling, which will likely lead to memory corruption
-    and/or segmentation faults. Python defaults to version 3 (Python 3-3.7) and
-    version 4 for Python 3.8+.
+    and/or segmentation faults.
 
 .. seealso::
 
@@ -1228,7 +1227,7 @@ whether a downcast is safe, you can proceed by specializing the
         std::string bark() const { return sound; }
     };
 
-    namespace pybind11 {
+    namespace PYBIND11_NAMESPACE {
         template<> struct polymorphic_type_hook<Pet> {
             static const void *get(const Pet *src, const std::type_info*& type) {
                 // note that src may be nullptr
@@ -1239,7 +1238,7 @@ whether a downcast is safe, you can proceed by specializing the
                 return src;
             }
         };
-    } // namespace pybind11
+    } // namespace PYBIND11_NAMESPACE
 
 When pybind11 wants to convert a C++ pointer of type ``Base*`` to a
 Python object, it calls ``polymorphic_type_hook<Base>::get()`` to
