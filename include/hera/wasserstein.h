@@ -288,8 +288,8 @@ wasserstein_cost_detailed(const PairContainer& A,
         return AuctionResult<RealType>();
     }
 
-    bool a_empty = true;
-    bool b_empty = true;
+    bool finite_a_empty = true;
+    bool finite_b_empty = true;
     RealType total_cost_A = 0;
     RealType total_cost_B = 0;
 
@@ -305,7 +305,6 @@ wasserstein_cost_detailed(const PairContainer& A,
     // loop over A, add projections of A-points to corresponding positions
     // in B-vector
     for(auto&& point_A : A) {
-        a_empty = false;
         RealType x = Traits::get_x(point_A);
         RealType y = Traits::get_y(point_A);
         int  id = Traits::get_id(point_A);
@@ -330,12 +329,12 @@ wasserstein_cost_detailed(const PairContainer& A,
         } else {
             dgm_A.emplace_back(x, y,  DgmPoint::NORMAL, id);
             dgm_B.emplace_back(x, y,  DgmPoint::DIAG, -id - 1);
+            finite_a_empty = false;
             total_cost_A += std::pow(dgm_A.back().persistence_lp(params.internal_p), params.wasserstein_power);
         }
     }
     // the same for B
     for(auto&& point_B : B) {
-        b_empty = false;
         RealType x = Traits::get_x(point_B);
         RealType y = Traits::get_y(point_B);
         int     id = Traits::get_id(point_B);
@@ -359,6 +358,7 @@ wasserstein_cost_detailed(const PairContainer& A,
         } else {
             dgm_A.emplace_back(x, y,  DgmPoint::DIAG, -id - 1);
             dgm_B.emplace_back(x, y,  DgmPoint::NORMAL, id);
+            finite_b_empty = false;
             total_cost_B += std::pow(dgm_B.back().persistence_lp(params.internal_p), params.wasserstein_power);
         }
     }
@@ -376,13 +376,13 @@ wasserstein_cost_detailed(const PairContainer& A,
         ws::get_one_dimensional_cost(y_minus_A, y_minus_B, params, infinity_result);
     }
 
-    if (a_empty) {
+    if (finite_a_empty) {
         AuctionResult<RealType> b_res;
         b_res.cost = total_cost_B;
         return add_results(b_res, infinity_result, params.wasserstein_power);
     }
 
-    if (b_empty) {
+    if (finite_b_empty) {
         AuctionResult<RealType> a_res;
         a_res.cost = total_cost_A;
         return add_results(a_res, infinity_result, params.wasserstein_power);
