@@ -4,3 +4,10 @@
     - Python bindings are now provided.
     - `DiagramPoint` now has id.
     - Fix: replace tbb::parallel_do with tbb::parallel_for_each.
+
+# 2.0.1
+    - Fix: Wasserstein distance computation when one diagram has no finite
+    off-diagonal points is computed without invoking 2D auction algorithm
+    (previously only worked if there were no off-diagonal points at all).
+    - License change: BSD for bottleneck and Wasserstein parts, GPL for the whole
+    library and the matching distance part.
