@@ -43,6 +43,7 @@ derivative works thereof, in binary and source code form.
 #include <algorithm>
 #include <map>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
 #include "diagram_point.h"
