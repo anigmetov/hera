@@ -234,7 +234,7 @@ namespace hera {
 
                 // for now skew edges may appear in the matching
                 // but they should not be returned to user
-                // if currrent edge is a skew edge, there must another edge
+                // if current edge is a skew edge, there must another edge
                 // with the same cost
                 R curr_dist;
                 if (x.first.is_diagonal() and x.second.is_normal()) {
