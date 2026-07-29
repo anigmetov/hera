@@ -50,6 +50,11 @@ namespace md {
             Relation() {}
             Relation(const Point<Real>& _pos, const IndexVec& _components) : position_(_pos), components_(_components) {}
 
+            bool operator==(const Relation& other) const
+            {
+                return position_ == other.position_ and components_ == other.components_;
+            }
+
             Real get_x() const { return position_.x; }
             Real get_y() const { return position_.y; }
         };
@@ -80,6 +85,11 @@ namespace md {
         Real min_y() const { return min_y_; }
 
         PointVec<Real> positions() const;
+
+        bool operator==(const ModulePresentation& other) const
+        {
+            return generators_ == other.generators_ and relations_ == other.relations_;
+        }
 
 #ifndef MD_TEST_CODE
     private:

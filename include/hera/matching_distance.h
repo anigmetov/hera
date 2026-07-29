@@ -171,6 +171,8 @@ namespace md {
 #ifdef MD_PRINT_HEAT_MAP
         HeatMaps<Real> heat_maps;
 #endif
+
+        int n_jobs {0}; // <= 0 uses TBB's automatic concurrency
     };
 
 
@@ -217,6 +219,7 @@ namespace md {
         Real get_max_y(int module) const;
 
         void set_cell_central_value(CellWithValue<Real>& dual_cell);
+        void set_cell_central_value(CellWithValue<Real>& dual_cell, Real value);
 
         Real get_distance();
 

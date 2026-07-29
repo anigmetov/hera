@@ -134,17 +134,46 @@ namespace md {
         project_generators(slice, sorted_gen_indices, gen_projections);
         project_relations(slice, sorted_rel_indices, rel_projections);
 
-        phat_matrix.set_num_cols(relations_.size());
+        const Index num_gens = static_cast<Index>(generators_.size());
+        const Index num_rels = static_cast<Index>(relations_.size());
+        const Index total_columns = num_gens + num_rels;
 
-        for(Index i = 0; i < (Index) relations_.size(); i++) {
-            IndexVec current_relation = relations_[sorted_rel_indices[i]].components_;
+        phat_matrix.set_num_cols(total_columns);
+
+        IndexVec generator_columns(num_gens);
+        IndexVec relation_columns(num_rels);
+        Index gen_ptr = 0;
+        Index rel_ptr = 0;
+        Index global_column = 0;
+
+        while (gen_ptr < num_gens or rel_ptr < num_rels) {
+            const bool take_generator =
+                rel_ptr == num_rels or (gen_ptr < num_gens and gen_projections[gen_ptr] <= rel_projections[rel_ptr]);
+
+            if (take_generator) {
+                const Index original_generator = sorted_gen_indices[gen_ptr];
+                generator_columns[original_generator] = global_column;
+                phat_matrix.set_dim(global_column, 0);
+                phat_matrix.set_col(global_column, IndexVec {});
+                ++gen_ptr;
+            } else {
+                const Index original_relation = sorted_rel_indices[rel_ptr];
+                relation_columns[original_relation] = global_column;
+                phat_matrix.set_dim(global_column, 1);
+                ++rel_ptr;
+            }
+
+            ++global_column;
+        }
+
+        for(Index i = 0; i < num_rels; i++) {
+            const Index original_relation = sorted_rel_indices[i];
+            IndexVec current_relation = relations_[original_relation].components_;
             for(auto& j : current_relation) {
-                j = sorted_gen_indices[j];
+                j = generator_columns.at(j);
             }
             std::sort(current_relation.begin(), current_relation.end());
-            // modules do not have dimension, set all to 0
-            phat_matrix.set_dim(i, 0);
-            phat_matrix.set_col(i, current_relation);
+            phat_matrix.set_col(relation_columns[original_relation], current_relation);
         }
     }
 
@@ -157,6 +186,27 @@ namespace md {
 
         get_slice_projection_matrix(slice, phat_matrix, gen_projections, rel_projections);
 
+        RealVec sorted_values;
+        sorted_values.reserve(generators_.size() + relations_.size());
+        std::vector<bool> is_generator_column;
+        is_generator_column.reserve(generators_.size() + relations_.size());
+
+        std::size_t gen_ptr = 0;
+        std::size_t rel_ptr = 0;
+        while (gen_ptr < gen_projections.size() or rel_ptr < rel_projections.size()) {
+            const bool take_generator = rel_ptr == rel_projections.size() or
+                (gen_ptr < gen_projections.size() and gen_projections[gen_ptr] <= rel_projections[rel_ptr]);
+            if (take_generator) {
+                sorted_values.push_back(gen_projections[gen_ptr]);
+                is_generator_column.push_back(true);
+                ++gen_ptr;
+            } else {
+                sorted_values.push_back(rel_projections[rel_ptr]);
+                is_generator_column.push_back(false);
+                ++rel_ptr;
+            }
+        }
+
         phat::persistence_pairs phat_persistence_pairs;
         phat::compute_persistence_pairs<phat::standard_reduction>(phat_persistence_pairs, phat_matrix, true);
 
@@ -166,9 +216,12 @@ namespace md {
 
         for(Index i = 0; i < (Index) phat_persistence_pairs.get_num_pairs(); i++) {
             std::pair<phat::index, phat::index> new_pair = phat_persistence_pairs.get_pair(i);
+            if (not is_generator_column.at(new_pair.first)) {
+                continue;
+            }
             bool is_finite_pair = new_pair.second != phat::k_infinity_index;
-            Real birth = gen_projections.at(new_pair.first);
-            Real death = is_finite_pair ? rel_projections.at(new_pair.second) : real_inf;
+            Real birth = sorted_values.at(new_pair.first);
+            Real death = is_finite_pair ? sorted_values.at(new_pair.second) : real_inf;
             if (birth != death) {
                 dgm.emplace_back(birth, death);
             }

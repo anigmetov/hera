@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <limits>
 #include <string>
 
 #define MD_TEST_CODE
@@ -65,6 +66,26 @@ TEST_CASE("Different bounds", "[bounds]")
     for(CellWithValue c : calc.get_refined_grid(5, false, false)) {
         boxes.push_back(c.dual_box());
     }
+
+    CellWithValue approximate_cell(boxes.front(), 1);
+    approximate_cell.set_value_at(ValuePoint::lower_left, 2.0);
+    params.stop_asap = false;
+    for(auto strategy : {BoundStrategy::local_dual_bound,
+                         BoundStrategy::local_dual_bound_refined,
+                         BoundStrategy::local_combined,
+                         BoundStrategy::local_dual_bound_for_each_point}) {
+        params.bound_strategy = strategy;
+        params.hera_epsilon = 0.0;
+        const Real exact_bound = calc.get_upper_bound(approximate_cell, std::numeric_limits<Real>::max());
+        params.hera_epsilon = 0.1;
+        REQUIRE(calc.get_upper_bound(approximate_cell, std::numeric_limits<Real>::max()) == Approx(exact_bound + 0.2));
+    }
+    params.stop_asap = true;
+    params.bound_strategy = BoundStrategy::local_combined;
+    params.hera_epsilon = 0.0;
+    const Real exact_fallback_bound = calc.get_upper_bound(approximate_cell, 0.0);
+    params.hera_epsilon = 0.1;
+    REQUIRE(calc.get_upper_bound(approximate_cell, 0.0) == Approx(exact_fallback_bound + 0.2));
 
     // fill in boxes and points
 
