@@ -36,3 +36,4 @@ bottleneck/build/
 ann/lib
 ann/bin
 ann/lib/dummy
+*.DS_Store

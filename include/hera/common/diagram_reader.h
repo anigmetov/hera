@@ -123,7 +123,9 @@ template<class RealType = double, class ContType_ = std::vector<std::pair<RealTy
 inline bool read_diagram_point_set(const char* fname, ContType_& result, int& decPrecision)
 {
     bool zero_pers_warning_printed = false;
+#ifndef FOR_R_TDA
     size_t lineNumber { 0 };
+#endif
     result.clear();
     std::ifstream f(fname);
     if (!f.good()) {
@@ -135,7 +137,9 @@ inline bool read_diagram_point_set(const char* fname, ContType_& result, int& de
     std::locale loc;
     std::string line;
     while(std::getline(f, line)) {
+#ifndef FOR_R_TDA
         lineNumber++;
+#endif
         // process comments: remove everything after hash
         auto hashPos = line.find_first_of("#", 0);
         if( std::string::npos != hashPos) {
@@ -189,7 +193,9 @@ inline bool read_diagram_point_set(const char* fname, ContType_& result, int& de
                 result.push_back(std::make_pair(x, y));
             } else {
                 if (!zero_pers_warning_printed) {
+#ifndef FOR_R_TDA
                     std::cerr << "Warning: point with 0 persistence ignored in " << fname << ":" << lineNumber << "\n";
+#endif
                     zero_pers_warning_printed = true;
                 }
             }
@@ -292,7 +298,9 @@ inline bool read_diagram_dipha(const std::string& fname, unsigned int dim, ContT
 
         if ((unsigned int)d == dim) {
             if (death == birth && !zero_pers_warning_printed) {
+#ifndef FOR_R_TDA
                 std::cerr << "Warning: point with 0 persistence ignored in " << fname << "." << std::endl;
+#endif
                 zero_pers_warning_printed = true;
             } else {
                 result.push_back(std::make_pair(birth, death));
@@ -377,8 +385,9 @@ template<class RealType = double >
 inline bool read_point_cloud(const char* fname, hera::ws::dnn::DynamicPointVector<RealType>& result, int& dimension, int& decPrecision)
 {
     using DynamicPointTraitsR = typename hera::ws::dnn::DynamicPointTraits<RealType>;
-
+#ifndef FOR_R_TDA
     size_t lineNumber { 0 };
+#endif
     result.clear();
     std::ifstream f(fname);
     if (!f.good()) {
@@ -392,7 +401,9 @@ inline bool read_point_cloud(const char* fname, hera::ws::dnn::DynamicPointVecto
     bool dim_computed = false;
     int point_idx = 0;
     while(std::getline(f, line)) {
+#ifndef FOR_R_TDA
         lineNumber++;
+#endif
         // process comments: remove everything after hash
         auto hashPos = line.find_first_of("#", 0);
         if( std::string::npos != hashPos) {

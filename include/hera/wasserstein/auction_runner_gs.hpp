@@ -40,7 +40,6 @@ derivative works thereof, in binary and source code form.
 #define PRINT_DETAILED_TIMING
 
 #ifdef FOR_R_TDA
-#include "Rcpp.h"
 #undef DEBUG_AUCTION
 #endif
 
@@ -167,12 +166,14 @@ void AuctionRunnerGS<R, AO, PC>::run_auction()
     } else {
         run_auction_phases();
 
+#ifdef DEBUG_AUCTION
         if (result.final_relative_error > params.delta and not params.tolerate_max_iter_exceeded) {
             std::cerr << "Maximum iteration number exceeded, exiting. Current result is: ";
             std::cerr << pow(result.cost, 1 / params.wasserstein_power) << std::endl;
             if (not params.tolerate_max_iter_exceeded)
                 throw std::runtime_error("Maximum iteration number exceeded");
         }
+#endif
     }
 
     result.compute_distance(params.wasserstein_power);

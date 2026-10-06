@@ -468,12 +468,10 @@ namespace hera {
 
             BoundMatchOracle<Real> oracle(A, B, distEpsilon, useRangeSearch);
             // binary search
-            size_t iterNum { 0 };
             size_t idxMin { 0 }, idxMax { pairwiseDist.size() - 1 };
             size_t idxMid;
             while (idxMax > idxMin) {
                 idxMid = static_cast<size_t>(floor(idxMin + idxMax) / 2);
-                iterNum++;
                 // not A[imid] < dist <=>  A[imid] >= dist  <=> A[imid[ >= dist + eps
                 if (oracle.isMatchLess(pairwiseDist[idxMid] + distEpsilon / 2)) {
                     idxMax = idxMid;

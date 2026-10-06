@@ -39,7 +39,6 @@ derivative works thereof, in binary and source code form.
 
 
 #ifdef FOR_R_TDA
-#include "Rcpp.h"
 #undef DEBUG_AUCTION
 #endif
 
@@ -432,11 +431,7 @@ namespace ws {
     void AuctionRunnerJac<R, AO, PC>::run_bidding_step(const Range &active_bidders)
     {
         clear_bid_table();
-        size_t bids_submitted = 0;
         for (const auto bidder_idx : active_bidders) {
-
-            ++bids_submitted;
-
             submit_bid(bidder_idx, oracle.get_optimal_bid(bidder_idx));
         }
 
