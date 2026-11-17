@@ -48,7 +48,7 @@ namespace phat {
         // The whole method is much faster than calling log2i, and very comparable to using ScanBitForward/Reverse intrinsic,
         // which should be one CPU instruction, but is not portable.
         size_t rightmost_pos( const block_type value ) const {                
-            return 64 - 1 - debrujin_magic_table[ ( (value & (-(int64_t)value) ) * 0x07EDD5E59A4E28C2 ) >> 58 ];
+            return 64 - 1 - debrujin_magic_table[ ( (value & (block_type(0) - value) ) * 0x07EDD5E59A4E28C2 ) >> 58 ];
         }
 
     public:        
