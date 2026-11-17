@@ -86,6 +86,9 @@ namespace md {
 
         assert(lower_bound >= 0);
 
+        if (lower_bound == std::numeric_limits<R>::infinity())
+            return result;
+
         for(auto& dual_cell : result) {
             R good_enough_ub = get_good_enough_upper_bound(lower_bound);
             R max_value_on_cell = get_upper_bound(dual_cell, good_enough_ub);
@@ -525,8 +528,16 @@ namespace md {
         R lower_bound = std::numeric_limits<R>::min();
 
         // init pq and lower bound
-        for(auto& init_cell : get_initial_dual_grid(lower_bound)) {
-            dual_cells_queue.push(init_cell);
+        {
+            auto initial_cells = get_initial_dual_grid(lower_bound);
+            // An infinite slice distance proves that the matching distance is infinite
+            if (lower_bound == std::numeric_limits<R>::infinity()) {
+                params_.actual_error = 0;
+                return lower_bound;
+            }
+            for(auto& init_cell : initial_cells) {
+                dual_cells_queue.push(init_cell);
+            }
         }
 
         R upper_bound = get_max_possible_value(&dual_cells_queue.top(), dual_cells_queue.size());
@@ -588,8 +599,16 @@ namespace md {
                         }
                     });
                 });
+                // Account for executed work even if its result is later discarded or never consumed
+                int n_prefetched_calls = 0;
                 for (std::size_t i = 0; i < prefetched_cells.size(); ++i) {
+                    n_prefetched_calls += prefetched_has_value[i] ? 1 : 0;
                     dual_cells_queue.push(prefetched_cells[i]);
+                }
+                if (n_prefetched_calls > 0) {
+                    n_hera_calls_ += n_prefetched_calls;
+                    n_hera_calls_per_level_[batch_level + 1] += n_prefetched_calls;
+                    params_.actual_max_depth = std::max(params_.actual_max_depth, batch_level + 1);
                 }
             }
 #endif
@@ -637,17 +656,18 @@ namespace md {
             // new_value will be the weighted distance at its center
 #ifdef MD_USE_TBB
             if (has_prefetched_value) {
-                ++n_hera_calls_;
                 if (prefetched_exception)
                     std::rethrow_exception(prefetched_exception);
-                n_hera_calls_per_level_[dual_cell.level() + 1]++;
-                params_.actual_max_depth = std::max(params_.actual_max_depth, dual_cell.level() + 1);
                 set_cell_central_value(dual_cell, prefetched_value);
             } else
 #endif
                 set_cell_central_value(dual_cell);
             R new_value = dual_cell.value_at(ValuePoint::center);
             lower_bound = std::max(new_value, lower_bound);
+            if (lower_bound == std::numeric_limits<R>::infinity()) {
+                params_.actual_error = 0;
+                return lower_bound;
+            }
 
             assert(upper_bound >= lower_bound);
 

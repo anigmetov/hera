@@ -1,109 +1,63 @@
-#include "catch/catch.hpp"
+#include <catch2/catch.hpp>
 
-#include <sstream>
-#include <iostream>
-#include <string>
+#include <algorithm>
+#include <limits>
 
 #define MD_TEST_CODE
-
-#include "common_util.h"
-#include "persistence_module.h"
-#include "matching_distance.h"
+#include <hera/matching_distance.h>
 
 using Real = double;
 using Point = md::Point<Real>;
-using Bifiltration = md::Bifiltration<Real>;
-using BifiltrationProxy = md::BifiltrationProxy<Real>;
-using CalculationParams = md::CalculationParams<Real>;
-using CellWithValue = md::CellWithValue<Real>;
-using DualPoint = md::DualPoint<Real>;
-using DualBox = md::DualBox<Real>;
-using BoundStrategy = md::BoundStrategy;
-using TraverseStrategy = md::TraverseStrategy;
-using AxisType = md::AxisType;
-using AngleType = md::AngleType;
-using ValuePoint = md::ValuePoint;
-using Column = md::Column;
-using PointVec = md::PointVec<Real>;
 using Module = md::ModulePresentation<Real>;
-using Relation = Module::Relation;
-using RelationVec = Module::RelVec;
-using IndexVec = md::IndexVec;
 
-using md::k_corner_vps;
-
-TEST_CASE("Module projection", "[module][projection]")
+TEST_CASE("Module slice barcode", "[module][barcode]")
 {
-    PointVec gens;
-    gens.emplace_back(1, 1); // A
-    gens.emplace_back(2, 3); // B
-    gens.emplace_back(3, 2); // C
+    const Real inf = std::numeric_limits<Real>::infinity();
+    const md::PointVec<Real> generators {Point(5, 5), Point(1, 1), Point(3, 3)};
+    Module::RelVec relations {Module::Relation(Point(6, 6), md::IndexVec{0})};
+    md::Diagram<Real> expected {{1, inf}, {3, inf}, {5, 6}};
 
-    RelationVec rels;
-
-    Point rel_x_position { 3.98, 2.47 };
-    IndexVec rel_x_components { 0, 2 }; // X: A + C = 0
-
-    Point rel_y_position { 2.5, 4 };
-    IndexVec rel_y_components { 0, 1 }; // Y: A + B = 0
-
-    Point rel_z_position { 5, 5 };
-    IndexVec rel_z_components { 1 };   // Z: B = 0
-
-
-    rels.emplace_back(rel_x_position, rel_x_components);
-    rels.emplace_back(rel_y_position, rel_y_components);
-    rels.emplace_back(rel_z_position, rel_z_components);
-
-    Module module { gens, rels };
-
-    {
-        DualPoint slice_1(AxisType::x_type, AngleType::flat, 6.0 / 7.0, 3.0);
-        std::vector<Real> gen_ps_1, rel_ps_1;
-        phat::boundary_matrix<> matr_1;
-
-        module.get_slice_projection_matrix(slice_1, matr_1, gen_ps_1, rel_ps_1);
-
-        phat::column c_1_0, c_1_1, c_1_2;
-
-        matr_1.get_col(0, c_1_0);
-        matr_1.get_col(1, c_1_1);
-        matr_1.get_col(2, c_1_2);
-
-        phat::column c_1_0_correct { 0, 1};
-        phat::column c_1_1_correct { 0, 2};
-        phat::column c_1_2_correct { 2 };
-
-        REQUIRE(c_1_0 == c_1_0_correct);
-        REQUIRE(c_1_1 == c_1_1_correct);
-        REQUIRE(c_1_2 == c_1_2_correct);
+    SECTION("Non-involutive generator order with fewer relations than generators") {}
+    SECTION("Redundant and empty relations do not create module bars") {
+        relations.emplace_back(Point(7, 7), md::IndexVec{0});
+        relations.emplace_back(Point(0, 0), md::IndexVec{});
+    }
+    SECTION("Generators without relations remain essential") {
+        relations.clear();
+        expected = {{1, inf}, {3, inf}, {5, inf}};
+    }
+    SECTION("Zero-length bars are omitted") {
+        relations = {Module::Relation(Point(5, 5), md::IndexVec{0})};
+        expected = {{1, inf}, {3, inf}};
     }
 
-    {
+    const Module module(generators, relations);
+    const md::DualPoint<Real> diagonal(md::AxisType::y_type, md::AngleType::flat, 1, 0);
+    auto diagram = module.weighted_slice_diagram(diagonal);
+    std::sort(diagram.begin(), diagram.end());
+    REQUIRE(diagram == expected);
+}
 
-        DualPoint slice_2(AxisType::y_type, AngleType::flat, 2.0 / 9.0, 5.0);
-        std::vector<Real> gen_ps_2, rel_ps_2;
-        phat::boundary_matrix<> matr_2;
+TEST_CASE("Modules without generators have no slice bars", "[module][barcode]")
+{
+    const md::DualPoint<Real> diagonal(md::AxisType::y_type, md::AngleType::flat, 1, 0);
+    const Module empty;
+    REQUIRE(empty.weighted_slice_diagram(diagonal).empty());
 
-        module.get_slice_projection_matrix(slice_2, matr_2, gen_ps_2, rel_ps_2);
+    const Module relations_only({}, {Module::Relation(Point(1, 1), {})});
+    REQUIRE(relations_only.weighted_slice_diagram(diagonal).empty());
+}
 
-        phat::column c_2_0, c_2_1, c_2_2;
-
-        matr_2.get_col(0, c_2_0);
-        matr_2.get_col(1, c_2_1);
-        matr_2.get_col(2, c_2_2);
-
-        phat::column c_2_0_correct { 0, 1};
-        phat::column c_2_1_correct { 0, 2};
-        phat::column c_2_2_correct { 1 };
-
-        //std::cerr << "gen_ps_2: " << md::container_to_string(gen_ps_2) << std::endl;
-        //std::cerr << "rel_ps_2: " << md::container_to_string(rel_ps_2) << std::endl;
-
-        REQUIRE(c_2_0 == c_2_0_correct);
-        REQUIRE(c_2_1 == c_2_1_correct);
-        REQUIRE(c_2_2 == c_2_2_correct);
-    }
-
-
+TEST_CASE("Different essential ranks have infinite matching distance", "[module][matching_distance]")
+{
+    const Module rank_one({Point(0, 0)}, {});
+    const Module rank_two({Point(0, 0), Point(1, 1)}, {});
+    md::CalculationParams<Real> params;
+    SECTION("Diagonal initialization") { params.initialization_depth = 0; }
+    SECTION("Refined-grid initialization") { params.initialization_depth = 2; }
+    params.max_depth = 0;
+    params.hera_epsilon = 0;
+    params.n_jobs = 1;
+    REQUIRE(md::matching_distance(rank_one, rank_two, params) == std::numeric_limits<Real>::infinity());
+    REQUIRE(params.actual_error == 0);
 }

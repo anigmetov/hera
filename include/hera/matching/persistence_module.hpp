@@ -208,7 +208,7 @@ namespace md {
         }
 
         phat::persistence_pairs phat_persistence_pairs;
-        phat::compute_persistence_pairs<phat::standard_reduction>(phat_persistence_pairs, phat_matrix, true);
+        phat::compute_persistence_pairs<phat::standard_reduction>(phat_persistence_pairs, phat_matrix);
 
         Diagram<Real> dgm;
 
