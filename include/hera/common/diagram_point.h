@@ -28,10 +28,13 @@ derivative works thereof, in binary and source code form.
 #ifndef HERA_DIAGRAM_POINT_H
 #define HERA_DIAGRAM_POINT_H
 
-#include <ostream>
+#include <algorithm>
 #include <cassert>
-#include <limits>
+#include <cmath>
 #include <functional>
+#include <limits>
+#include <ostream>
+#include <stdexcept>
 #include <tuple>
 
 #include "infinity.h"
