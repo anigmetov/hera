@@ -174,7 +174,7 @@ namespace md {
             Real birth = simplices.at(new_pair.first).value();
             Real death = is_finite_pair ? simplices.at(new_pair.second).value() : real_inf;
             int dim = simplices[new_pair.first].dim();
-            assert(dim + 1 == simplices[new_pair.second].dim());
+            assert(not is_finite_pair or dim + 1 == simplices[new_pair.second].dim());
             if (birth != death) {
                 dgm.add_point(dim, birth, death);
             }

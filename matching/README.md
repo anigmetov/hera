@@ -51,6 +51,42 @@ Here you can compute the matching distance either between bi-filtrations or betw
 First, you need to include `#include <hera/matching_distance.h>` Practically every class you need is parameterized by Real type, which should be either float or double.  The header provides two functions called `matching_distance.` 
 See `example/module_example.cpp` for additional details.
 
+## Parallel evaluation
+
+To enable TBB evaluation in a C++ application, define `MD_USE_TBB` and link TBB
+(for CMake consumers, `TBB::tbb`). Parallel evaluation is supported by
+`TraverseStrategy::breadth_first` and `TraverseStrategy::breadth_first_value`.
+Set `CalculationParams::n_jobs` to 1 for serial execution, a positive value for
+the requested concurrency, or 0 (the default) for automatic concurrency.
+Without `MD_USE_TBB`, evaluation remains serial.
+
+`n_hera_calls` counts executed bottleneck calls, including prefetched calls whose
+results are discarded or unused after early termination.
+
+## Tests
+
+From the repository root:
+
+```sh
+cmake -S . -B build -DHERA_BUILD_TESTS=ON
+cmake --build build --target matching_tests
+ctest --test-dir build -R '^matching_(module|distance)$' --output-on-failure
+```
+
+With CMake 4, add `-DCMAKE_POLICY_VERSION_MINIMUM=3.5` to the configure command
+for the bundled Catch2 dependency.
+
+If CMake finds TBB, it also provides the parallel regression target:
+
+```sh
+cmake --build build --target matching_tests_tbb
+ctest --test-dir build -R '^matching_parallel$' --output-on-failure
+```
+
+Use `CMAKE_PREFIX_PATH` when TBB is installed outside the usual search paths.
+The existing exhaustive bound checks are registered separately as
+`matching_bounds`.
+
 ## License
 
 See `licence.txt` in the repository root folder.

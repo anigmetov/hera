@@ -1,14 +1,16 @@
-#include "catch/catch.hpp"
+#include <catch2/catch.hpp>
 
+#include <atomic>
 #include <sstream>
 #include <iostream>
+#include <limits>
 #include <string>
 
 #define MD_TEST_CODE
 
-#include "common_util.h"
-#include "simplex.h"
-#include "matching_distance.h"
+#include <hera/matching/common_util.h>
+#include <hera/matching/simplex.h>
+#include <hera/matching_distance.h>
 
 using Real = double;
 using Point = md::Point<Real>;
@@ -65,6 +67,26 @@ TEST_CASE("Different bounds", "[bounds]")
     for(CellWithValue c : calc.get_refined_grid(5, false, false)) {
         boxes.push_back(c.dual_box());
     }
+
+    CellWithValue approximate_cell(boxes.front(), 1);
+    approximate_cell.set_value_at(ValuePoint::lower_left, 2.0);
+    params.stop_asap = false;
+    for(auto strategy : {BoundStrategy::local_dual_bound,
+                         BoundStrategy::local_dual_bound_refined,
+                         BoundStrategy::local_combined,
+                         BoundStrategy::local_dual_bound_for_each_point}) {
+        params.bound_strategy = strategy;
+        params.hera_epsilon = 0.0;
+        const Real exact_bound = calc.get_upper_bound(approximate_cell, std::numeric_limits<Real>::max());
+        params.hera_epsilon = 0.1;
+        REQUIRE(calc.get_upper_bound(approximate_cell, std::numeric_limits<Real>::max()) == Approx(exact_bound + 0.2));
+    }
+    params.stop_asap = true;
+    params.bound_strategy = BoundStrategy::local_combined;
+    params.hera_epsilon = 0.0;
+    const Real exact_fallback_bound = calc.get_upper_bound(approximate_cell, 0.0);
+    params.hera_epsilon = 0.1;
+    REQUIRE(calc.get_upper_bound(approximate_cell, 0.0) == Approx(exact_fallback_bound + 0.2));
 
     // fill in boxes and points
 
@@ -123,8 +145,8 @@ TEST_CASE("Bifiltrations from file", "[matching_distance][small_example]")
 {
     std::string fname_a, fname_b;
 
-    fname_a = "../tests/prism_1.bif";
-    fname_b = "../tests/prism_2.bif";
+    fname_a = "prism_1.bif";
+    fname_b = "prism_2.bif";
 
     Bifiltration bif_a(fname_a);
     Bifiltration bif_b(fname_b);
@@ -157,3 +179,51 @@ TEST_CASE("Bifiltrations from file", "[matching_distance][small_example]")
         }
     }
 }
+
+#ifdef MD_USE_TBB
+namespace {
+    class CountedModule : public md::ModulePresentation<Real> {
+    public:
+        CountedModule(const md::ModulePresentation<Real>& module, std::atomic<int>& calls)
+            : md::ModulePresentation<Real>(module), calls_(calls) {}
+
+        md::Diagram<Real> weighted_slice_diagram(const DualPoint& line) const
+        {
+            calls_.fetch_add(1, std::memory_order_relaxed);
+            return md::ModulePresentation<Real>::weighted_slice_diagram(line);
+        }
+
+    private:
+        std::atomic<int>& calls_;
+    };
+}
+
+TEST_CASE("Prefetched bottleneck calls are counted even after early termination", "[matching_distance][parallel]")
+{
+    using Module = md::ModulePresentation<Real>;
+    const Module module_a({Point(0, 0)}, {});
+    const Module module_b({Point(1, 1)}, {});
+
+    for (auto strategy : {TraverseStrategy::breadth_first, TraverseStrategy::breadth_first_value}) {
+        for (int n_jobs : {1, 2}) {
+            CAPTURE(strategy, n_jobs);
+            std::atomic<int> calls_a{0}, calls_b{0};
+            CountedModule counted_a(module_a, calls_a), counted_b(module_b, calls_b);
+            CalculationParams params;
+            params.initialization_depth = 0;
+            params.hera_epsilon = 0;
+            params.delta = 10;
+            params.bound_strategy = BoundStrategy::local_dual_bound;
+            params.traverse_strategy = strategy;
+            params.n_jobs = n_jobs;
+            md::DistanceCalculator<Real, CountedModule> calculator(counted_a, counted_b, params);
+
+            REQUIRE(calculator.distance() == 1);
+            REQUIRE(calculator.get_hera_calls_number() == calls_a.load());
+            REQUIRE(calls_a.load() == calls_b.load());
+            REQUIRE(calculator.n_hera_calls_per_level_.at(0) == 1);
+            REQUIRE(calculator.n_hera_calls_per_level_.at(1) == calls_a.load() - 1);
+        }
+    }
+}
+#endif

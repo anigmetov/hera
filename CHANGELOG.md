@@ -11,3 +11,17 @@
     (previously only worked if there were no off-diagonal points at all).
     - License change: BSD for bottleneck and Wasserstein parts, GPL for the whole
     library and the matching distance part.
+
+# Unreleased
+    - Fix module slice reduction with square presentation matrices, inverse
+    generator indexing, and complete extraction of infinite bars.
+    - Return infinite matching distance without finite-bound arithmetic when a
+    slice has infinite bottleneck distance.
+    - Restore the bottleneck approximation factor in matching-distance upper
+    bounds, and return zero immediately for identical module presentations.
+    - Add optional TBB breadth-first evaluation. Call statistics include all
+    executed prefetched distances, even if their results are not consumed.
+    - Replace obsolete module matrix-layout tests with barcode regressions and
+    enable matching-distance tests, including optional TBB accounting coverage.
+    - Fix infinite-pair assertion indexing in bifiltration slices and signed
+    overflow in PHAT's bit-tree pivot scan.

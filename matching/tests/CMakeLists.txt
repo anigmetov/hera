@@ -1,0 +1,28 @@
+set(matching_test_sources test_module.cpp test_matching_distance.cpp)
+
+add_executable(matching_tests ${matching_test_sources})
+target_link_libraries(matching_tests PRIVATE Catch2::Catch2WithMain hera)
+target_include_directories(matching_tests SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(matching_tests PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
+foreach(fixture prism_1.bif prism_2.bif)
+    configure_file(${fixture} ${fixture} COPYONLY)
+endforeach()
+
+add_test(NAME matching_module COMMAND matching_tests "[module]")
+add_test(NAME matching_distance COMMAND matching_tests "[matching_distance]")
+add_test(NAME matching_bounds COMMAND matching_tests "[bounds]")
+
+find_package(TBB QUIET COMPONENTS tbb)
+if(TBB_FOUND)
+    add_executable(matching_tests_tbb ${matching_test_sources})
+    target_compile_definitions(matching_tests_tbb PRIVATE MD_USE_TBB)
+    target_include_directories(matching_tests_tbb SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+    target_link_libraries(matching_tests_tbb PRIVATE Catch2::Catch2WithMain hera TBB::tbb)
+    if(OpenMP_CXX_FOUND)
+        target_link_libraries(matching_tests_tbb PRIVATE OpenMP::OpenMP_CXX)
+    endif()
+    add_test(NAME matching_parallel COMMAND matching_tests_tbb "[parallel]")
+endif()
